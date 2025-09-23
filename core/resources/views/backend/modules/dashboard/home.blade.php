@@ -15,7 +15,7 @@
                     </a>
                 </li>
                 <li>-</li>
-                <li class="fw-medium">POS Software & Inventory test change</li>
+                <li class="fw-medium">POS Software & Inventory</li>
             </ul>
         </div>
 
