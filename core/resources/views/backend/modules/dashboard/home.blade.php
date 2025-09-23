@@ -15,7 +15,7 @@
                     </a>
                 </li>
                 <li>-</li>
-                <li class="fw-medium">POS & Inventory</li>
+                <li class="fw-medium">POS Software & Inventory</li>
             </ul>
         </div>
 
