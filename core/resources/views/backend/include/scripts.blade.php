@@ -335,7 +335,7 @@
         if (q) finalUrl += (url.includes('?')?'&':'?') + q;
 
         // store per-trigger callbacks for later use
-        $modal.data('onload-fn', onLoadFn || null);
+        $modal.data('onload-fn', onLoadFn || null); 
         $modal.data('onsuccess-fn', onSuccFn || null);
 
         $.ajax({ url: finalUrl, type: 'GET' })

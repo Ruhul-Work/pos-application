@@ -33,7 +33,7 @@
             @permgroup(['usermanage.users', 'rbac.permissions', 'rbac.role'])
                 <li class="sidebar-menu-group-title">User Management</li>
                 @permgroup(['usermanage.users']) {{-- prefix ভিত্তিক হেডিং অটো-শো/হাইড --}}
-                    {{-- @if (can_route('usermanage.users.index')) you can use this system if you want @prem and @if both system are work--}}
+                    {{-- @if (can_route('usermanage.users.index')) you can use this system if you want @prem and @if both system are work --}}
 
                     @perm('usermanage.users.index')
                         <li class="{{ Route::is('usermanage.users.index') ? 'active' : '' }}">
@@ -135,11 +135,41 @@
                     @endperm
                 @endpermgroup
             @endpermgroup
-
-
             {{-- branch management module end --}}
 
+            {{-- organization settings module start --}}
 
+            @permgroup(['org.btypes'])
+                <li class="sidebar-menu-group-title">Organization</li>
+                <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="mdi:shape" class="menu-icon"></iconify-icon>
+                        <span>Business Types</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @perm('org.btypes.index')
+                            <li>
+                                <a class="{{ Route::is('org.btypes.index') ? 'active' : '' }}"
+                                    href="{{ route('org.btypes.index') }}">
+                                    <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Types List
+                                </a>
+                            </li>
+                        @endperm
+                    </ul>
+                </li>
+
+
+
+            @endpermgroup
+            {{-- organization settings module end --}}
+            <li class="{{ Route::is('units.index') ? 'active' : '' }}">
+                <a href="{{ route('units.index') }}">
+                    <i class="ri-weight-line"></i>
+                    <span>Unit</span>
+                </a>
+            </li>
         </ul>
+        {{-- Units (main level item) --}}
+
     </div>
 </aside>

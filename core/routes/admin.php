@@ -1,13 +1,13 @@
 <?php
 use App\Http\Controllers\admin\BranchController;
+use App\Http\Controllers\admin\BranchSwitchController;
 use App\Http\Controllers\admin\FirewallController;
 use App\Http\Controllers\admin\PermissionController;
 use App\Http\Controllers\admin\RoleController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\admin\UserPermissionController;
-use App\Http\Controllers\admin\BranchSwitchController;
+use App\Http\Controllers\admin\BusinessTypeController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Crypt;
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
 // ←(Perm) একবার দিলেই গ্রুপের সব রুটে অটো ability detect হবে
@@ -23,14 +23,15 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         // Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
         Route::get('users-roles', [UserController::class, 'rolesForSelect'])->name('users.roles');
         Route::get('users/{encrypted}/profile', [UserController::class, 'showProfile'])->name('users.profile');
-        Route::get('users/{user}/edit-modal', [UserController::class, 'editModal'])->name('users.edit.modal');
+        Route::get('users/{user}/edit-modal', [UserController::class, 'b b   '])->name('users.edit.modal');
+            
 
         //=== Individual User Permission Overrides
- Route::get('users/{encrypted}/userpermission', [UserPermissionController::class, 'edit'])
-        ->name('userspermission.edit');
+        Route::get('users/{encrypted}/userpermission', [UserPermissionController::class, 'edit'])
+            ->name('userspermission.edit');
 
-    Route::post('users/{encrypted}/userpermission', [UserPermissionController::class, 'update'])
-        ->name('userspermission.update');
+        Route::post('users/{encrypted}/userpermission', [UserPermissionController::class, 'update'])
+            ->name('userspermission.update');
 
     });
 
@@ -57,7 +58,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('role', [RoleController::class, 'store'])->name('role.store');
         Route::get('role/list', [RoleController::class, 'list'])->name('role.list');
         Route::post('role/list', [RoleController::class, 'listAjax'])->name('role.list.ajax');
-        Route::get('roles/{role}/edit', [RoleController::class, 'edit'])->name('role.edit'); 
+        Route::get('roles/{role}/edit', [RoleController::class, 'edit'])->name('role.edit');
         Route::put('roles/{role}', [RoleController::class, 'update'])->name('role.update');
         Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('role.destroy');
         Route::get('roles/{role}/matrix', [RoleController::class, 'matrix'])->name('role.matrix');
@@ -85,10 +86,22 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('branches/{branch}', [BranchController::class, 'show'])->name('branches.show');
         Route::put('branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
         Route::delete('branches/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
+        Route::post('branch/switch', [BranchSwitchController::class, 'switch'])->name('branch.switch');
+        Route::get('org/branches/select2', [BranchController::class,'select2'])->name('branches.select2');
 
-         Route::post('branch/switch', [BranchSwitchController::class, 'switch'])->name('branch.switch');
+        // Business Types (Master)
+        Route::get('btypes', [BusinessTypeController::class, 'index'])->name('btypes.index');
+        Route::post('btypes/list', [BusinessTypeController::class, 'listAjax'])->name('btypes.list.ajax');
+        Route::get('btypes/create-modal', [BusinessTypeController::class, 'createModal'])->name('btypes.createModal');
+        Route::get('btypes/{type}/edit-modal', [BusinessTypeController::class, 'editModal'])->whereNumber('type')->name('btypes.editModal');
+        Route::post('btypes', [BusinessTypeController::class, 'store'])->name('btypes.store');
+        Route::post('btypes/{type}', [BusinessTypeController::class, 'update'])->whereNumber('type')->name('btypes.update');
+        Route::delete('btypes/{type}', [BusinessTypeController::class, 'destroy'])->whereNumber('type')->name('btypes.destroy');
+
+        // Branch ↔ Types assign
+        Route::get('branches/{branch}/types-modal', [BranchController::class, 'typesModal'])->whereNumber('branch')->name('branches.types.modal');
+        Route::post('branches/{branch}/types-sync', [BranchController::class, 'typesSync'])->whereNumber('branch')->name('branches.types.sync');
 
     });
-   
 
 });
