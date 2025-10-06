@@ -139,6 +139,135 @@
 
             {{-- branch management module end --}}
 
+            {{-- country managemnt module start --}}
+
+                @permgroup(['org.branches'])
+                <li class="sidebar-menu-group-title">Location Management</li>
+                @permgroup(['org.branches'])
+                    @perm('org.branches.index')
+                        <li class=" dropdown ">
+                            <a href="javascript:void(0)">
+                                <i class="ri-map-pin-line"></i>
+                                <span>Countries</span>
+                            </a>
+
+                            <ul class="sidebar-submenu">
+
+                                @perm('org.branches.index')
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('country.countries.index') ? 'active' : '' }}"
+                                            href="{{ route('country.countries.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Country List</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('division.divisions.index') ? 'active' : '' }}"
+                                            href="{{ route('division.divisions.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Division List</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('district.districts.index') ? 'active' : '' }}"
+                                            href="{{ route('district.districts.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>District List</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('upazila.upazilas.index') ? 'active' : '' }}"
+                                            href="{{ route('upazila.upazilas.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Upazila List</span>
+                                        </a>
+                                    </li>
+                                @endperm
+                            </ul>
+                        </li>
+                    @endperm
+                @endpermgroup
+            @endpermgroup
+
+                {{-- category managemnt module end --}}
+  @permgroup(['org.branches'])
+                <li class="sidebar-menu-group-title">Item Management</li>
+                @permgroup(['org.branches'])
+                    @perm('org.branches.index')
+                        <li class=" dropdown ">
+                            <a href="javascript:void(0)">
+                                <i class="ri-box-3-line"></i>
+                                <span>Category</span>
+                            </a>
+
+                            <ul class="sidebar-submenu">
+
+                                @perm('org.branches.index')
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('category.categories.index') ? 'active' : '' }}"
+                                            href="{{ route('category.categories.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Category List</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-8">
+                                        <a class="{{ Route::is('subcategory.subcategories.index') ? 'active' : '' }}"
+                                            href="{{ route('subcategory.subcategories.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Subcategory List</span>
+                                        </a>
+                                    </li>
+                                    
+                                   
+                                @endperm
+                            </ul>
+                             <li class="mb-8">
+                                        <a class="{{ Route::is('brand.brands.index')? 'active' : '' }}"
+                                            href="{{ route('brand.brands.index') }}">
+                                            <iconify-icon icon="ri-price-tag-3-line" class="menu-icon"></iconify-icon>
+                                            <span>Brand List</span>
+                                        </a>
+                                    </li>
+                        </li>
+                    @endperm
+                @endpermgroup
+            @endpermgroup
+
+                {{-- categories managemnt module end --}}
+
+        {{-- brand management module start --}}
+            {{-- @permgroup(['org.branches'])
+                <li class="sidebar-menu-group-title">Brand Management</li>
+                @permgroup(['org.branches'])
+                    @perm('org.branches.index')
+                        <li class=" dropdown ">
+                            <a href="javascript:void(0)">
+                                <i class="ri-store-3-line"></i>
+                                <span>Brand</span>
+                            </a>
+
+                            <ul class="sidebar-submenu">
+
+                                @perm('org.branches.index')
+                                    <li>
+                                        <a class="{{ Route::is('brand.brands.index') ? 'active' : '' }}"
+                                            href="{{ route('brand.brands.index') }}">
+                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                            <span>Brand List</span>
+                                        </a>
+                                    </li>
+                                @endperm
+                            </ul>
+                        </li>
+                    @endperm
+                @endpermgroup
+            @endpermgroup --}}
+
+
+            {{-- brand management module end --}}
+
+                
+
 
         </ul>
     </div>

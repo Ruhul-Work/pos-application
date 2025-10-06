@@ -89,6 +89,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
          Route::post('branch/switch', [BranchSwitchController::class, 'switch'])->name('branch.switch');
 
     });
-   
+
+    
+
 
 });

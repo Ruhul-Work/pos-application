@@ -1,156 +1,208 @@
 <script>
-   $(document).ready(function() {
-    // Ajax DataTable init
-    $(function () {
-        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+    $(document).ready(function() {
+        // Ajax DataTable init
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
 
-        if ($('.AjaxDataTable').length) {
-            const table = $('.AjaxDataTable').DataTable({
-            dom: '<"dt-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-12"lfr>t<"dt-bottom d-flex flex-wrap align-items-center justify-content-between mt-12"ip>',
-            ordering: true,
-            responsive: true,
-            stateSave: true,
-            order: [[0, 'desc']],
-            scrollY: '50vh',
-            scrollX: true,
-            scrollCollapse: true,
-            processing: true,
-            serverSide: true,
-            serverMethod: 'post',
-            ajax: { url: DATATABLE_URL },
+            if ($('.AjaxDataTable').length) {
+                const table = $('.AjaxDataTable').DataTable({
+                    dom: '<"dt-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-12"lfr>t<"dt-bottom d-flex flex-wrap align-items-center justify-content-between mt-12"ip>',
+                    ordering: true,
+                    responsive: true,
+                    stateSave: true,
+                    order: [
+                        [0, 'desc']
+                    ],
+                    scrollY: '50vh',
+                    scrollX: true,
+                    scrollCollapse: true,
+                    processing: true,
+                    serverSide: true,
+                    serverMethod: 'post',
+                    ajax: {
+                        url: DATATABLE_URL
+                    },
 
-            aLengthMenu: [[10, 50, 100, 200, 500,1000, -1],[10, 50, 100, 200, 500,1000, "ALL"]],
-            language: {
-                search: '',
-                sLengthMenu: '_MENU_',
-                searchPlaceholder: "Search",
-                info: "_START_ - _END_ of _TOTAL_ items",
-                paginate: {
-                next: '<i class="ri-arrow-right-s-line"></i>',
-                previous: '<i class="ri-arrow-left-s-line"></i>'
-                },
-            },
+                    aLengthMenu: [
+                        [10, 50, 100, 200, 500, 1000, -1],
+                        [10, 50, 100, 200, 500, 1000, "ALL"]
+                    ],
+                    language: {
+                        search: '',
+                        sLengthMenu: '_MENU_',
+                        searchPlaceholder: "Search",
+                        info: "_START_ - _END_ of _TOTAL_ items",
+                        paginate: {
+                            next: '<i class="ri-arrow-right-s-line"></i>',
+                            previous: '<i class="ri-arrow-left-s-line"></i>'
+                        },
+                    },
 
-                columnDefs: [
-                {
-                    targets: 0, // SL checkbox
-                    orderable: false,
-                    searchable: false,
-                    className: 'no-export',
-                    render: (data, type, row, meta) => {
-                        const sl = String(meta.row + meta.settings._iDisplayStart + 1).padStart(2,'0');
-                        return `
+                    columnDefs: [{
+                            targets: 0, // SL checkbox
+                            orderable: false,
+                            searchable: false,
+                            className: 'no-export',
+                            render: (data, type, row, meta) => {
+                                const sl = String(meta.row + meta.settings
+                                    ._iDisplayStart + 1).padStart(2, '0');
+                                return `
                             <div class="form-check style-check d-flex align-items-center">
                             <input class="form-check-input row-check" type="checkbox" data-id="${data}">
                             <label class="form-check-label">${sl}</label>
                             </div>`;
-                    }
-                },
-                {
-                    targets: -1, // Action column 
-                    orderable: false,   
-                    searchable: false, 
-                    className: 'no-export text-end',
-                    width: '120px'       
-                }
-            ],
+                            }
+                        },
+                        {
+                            targets: -1, // Action column 
+                            orderable: false,
+                            searchable: false,
+                            className: 'no-export text-end',
+                            width: '120px'
+                        }
+                    ],
 
-            buttons: [
-                { extend: 'copy',  className: 'btn btn-sm btn-light d-none',
-                    exportOptions: { columns: ':visible:not(.no-export)' } },
-                { extend: 'excel', className: 'btn btn-sm btn-light d-none',
-                    exportOptions: { columns: ':visible:not(.no-export)' } },
-                { extend: 'print', className: 'btn btn-sm btn-light d-none',
-                    exportOptions: { columns: ':visible:not(.no-export)' } }
-              
-                ],
+                    buttons: [{
+                            extend: 'copy',
+                            className: 'btn btn-sm btn-light d-none',
+                            exportOptions: {
+                                columns: ':visible:not(.no-export)'
+                            }
+                        },
+                        {
+                            extend: 'excel',
+                            className: 'btn btn-sm btn-light d-none',
+                            exportOptions: {
+                                columns: ':visible:not(.no-export)'
+                            }
+                        },
+                        {
+                            extend: 'print',
+                            className: 'btn btn-sm btn-light d-none',
+                            exportOptions: {
+                                columns: ':visible:not(.no-export)'
+                            }
+                        }
 
-            drawCallback: function () {
-                const $w = $(this.api().table().container());
-                $w.find('.dataTables_paginate .pagination')
-                .addClass('pagination-sm justify-content-end');
-                $w.find('.dataTables_length select')
-                .addClass('form-select form-select-sm dt-len');
-            },
+                    ],
 
-            initComplete: function (settings) {
-                const $wrap = $(settings.nTableWrapper);            
-                const $card = $(settings.nTable).closest('.card'); 
+                    drawCallback: function() {
+                        const $w = $(this.api().table().container());
+                        $w.find('.dataTables_paginate .pagination')
+                            .addClass('pagination-sm justify-content-end');
+                        $w.find('.dataTables_length select')
+                            .addClass('form-select form-select-sm dt-len');
+                    },
 
-                // ✅ এই টেবিলের নিজের ফিল্টারকেই move করুন (গ্লোবাল না)
-                $card.find('#tableSearch').empty().append($wrap.find('.dataTables_filter'));
+                    initComplete: function(settings) {
+                        const $wrap = $(settings.nTableWrapper);
+                        const $card = $(settings.nTable).closest('.card');
 
-                // Length select bootstrapize
-                $wrap.find('.dataTables_length select').addClass('form-select form-select-sm dt-len');
+                        // ✅ এই টেবিলের নিজের ফিল্টারকেই move করুন (গ্লোবাল না)
+                        $card.find('#tableSearch').empty().append($wrap.find(
+                            '.dataTables_filter'));
 
-                // ==== External buttons → internal buttons trigger (duplicate free)
-                $(document).off('click.dtbtn');
-                $(document).on('click.dtbtn', '.export-copy',  function(e){ e.preventDefault(); table.button('.buttons-copy').trigger();  });
-                $(document).on('click.dtbtn', '.export-excel', function(e){ e.preventDefault(); table.button('.buttons-excel').trigger(); });
-                $(document).on('click.dtbtn', '.export-print', function(e){ e.preventDefault(); table.button('.buttons-print').trigger(); });
+                        // Length select bootstrapize
+                        $wrap.find('.dataTables_length select').addClass(
+                            'form-select form-select-sm dt-len');
 
-                // ✅ Custom Hide/Show Columns using Swal (ColVis বাদ)
-                $(document).on('click.dtbtn', '.export-hide-column', function(e){
-                e.preventDefault();
+                        // ==== External buttons → internal buttons trigger (duplicate free)
+                        $(document).off('click.dtbtn');
+                        $(document).on('click.dtbtn', '.export-copy', function(e) {
+                            e.preventDefault();
+                            table.button('.buttons-copy').trigger();
+                        });
+                        $(document).on('click.dtbtn', '.export-excel', function(e) {
+                            e.preventDefault();
+                            table.button('.buttons-excel').trigger();
+                        });
+                        $(document).on('click.dtbtn', '.export-print', function(e) {
+                            e.preventDefault();
+                            table.button('.buttons-print').trigger();
+                        });
 
-                // কোন কোন কলাম দেখাব/লুকাব — first(0) ও last বাদ চাইলে logic বসান
-                let html = '';
-                table.columns().every(function(idx){
-                    // first: 0 (SL) বাদ, আর দরকার হলে last বাদ দিন
-                    if (idx === 0) return;
-                    const title = $(this.header()).text().trim() || ('Column ' + (idx+1));
-                    const vis   = this.visible();
-                    html += `
+                        // ✅ Custom Hide/Show Columns using Swal (ColVis বাদ)
+                        $(document).on('click.dtbtn', '.export-hide-column', function(e) {
+                            e.preventDefault();
+
+                            // কোন কোন কলাম দেখাব/লুকাব — first(0) ও last বাদ চাইলে logic বসান
+                            let html = '';
+                            table.columns().every(function(idx) {
+                                // first: 0 (SL) বাদ, আর দরকার হলে last বাদ দিন
+                                if (idx === 0) return;
+                                const title = $(this.header()).text()
+                                .trim() || ('Column ' + (idx + 1));
+                                const vis = this.visible();
+                                html += `
                     <div class="form-check mb-1 text-start">
                         <input class="form-check-input colvis-toggle" type="checkbox" id="col_${idx}" data-idx="${idx}" ${vis ? 'checked' : ''}>
                         <label class="form-check-label" for="col_${idx}">${title}</label>
                     </div>`;
-                });
+                            });
 
-                    Swal.fire({
-                        title: 'Hide/Unhide Columns',
-                        html: `<div style="max-height:50vh;overflow:auto;">${html}</div>`,
-                        focusConfirm: false,
-                        showCancelButton: true,
-                        confirmButtonText: 'Apply',
-                        cancelButtonText: 'Cancel',
-                        customClass: { popup: 'text-start' },
-                        preConfirm: () => {
-                        document.querySelectorAll('.colvis-toggle').forEach(cb => {
-                            const idx = parseInt(cb.dataset.idx, 10);
-                            table.column(idx).visible(cb.checked);
+                            Swal.fire({
+                                title: 'Hide/Unhide Columns',
+                                html: `<div style="max-height:50vh;overflow:auto;">${html}</div>`,
+                                focusConfirm: false,
+                                showCancelButton: true,
+                                confirmButtonText: 'Apply',
+                                cancelButtonText: 'Cancel',
+                                customClass: {
+                                    popup: 'text-start'
+                                },
+                                preConfirm: () => {
+                                    document.querySelectorAll(
+                                        '.colvis-toggle').forEach(
+                                        cb => {
+                                            const idx = parseInt(cb
+                                                .dataset.idx, 10
+                                                );
+                                            table.column(idx)
+                                                .visible(cb
+                                                .checked);
+                                        });
+                                }
+                            });
                         });
-                        }
+
+                        // Refresh
+                        $(document).on('click.dtbtn', '.export-refresh', function(e) {
+                            e.preventDefault();
+                            table.ajax.reload(null, false);
+                            if (window.Swal) Swal.fire({
+                                icon: 'success',
+                                title: 'Reloaded',
+                                timer: 900,
+                                showConfirmButton: false
+                            });
+                        });
+
+                        // Master checkbox
+                        $(document).on('change.dtbtn', '#select-all', function() {
+                            $('.row-check').prop('checked', this.checked);
+                        });
+                    }
+                });
+            }
+
+            // Tooltips re-init after draw (error-safe)
+            $(document).on('draw.dt', function() {
+                if (window.bootstrap?.Tooltip) {
+                    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                        try {
+                            new bootstrap.Tooltip(el);
+                        } catch (_) {}
                     });
-                });
-
-                // Refresh
-                $(document).on('click.dtbtn', '.export-refresh', function(e){
-                e.preventDefault();
-                table.ajax.reload(null, false);
-                if (window.Swal) Swal.fire({ icon:'success', title:'Reloaded', timer:900, showConfirmButton:false });
-                });
-
-                // Master checkbox
-                $(document).on('change.dtbtn', '#select-all', function(){
-                $('.row-check').prop('checked', this.checked);
-                });
-            }
-        });
-        }
-
-        // Tooltips re-init after draw (error-safe)
-        $(document).on('draw.dt', function(){
-            if (window.bootstrap?.Tooltip) {
-            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-                try { new bootstrap.Tooltip(el); } catch(_) {}
+                }
             });
-            }
         });
-    });
 
 
-    // DataTable init (non-ajax)
+        // DataTable init (non-ajax)
         if ($('.DataTable').length > 0) {
 
             table = $('.DataTable').DataTable({
@@ -283,150 +335,423 @@
                 },
             });
         }
-    });
+    });+
 
 
     // ====== Minimal Global AjaxModal Manager (keep this once in layout) ======
 
-    (function(){
-    const MODAL_ID = '#AjaxModal';
+    (function() {
+        const MODAL_ID = '#AjaxModal';
 
-    function csrf() {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    }
-    function qs(obj){ try{ return $.param(obj||{}) }catch(e){ return '' } }
+        function csrf() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        }
 
-    // Safe dynamic function caller: "Namespace.fn" বা "fn" — window থেকে resolve করবে
-    function callFnByName(fnName, args=[]) {
-        if (!fnName) return;
-        try {
-        const parts = String(fnName).split('.');
-        let ctx = window, fn = null;
-        while (parts.length > 1) { ctx = ctx[parts.shift()]; if (!ctx) return; }
-        fn = ctx[parts[0]];
-        if (typeof fn === 'function') return fn.apply(ctx, args);
-        } catch(e) {}
-    }
-
-    // Open & load modal partial
-    $(document).on('click', '.AjaxModal', function(e){
-        e.preventDefault();
-        const $btn      = $(this);
-        const url       = $btn.data('ajax-modal');
-        const size      = String($btn.data('size')||'').trim();         
-        const keyAttr   = String($btn.data('key') ||'').trim();           
-        const params    = $btn.data('params') || null;                   
-        const onLoadFn  = $btn.data('onload') || null;                 
-        const onSuccFn  = $btn.data('onsuccess') || null;               
-
-        const $modal    = $(MODAL_ID);
-        const $dialog   = $modal.find('.modal-dialog');
-        const $content  = $modal.find('.modal-content');
-
-        // apply size
-        $dialog.removeClass('modal-sm modal-lg modal-xl');
-        if (['sm','lg','xl'].includes(size)) $dialog.addClass('modal-'+size);
-
-        // loading
-        $content.html('<div class="p-5 text-center"><div class="spinner-border"></div><div class="mt-2">Loading...</div></div>');
-
-        // build final URL
-        let finalUrl = url; const q = qs(params);
-        if (q) finalUrl += (url.includes('?')?'&':'?') + q;
-
-        // store per-trigger callbacks for later use
-        $modal.data('onload-fn', onLoadFn || null);
-        $modal.data('onsuccess-fn', onSuccFn || null);
-
-        $.ajax({ url: finalUrl, type: 'GET' })
-        .done(function(html){
-            $content.html(html);
-            $modal.modal('show');
-
-            // resolve key: content data-modal-key > trigger data-key
-            const foundKey  = $content.find('[data-modal-key]').first().data('modal-key');
-            const activeKey = (foundKey || keyAttr || '').toString().trim();
-            $modal.data('modal-key', activeKey || null);
-
-            // 1) page-provided onLoad function (via data-onload)
-            callFnByName($modal.data('onload-fn'), [$modal]);
-
-            // 2) or fallback: window.ModalHooks[activeKey]?.onLoad
-            if (! $modal.data('onload-fn') && activeKey && window.ModalHooks && window.ModalHooks[activeKey] && typeof window.ModalHooks[activeKey].onLoad === 'function') {
-            try { window.ModalHooks[activeKey].onLoad($modal); } catch(e){}
+        function qs(obj) {
+            try {
+                return $.param(obj || {})
+            } catch (e) {
+                return ''
             }
-        })
-        .fail(function(){
-            $content.html('<div class="p-4 text-danger">Failed to load modal.</div>');
+        }
+
+        // Safe dynamic function caller: "Namespace.fn" বা "fn" — window থেকে resolve করবে
+        function callFnByName(fnName, args = []) {
+            if (!fnName) return;
+            try {
+                const parts = String(fnName).split('.');
+                let ctx = window,
+                    fn = null;
+                while (parts.length > 1) {
+                    ctx = ctx[parts.shift()];
+                    if (!ctx) return;
+                }
+                fn = ctx[parts[0]];
+                if (typeof fn === 'function') return fn.apply(ctx, args);
+            } catch (e) {}
+        }
+
+        // Open & load modal partial
+        $(document).on('click', '.AjaxModal', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('ajax-modal');
+            const size = String($btn.data('size') || '').trim();
+            const keyAttr = String($btn.data('key') || '').trim();
+            const params = $btn.data('params') || null;
+            const onLoadFn = $btn.data('onload') || null;
+            const onSuccFn = $btn.data('onsuccess') || null;
+
+            const $modal = $(MODAL_ID);
+            const $dialog = $modal.find('.modal-dialog');
+            const $content = $modal.find('.modal-content');
+
+            // apply size
+            $dialog.removeClass('modal-sm modal-lg modal-xl');
+            if (['sm', 'lg', 'xl'].includes(size)) $dialog.addClass('modal-' + size);
+
+            // loading
+            $content.html(
+                '<div class="p-5 text-center"><div class="spinner-border"></div><div class="mt-2">Loading...</div></div>'
+                );
+
+            // build final URL
+            let finalUrl = url;
+            const q = qs(params);
+            if (q) finalUrl += (url.includes('?') ? '&' : '?') + q;
+
+            // store per-trigger callbacks for later use
+            $modal.data('onload-fn', onLoadFn || null);
+            $modal.data('onsuccess-fn', onSuccFn || null);
+
+            $.ajax({
+                    url: finalUrl,
+                    type: 'GET'
+                })
+                .done(function(html) {
+                    $content.html(html);
+                    $modal.modal('show');
+
+                    // resolve key: content data-modal-key > trigger data-key
+                    const foundKey = $content.find('[data-modal-key]').first().data('modal-key');
+                    const activeKey = (foundKey || keyAttr || '').toString().trim();
+                    $modal.data('modal-key', activeKey || null);
+
+                    // 1) page-provided onLoad function (via data-onload)
+                    callFnByName($modal.data('onload-fn'), [$modal]);
+
+                    // 2) or fallback: window.ModalHooks[activeKey]?.onLoad
+                    if (!$modal.data('onload-fn') && activeKey && window.ModalHooks && window
+                        .ModalHooks[activeKey] && typeof window.ModalHooks[activeKey].onLoad ===
+                        'function') {
+                        try {
+                            window.ModalHooks[activeKey].onLoad($modal);
+                        } catch (e) {}
+                    }
+                })
+                .fail(function() {
+                    $content.html('<div class="p-4 text-danger">Failed to load modal.</div>');
+                });
         });
-    });
 
-    $(document).on('submit', `${MODAL_ID} form[data-ajax="true"]`, function(e){
+        // $(document).on('submit', `${MODAL_ID} form[data-ajax="true"]`, function(e) {
+        //     e.preventDefault();
+        //     const $form = $(this);
+        //     const $modal = $(MODAL_ID);
+        //     const url = $form.attr('action');
+        //     const data = $form.serialize();
+        //     const $btn = $form.find('[type="submit"]');
+
+        //     $btn.prop('disabled', true);
+        //     $form.find('.invalid-feedback.d-block').hide().text('');
+        //     $form.find('.is-invalid').removeClass('is-invalid');
+
+        //     $.ajax({
+        //             type: 'POST',
+        //             url,
+        //             data,
+        //             dataType: 'json',
+        //             headers: {
+        //                 'X-CSRF-TOKEN': csrf()
+        //             }
+        //         })
+        //         .done(function(res) {
+        //             // 🔥 SUCCESS: callback 
+        //             const succName = $modal.data('onsuccess-fn') || null;
+        //             const key = $modal.data('modal-key') || null;
+
+        //             if (succName) {
+        //                 callFnByName(succName, [res]); // e.g., UsersIndex.onSaved(res)
+        //             } else if (key && window.ModalHooks && window.ModalHooks[key] && typeof window
+        //                 .ModalHooks[key].onSuccess === 'function') {
+        //                 try {
+        //                     window.ModalHooks[key].onSuccess(res);
+        //                 } catch (e) {}
+        //             }
+
+        //             //  modal hide
+        //             const el = $modal.get(0);
+        //             bootstrap.Modal.getOrCreateInstance(el).hide();
+
+        //             if (window.Swal) {
+        //                 Swal.fire({
+        //                     icon: 'success',
+        //                     title: 'Success',
+        //                     text: res?.msg || 'Saved',
+        //                     timer: 1000,
+        //                     showConfirmButton: false
+        //                 });
+        //             }
+        //         })
+        //         .fail(function(xhr) {
+        //             if (xhr.status === 422) {
+        //                 const errs = xhr.responseJSON?.errors || {};
+        //                 Object.keys(errs).forEach(function(k) {
+        //                     const $c = $form.find(`.${k}-error`);
+        //                     if ($c.length) {
+        //                         $c.text(errs[k][0]).show();
+        //                     }
+        //                     const $f = $form.find(`[name="${k}"]`);
+        //                     if ($f.length) {
+        //                         $f.addClass('is-invalid');
+        //                         let $fb = $f.siblings('.invalid-feedback');
+        //                         if (!$fb.length) {
+        //                             $fb = $('<div class="invalid-feedback"></div>');
+        //                             $f.after($fb);
+        //                         }
+        //                         $fb.text(errs[k][0]).show();
+        //                     }
+        //                 });
+        //             } else if (xhr.status === 403) {
+        //                 window.Swal && Swal.fire({
+        //                     icon: 'warning',
+        //                     title: 'Forbidden',
+        //                     text: xhr.responseJSON?.message || 'Permission denied'
+        //                 });
+        //             } else {
+        //                 window.Swal && Swal.fire({
+        //                     icon: 'error',
+        //                     title: 'Failed',
+        //                     text: 'Something went wrong'
+        //                 });
+        //             }
+        //         })
+        //         .always(function() {
+        //             $btn.prop('disabled', false);
+        //         });
+        // });
+          $(document).on('submit', '#AjaxModal form[data-ajax="true"]', function (e) {
   e.preventDefault();
+ 
   const $form  = $(this);
-  const $modal = $(MODAL_ID);
+  const $modal = $('#AjaxModal');
   const url    = $form.attr('action');
-  const data   = $form.serialize();
   const $btn   = $form.find('[type="submit"]');
-
+ 
+  // IMPORTANT: use FormData (not serialize) to include files
+  const formData = new FormData(this);
+ 
   $btn.prop('disabled', true);
   $form.find('.invalid-feedback.d-block').hide().text('');
   $form.find('.is-invalid').removeClass('is-invalid');
-
+ 
   $.ajax({
-    type:'POST', url, data, dataType:'json',
-    headers: { 'X-CSRF-TOKEN': csrf() }
+    url: url,
+    type: 'POST',               
+    data: formData,
+    processData: false,         
+    contentType: false,           
+    dataType: 'json',
+    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '' }
   })
-  .done(function(res){
-    // 🔥 SUCCESS: callback 
+  .done(function (res) {
+    // success callbacks (unchanged)
     const succName = $modal.data('onsuccess-fn') || null;
     const key      = $modal.data('modal-key')   || null;
-
+ 
     if (succName) {
-      callFnByName(succName, [res]);          // e.g., UsersIndex.onSaved(res)
+      try { (function call(){ 
+        const parts = String(succName).split('.'); let ctx = window, fn = null;
+        while (parts.length > 1) { ctx = ctx[parts.shift()]; if (!ctx) return; }
+        fn = ctx[parts[0]]; if (typeof fn === 'function') fn(res);
+      })(); } catch(e){}
     } else if (key && window.ModalHooks && window.ModalHooks[key] && typeof window.ModalHooks[key].onSuccess === 'function'){
       try { window.ModalHooks[key].onSuccess(res); } catch(e){}
     }
-
-    //  modal hide
+ 
     const el = $modal.get(0);
     bootstrap.Modal.getOrCreateInstance(el).hide();
-
+ 
     if (window.Swal) {
       Swal.fire({ icon:'success', title:'Success', text: res?.msg || 'Saved', timer: 1000, showConfirmButton:false });
     }
   })
-  .fail(function(xhr){
-    if (xhr.status === 422){
+  .fail(function (xhr) {
+    if (xhr.status === 422) {
       const errs = xhr.responseJSON?.errors || {};
-      Object.keys(errs).forEach(function(k){
-        const $c = $form.find(`.${k}-error`); if ($c.length){ $c.text(errs[k][0]).show(); }
+      Object.keys(errs).forEach(function (k) {
+        const msg = errs[k][0];
+        $form.find(`.${k}-error`).text(msg).show();
         const $f = $form.find(`[name="${k}"]`);
-        if ($f.length){
+        if ($f.length) {
           $f.addClass('is-invalid');
           let $fb = $f.siblings('.invalid-feedback');
-          if (!$fb.length){ $fb = $('<div class="invalid-feedback"></div>'); $f.after($fb); }
-          $fb.text(errs[k][0]).show();
+          if (!$fb.length) { $fb = $('<div class="invalid-feedback"></div>'); $f.after($fb); }
+          $fb.text(msg).show();
         }
       });
-    } else if (xhr.status === 403){
+    } else if (xhr.status === 403) {
       window.Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
     } else {
       window.Swal && Swal.fire({ icon:'error', title:'Failed', text:'Something went wrong' });
     }
   })
-  .always(function(){ $btn.prop('disabled', false); });
+  .always(function () {
+    $btn.prop('disabled', false);
+  });
 });
-    // Cleanup
-    $(MODAL_ID).on('hidden.bs.modal', function(){
-        const $m = $(this);
-        $m.find('.modal-dialog').removeClass('modal-sm modal-lg modal-xl');
-        $m.find('.modal-content').empty();
-        $m.removeData('modal-key onload-fn onsuccess-fn');
-    });
+
+
+        // Cleanup
+        $(MODAL_ID).on('hidden.bs.modal', function() {
+            const $m = $(this);
+            $m.find('.modal-dialog').removeClass('modal-sm modal-lg modal-xl');
+            $m.find('.modal-content').empty();
+            $m.removeData('modal-key onload-fn onsuccess-fn');
+        });
     })();
+  
+    // const banglaMap = {
+    //      "অ": "o", "আ": "a", "ই": "i", "ঈ": "ii", "উ": "u", "ঊ": "uu",
+    //     "ঋ": "ri", "এ": "e", "ঐ": "oi", "ও": "o", "ঔ": "ou",
+    //     "ক": "k", "খ": "kh", "গ": "g", "ঘ": "gh", "ঙ": "ng",
+    //     "চ": "ch", "ছ": "chh", "জ": "j", "ঝ": "jh", "ঞ": "n",
+    //     "ট": "t", "ঠ": "th", "ড": "d", "ঢ": "dh", "ণ": "n",
+    //     "ত": "t", "থ": "th", "দ": "d", "ধ": "dh", "ন": "n",
+    //     "প": "p", "ফ": "ph", "ব": "b", "ভ": "bh", "ম": "m",
+    //     "য": "z", "র": "r", "ল": "l", "শ": "sh", "ষ": "sh",
+    //     "স": "s", "হ": "h", "ড়": "r", "ঢ়": "rh", "য়": "y",
+    //     "ঁ": "n", "ং": "ng", "ঃ": "h", "্": "",
+    //     "া": "a", "ি": "i", "ী": "ii", "ু": "u", "ূ": "uu",
+    //     "ৃ": "ri", "ে": "e", "ৈ": "oi", "ো": "o", "ৌ": "ou",
+    //     "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+    //     "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+    //     " ": "_", "।": "", "ঃ": "", ",": "", ".": "", "?": ""
+    // };
 
+    window.slugify = function(text) {
+        const clusters = {
+            "ক্ষ": "kh",
+            "জ্ঞ": "gg",
+            "ঞ্চ": "nch",
+            "ঞ্জ": "nj",
+            "ন্ড": "nd",
+            "ত্ত": "tt",
+            "ত্থ": "tth",
+            "ল্ল": "ll",
+            "ষ্ঠ": "shth",
+            "ষ্ট": "sht",
+            "শ্চ": "shch",
+            "ত্র": "tr",
+            "দ্ম": "dm",
+            "ম্ভ": "mbh",
+            "ন্ধ": "ndh",
+            "ঙ্ঘ": "nggh",
+            "ঙ্খ": "ngkh",
+            "ঙ্জ": "ngj",
+            "ঙ্চ": "ngch",
+            "ঙ্ঠ": "ngth",
+            "ন্ড": "nd",
+            "ত্ত": "tt",
+            "ত্থ": "tth",
+            "ল্ল": "ll",
+            "ষ্ঠ": "shth",
+            "ষ্ট": "sht",
+            "শ্চ": "shch",
+            "ত্র": "tr",
+            "দ্ম": "dm",
+            "ম্ভ": "mbh",
+            "ন্ধ": "ndh",
+            "ঙ্ঘ": "nggh",
+            "ঙ্খ": "ngkh",
+            "ঙ্জ": "ngj",
+            "ঙ্চ": "ngch",
+            "ঙ্ঠ": "ngth",
+            "ওয়া": "wa",
+            "ওয়": "wa"
+        };
 
+        const banglaMap = {
+            "অ": "o",
+            "আ": "a",
+            "ই": "i",
+            "ঈ": "i",
+            "উ": "u",
+            "ঊ": "u",
+            "ঋ": "ri",
+            "এ": "e",
+            "ঐ": "oi",
+            "ও": "o",
+            "ঔ": "ou",
+            "ক": "k",
+            "খ": "kh",
+            "গ": "g",
+            "ঘ": "gh",
+            "ঙ": "ng",
+            "চ": "ch",
+            "ছ": "chh",
+            "জ": "j",
+            "ঝ": "jh",
+            "ঞ": "n",
+            "ট": "t",
+            "ঠ": "th",
+            "ড": "d",
+            "ঢ": "dh",
+            "ণ": "n",
+            "ত": "t",
+            "থ": "th",
+            "দ": "d",
+            "ধ": "dh",
+            "ন": "n",
+            "প": "p",
+            "ফ": "ph",
+            "ব": "b",
+            "ভ": "bh",
+            "ম": "m",
+            "য": "j",
+            "র": "r",
+            "ল": "l",
+            "শ": "sh",
+            "ষ": "sh",
+            "স": "s",
+            "হ": "h",
+            "ড়": "r",
+            "ঢ়": "rh",
+            "য়": "y",
+            "ঁ": "n",
+            "ং": "ng",
+            "ঃ": "h",
+            "্": "",
+            "া": "a",
+            "ি": "i",
+            "ী": "i",
+            "ু": "u",
+            "ূ": "u",
+            "ৃ": "ri",
+            "ে": "e",
+            "ৈ": "oi",
+            "ো": "o",
+            "ৌ": "ou",
+            "০": "0",
+            "১": "1",
+            "২": "2",
+            "৩": "3",
+            "৪": "4",
+            "৫": "5",
+            "৬": "6",
+            "৭": "7",
+            "৮": "8",
+            "৯": "9",
+            " ": "_",
+            "।": "",
+            ",": "",
+            ".": "",
+            "?": ""
+        };
 
+        let result = text;
+
+        // Replace clusters first
+        for (let key in clusters) {
+            result = result.replace(new RegExp(key, "g"), clusters[key]);
+        }
+
+        // Replace single characters
+        let final = "";
+        for (let char of result) {
+            final += banglaMap[char] !== undefined ? banglaMap[char] : char;
+        }
+
+        return final.toLowerCase();
+    }
 </script>
-

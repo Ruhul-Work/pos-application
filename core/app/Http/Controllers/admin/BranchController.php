@@ -102,8 +102,8 @@ class BranchController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $branch = Branch::create([
-            'name'      => $data['name'],
+         $branch = Branch::create([
+             'name'      => $data['name'],
             'code'      => strtoupper($data['code']),
             'phone'     => $data['phone'] ?? null,
             'email'     => $data['email'] ?? null,
