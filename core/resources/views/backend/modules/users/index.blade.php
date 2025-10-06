@@ -404,5 +404,41 @@
   }
 
     };
+
+    // Delete user
+    $(document).on('click', '.btn-user-delete', function(e){
+      e.preventDefault();
+      const id = $(this).data('id');
+      const url = "{{ route('usermanage.users.destroy', ':id') }}".replace(':id', id);
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This action cannot be undone!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $.ajax({
+            type: 'POST',
+            url: url,
+            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+            success: function(res){
+              $('.AjaxDataTable').DataTable().ajax.reload(null, false);
+              Swal.fire({ icon:'success', title:'Deleted', text:res.msg || 'Role deleted', timer:1200, showConfirmButton:false });
+            },
+            error: function(xhr){
+              if(xhr.status === 403){
+                Swal.fire({ icon:'error', title:'Forbidden', text:xhr.responseJSON?.msg || 'Not allowed' });
+              } else {
+                Swal.fire({ icon:'error', title:'Failed', text:'Something went wrong' });
+              }
+            }
+          });
+        }
+      });
+    });
     </script>
 @endsection
