@@ -9,6 +9,8 @@ use App\Http\Controllers\backend\SubCategoryController;
 use App\Http\Controllers\backend\UpazilaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CoreController;
+use App\Http\Controllers\backend\UnitController;
+
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('country')->name('country.')->group(function () {
@@ -131,8 +133,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
 
 });
-use App\Http\Controllers\backend\UnitController;
-use Illuminate\Support\Facades\Route;
+
+
 
 Route::middleware(['web', 'auth'])->prefix('units')->name('units.')->group(function () {
     // Page

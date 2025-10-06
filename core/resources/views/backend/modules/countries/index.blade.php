@@ -57,9 +57,7 @@
               </div>
             </th>
             <th>Country Name</th>
-            {{-- <th>Phone</th>
-            <th>Address</th> --}}
-            {{-- <th>Status</th> --}}
+         
             <th style="width:120px">Action</th>
           </tr>
         </thead>
