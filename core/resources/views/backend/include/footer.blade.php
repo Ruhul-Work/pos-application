@@ -62,7 +62,10 @@
     <script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.print.min.js"></script>
-
+{{-- <script src="/path/to/dist/js/spartan-multi-image-picker.min.js"></script>  --}}
+   <link rel="stylesheet" href="{{asset('theme/admin/assets/css/image-uploader.min.css')}}">
+   <script src="{{asset('theme/admin/assets/plugins/fileupload/image-uploader.min.js')}}" type="text/javascript"></script>
+   <script src="{{asset('theme/admin/assets/plugins/fileupload/spartan-multi-image-picker-min.js')}}" type="text/javascript"></script>
 
     {{-- Modal --}}
 

@@ -47,4 +47,5 @@
 
         {{-- select tow js --}}
     <link rel="stylesheet" href="{{asset('theme/admin/assets/js/lib/select2/css/select2.min.css')}}" ></link>
+ 
 </head>

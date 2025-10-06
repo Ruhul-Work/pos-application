@@ -9,7 +9,7 @@
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
     <div>
       <h6 class="fw-semibold mb-0">Branch List</h6>
-      <p class="text-muted m-0">Manage company branches</p>
+      <p class=" m-0">Manage company branches</p>
     </div>
     <ul class="d-flex align-items-center gap-2">
       <li class="fw-medium">
