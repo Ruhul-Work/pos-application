@@ -5,6 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Models\backend\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\backend\BusinessType;
+
+
 
 class BranchController extends Controller
 {
@@ -172,7 +175,41 @@ class BranchController extends Controller
         return response()->json(['ok' => true, 'msg' => 'Branch deleted']);
     }
 
+    public function typesModal(Branch $branch)
+    {
+        // preselected ids
+        $selected = $branch->businessTypes()->pluck('business_types.id')->all();
+        // dropdown এর জন্য সব types (cache করতে পারেন)
+        $types = BusinessType::orderBy('name')->get(['id', 'name']);
+        return view('backend.modules.branches.modals.types', compact('branch', 'types', 'selected'));
+    }
 
-    
+    public function typesSync(Request $req, Branch $branch)
+    {
+        $ids = $req->input('types', []); // array of ids
+        $ids = array_map('intval', (array) $ids);
+        $branch->businessTypes()->sync($ids);
+        return response()->json(['ok' => true, 'msg' => 'Branch types updated']);
+    }
+
+        public function select2(Request $req)
+    {
+        $q = trim($req->get('q',''));
+        $rows = Branch::query()
+            ->where('is_active',1)
+            ->when($q, fn($w)=> $w->where('name','like',"%{$q}%")
+                                ->orWhere('code','like',"%{$q}%"))
+            ->orderBy('name')
+            ->limit(20)
+            ->get(['id','name','code']);
+
+        // select2 format: {id,text}
+        return response()->json([
+            'results' => $rows->map(fn($b)=>[
+                'id'   => $b->id,
+                'text' => $b->name . ($b->code ? " ({$b->code})" : '')
+            ])
+        ]);
+    }
 
 }

@@ -14,7 +14,7 @@
                     <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
                 </form>
                 <!-- Branch switcher start -->
-                @php
+                {{-- @php
                     use App\Support\BranchScope;
                     $isAll = BranchScope::isAll();
                     $curId = BranchScope::currentId();
@@ -45,7 +45,64 @@
                         @endforeach
                     </ul>
                     </div>
-                    @endif
+                    @endif --}}
+
+
+                @php
+                use App\Support\BranchScope;
+                $auth    = auth()->user();
+                $isSuper = $auth?->isSuper();
+                $isAll   = BranchScope::isAll();
+                $curId   = BranchScope::currentId();
+
+                // সুপার হলে: list cache করে দেখাবো
+                $branchList = collect();
+                if ($isSuper) {
+                    $branchList = Cache::remember('ui:branches:list', 60, fn() =>
+                        \App\Models\backend\Branch::where('is_active',1)
+                            ->orderBy('name')
+                            ->get(['id','name'])
+                    );
+                }
+
+                // বর্তমান branch নাম বের করা (সুপার হলে scope থেকে, normal হলে user->branch)
+                $currentBranchName = 'Not assigned';
+                if ($isSuper) {
+                    $currentBranchName = $isAll
+                        ? 'All Branches'
+                        : 'Branch: '. optional($branchList->firstWhere('id', $curId))->name ?? ('#'.$curId);
+                } else {
+                    $currentBranchName = optional($auth?->branch)->name ?? 'Not assigned';
+                }
+                @endphp
+
+                @if($isSuper)
+                {{-- SUPER: dropdown with switch --}}
+                <div class="dropdown">
+                    <button class="bg-success-focus text-success-600 border border-success-main px-24 py-4 radius-4 fw-medium text-sm dropdown-toggle" data-bs-toggle="dropdown">
+                    {{ $currentBranchName }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a href="#" class="dropdown-item js-branch-switch" data-mode="all">All Branches</a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    @foreach($branchList as $b)
+                        <li>
+                        <a href="#" class="dropdown-item js-branch-switch" data-mode="one" data-branch="{{ $b->id }}">
+                            {{ $b->name }}
+                        </a>
+                        </li>
+                    @endforeach
+                    </ul>
+                </div>
+                @else
+                {{-- NORMAL: just a label (no dropdown, no switch) --}}
+                <span class="bg-success-focus text-success-600 border border-success-main px-24 py-4 radius-4 fw-medium text-sm">
+                    Branch: {{ $currentBranchName }}
+                </span>
+                @endif
+
                 <!-- Branch switcher end -->
 
             </div>

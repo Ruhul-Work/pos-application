@@ -352,6 +352,52 @@
                 return $.param(obj || {})
             } catch (e) {
                 return ''
+    // Open & load modal partial
+    $(document).on('click', '.AjaxModal', function(e){
+        e.preventDefault();
+        const $btn      = $(this);
+        const url       = $btn.data('ajax-modal');
+        const size      = String($btn.data('size')||'').trim();         
+        const keyAttr   = String($btn.data('key') ||'').trim();           
+        const params    = $btn.data('params') || null;                   
+        const onLoadFn  = $btn.data('onload') || null;                 
+        const onSuccFn  = $btn.data('onsuccess') || null;               
+
+        const $modal    = $(MODAL_ID);
+        const $dialog   = $modal.find('.modal-dialog');
+        const $content  = $modal.find('.modal-content');
+
+        // apply size
+        $dialog.removeClass('modal-sm modal-lg modal-xl');
+        if (['sm','lg','xl'].includes(size)) $dialog.addClass('modal-'+size);
+
+        // loading
+        $content.html('<div class="p-5 text-center"><div class="spinner-border"></div><div class="mt-2">Loading...</div></div>');
+
+        // build final URL
+        let finalUrl = url; const q = qs(params);
+        if (q) finalUrl += (url.includes('?')?'&':'?') + q;
+
+        // store per-trigger callbacks for later use
+        $modal.data('onload-fn', onLoadFn || null); 
+        $modal.data('onsuccess-fn', onSuccFn || null);
+
+        $.ajax({ url: finalUrl, type: 'GET' })
+        .done(function(html){
+            $content.html(html);
+            $modal.modal('show');
+
+            // resolve key: content data-modal-key > trigger data-key
+            const foundKey  = $content.find('[data-modal-key]').first().data('modal-key');
+            const activeKey = (foundKey || keyAttr || '').toString().trim();
+            $modal.data('modal-key', activeKey || null);
+
+            // 1) page-provided onLoad function (via data-onload)
+            callFnByName($modal.data('onload-fn'), [$modal]);
+
+            // 2) or fallback: window.ModalHooks[activeKey]?.onLoad
+            if (! $modal.data('onload-fn') && activeKey && window.ModalHooks && window.ModalHooks[activeKey] && typeof window.ModalHooks[activeKey].onLoad === 'function') {
+            try { window.ModalHooks[activeKey].onLoad($modal); } catch(e){}
             }
         }
 

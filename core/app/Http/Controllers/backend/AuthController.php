@@ -6,6 +6,9 @@ use App\Models\backend\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Support\BranchScope;
+
+
 
 class AuthController extends Controller
 {
@@ -71,6 +74,7 @@ class AuthController extends Controller
         // return redirect()->route('login')->with('success','Registration successful! Please login.');
     }
 
+
     // public function login(Request $req)
     // {
     //     $data = $req->validate([
@@ -79,50 +83,65 @@ class AuthController extends Controller
     //         'remember'   => 'nullable|boolean',
     //     ]);
 
-    //     $user = User::query()
-    //         ->where('email', $data['identifier'])
-    //         ->orWhere('phone', $data['identifier'])
-    //         ->orWhere('username', $data['identifier'])
-    //         ->first();
+    //     $id       = $data['identifier'];
+    //     $pwd      = $data['password'];
+    //     $remember = (bool) ($data['remember'] ?? false);
 
-    //     if (! $user || ! Hash::check($data['password'], $user->password) || $user->status != 1) {
-    //         return back()->withErrors(['identifier' => 'Invalid credentials'])->withInput();
+    //     if (filter_var($id, FILTER_VALIDATE_EMAIL)) {
+    //         $creds = ['email' => $id, 'password' => $pwd, 'status' => 1];
+    //     } elseif (preg_match('/^\+?\d[\d\s\-()]{4,}$/', $id)) {
+    //         $creds = ['phone' => $id, 'password' => $pwd, 'status' => 1];
+    //     } else {
+    //         $creds = ['username' => $id, 'password' => $pwd, 'status' => 1];
     //     }
 
-    //     Auth::login($user, (bool) ($data['remember'] ?? false));
-    //     $req->session()->regenerate(); // session fixation protection
-    //     return redirect()->intended(route('backend.dashboard'));
+    //     if (! Auth::attempt($creds, $remember)) {
+    //         return back()->withErrors([
+    //             'identifier' => 'Invalid credentials',
+    //         ])->withInput();
+    //     }
+
+      
+    //     $req->session()->regenerate();
+    //     return redirect()->route('backend.dashboard');
     // }
 
     public function login(Request $req)
-    {
-        $data = $req->validate([
-            'identifier' => 'required|string',
-            'password'   => 'required|string',
-            'remember'   => 'nullable|boolean',
-        ]);
+{
+    $data = $req->validate([
+        'identifier' => 'required|string',
+        'password'   => 'required|string',
+        'remember'   => 'nullable|boolean',
+    ]);
 
-        $id       = $data['identifier'];
-        $pwd      = $data['password'];
-        $remember = (bool) ($data['remember'] ?? false);
+    $id       = $data['identifier'];
+    $pwd      = $data['password'];
+    $remember = (bool) ($data['remember'] ?? false);
 
-        if (filter_var($id, FILTER_VALIDATE_EMAIL)) {
-            $creds = ['email' => $id, 'password' => $pwd, 'status' => 1];
-        } elseif (preg_match('/^\+?\d[\d\s\-()]{4,}$/', $id)) {
-            $creds = ['phone' => $id, 'password' => $pwd, 'status' => 1];
-        } else {
-            $creds = ['username' => $id, 'password' => $pwd, 'status' => 1];
-        }
-
-        if (! Auth::attempt($creds, $remember)) {
-            return back()->withErrors([
-                'identifier' => 'Invalid credentials',
-            ])->withInput();
-        }
-
-        $req->session()->regenerate();
-        return redirect()->route('backend.dashboard');
+    if (filter_var($id, FILTER_VALIDATE_EMAIL)) {
+        $creds = ['email'=>$id, 'password'=>$pwd, 'status'=>1];
+    } elseif (preg_match('/^\+?\d[\d\s\-()]{4,}$/', $id)) {
+        $creds = ['phone'=>$id, 'password'=>$pwd, 'status'=>1];
+    } else {
+        $creds = ['username'=>$id, 'password'=>$pwd, 'status'=>1];
     }
+
+    if (! Auth::attempt($creds, $remember)) {
+        return back()->withErrors(['identifier' => 'Invalid credentials'])->withInput();
+    }
+
+    $user = Auth::user();                   
+    $req->session()->regenerate();
+
+    // ✅ set branch scope
+    if ($user->isSuper()) {
+        BranchScope::setAll();
+    } else {
+        BranchScope::setBranch((int) $user->branch_id);
+    }
+
+    return redirect()->intended(route('backend.dashboard'));
+}
 
     public function logout(Request $req)
     {

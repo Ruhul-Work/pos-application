@@ -125,12 +125,18 @@
                                 <div class="invalid-feedback d-block role-error" style="display:none"></div>
                             </div>
 
-                            <div class="col-md-3 mb-16">
+                            {{-- <div class="col-md-3 mb-16">
                                 <label class="form-label text-sm mb-6">Branch</label>
                                 <input type="number" name="branch_id" class="form-control radius-8"
                                     placeholder="Branch ID">
                                 <div class="invalid-feedback d-block branch-error" style="display:none"></div>
+                            </div> --}}
+                            <div class="col-md-6 mb-16">
+                                <label class="form-label text-sm mb-6">Branch</label>
+                                <select id="createBranch" name="branch_id" class="form-control radius-8"></select>
+                                <div class="invalid-feedback d-block branch_id-error" style="display:none"></div>
                             </div>
+                                                
 
                             <div class="col-md-3 mb-16">
                                 <label class="form-label text-sm mb-6">Status</label>
@@ -190,102 +196,213 @@
             });
         }
 
-        // --- Create Modal
+
+       
+            function initBranchSelect($el, $modal) {
+        $el.select2({
+            dropdownParent: $modal,
+            placeholder: 'Select branch',
+            allowClear: true,
+            width: '100%',
+            ajax: {
+            url: "{{ route('org.branches.select2') }}",
+            dataType: 'json',
+            delay: 200,
+            data: params => ({ q: params.term || '' }),
+            processResults: data => data
+            }
+        });
+        }
+
         const $createModal = $('#userCreateModal');
-        const $createForm = $('#userCreateForm');
+        const $createForm  = $('#userCreateForm');
 
-        $createModal.on('shown.bs.modal', function() {
-            $createForm[0].reset();
-            initRoleSelect($('#createRole'), $createModal);
-            $('#createRole').val(null).trigger('change');
-            $createForm.find(
-                '.name-error,.email-error,.username-error,.phone-error,.password-error,.role-error,.branch-error'
-                ).hide().text('');
+        $createModal.on('shown.bs.modal', function () {
+        // reset
+        $createForm[0].reset();
+
+        // clear errors (সব জায়গায় এক নাম)
+        $createForm.find(
+            '.name-error,.email-error,.username-error,.phone-error,.password-error,.role-error,.branch_id-error'
+        ).hide().text('');
+
+        // init/select2
+        const $m = $(this);
+        initRoleSelect($('#createRole'), $m);
+        $('#createRole').val(null).trigger('change');
+
+        initBranchSelect($('#createBranch'), $m);
+        $('#createBranch').val(null).trigger('change');
         });
 
+        // Submit
         $(document).on('submit', '#userCreateForm', function(e) {
-            e.preventDefault();
-            const url = STORE_URL;
-            const data = $createForm.serialize();
+        e.preventDefault();
 
-            $.ajax({
-                type: 'POST',
-                url,
-                data,
-                dataType: 'json',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                success: function(res) {
-                    const el = document.getElementById('userCreateModal');
-                    const inst = bootstrap.Modal.getOrCreateInstance(el);
-                    document.activeElement && document.activeElement.blur();
-                    el.addEventListener('hidden.bs.modal', function onH() {
-                        el.removeEventListener('hidden.bs.modal', onH);
-                        $('.AjaxDataTable').DataTable().ajax.reload(() => $('.AjaxDataTable')
-                            .DataTable().page('first').draw('page'), false);
-                        Swal && Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: res.msg || 'User created',
-                            timer: 1200,
-                            showConfirmButton: false
-                        });
-                    });
-                    inst.hide();
-                },
-                error: function(xhr) {
-                    if (xhr.status === 422) {
-                        const errs = xhr.responseJSON?.errors || {};
-                        for (const k in errs) $createForm.find(`.${k}-error`).text(errs[k][0]).show();
-                    } else if (xhr.status === 403) {
-                        Swal && Swal.fire({
-                            icon: 'warning',
-                            title: 'Forbidden',
-                            text: xhr.responseJSON?.message || 'Permission denied'
-                        });
-                    } else {
-                        Swal && Swal.fire({
-                            icon: 'error',
-                            title: 'Failed',
-                            text: 'Something went wrong'
-                        });
-                    }
-                }
+        const url  = (typeof STORE_URL !== 'undefined') ? STORE_URL : "{{ route('usermanage.users.store') }}";
+        const data = $createForm.serialize();
+
+        $.ajax({
+            type: 'POST',
+            url,
+            data,
+            dataType: 'json',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        })
+        .done(function(res){
+            const el   = document.getElementById('userCreateModal');
+            const inst = bootstrap.Modal.getOrCreateInstance(el);
+            document.activeElement && document.activeElement.blur();
+            el.addEventListener('hidden.bs.modal', function onH(){
+            el.removeEventListener('hidden.bs.modal', onH);
+            if ($.fn.dataTable && $('.AjaxDataTable').length) {
+                $('.AjaxDataTable').DataTable().ajax.reload(() => {
+                $('.AjaxDataTable').DataTable().page('first').draw('page');
+                }, false);
+            }
+            window.Swal && Swal.fire({ icon:'success', title:'Success', text: res.msg || 'User created', timer:1200, showConfirmButton:false });
             });
+            inst.hide();
+        })
+        .fail(function(xhr){
+            if (xhr.status === 422) {
+            const errs = xhr.responseJSON?.errors || {};
+            for (const k in errs) {
+                $createForm.find(`.${k}-error`).text(errs[k][0]).show();
+                const $f = $createForm.find(`[name="${k}"]`);
+                if ($f.length) {
+                $f.addClass('is-invalid');
+                let $fb = $f.siblings('.invalid-feedback');
+                if (!$fb.length){ $fb = $('<div class="invalid-feedback"></div>'); $f.after($fb); }
+                $fb.text(errs[k][0]).show();
+                }
+            }
+            } else if (xhr.status === 403) {
+            window.Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
+            } else {
+            window.Swal && Swal.fire({ icon:'error', title:'Failed', text:'Something went wrong' });
+            }
         });
+        });
+
+
+        // --- Create Modal
+        // const $createModal = $('#userCreateModal');
+        // const $createForm = $('#userCreateForm');
+
+        // $createModal.on('shown.bs.modal', function() {
+        //     $createForm[0].reset();
+        //     initRoleSelect($('#createRole'), $createModal);
+        //     $('#createRole').val(null).trigger('change');
+        //     $createForm.find(
+        //         '.name-error,.email-error,.username-error,.phone-error,.password-error,.role-error,.branch-error'
+        //         ).hide().text('');
+        // });
+
+        // $(document).on('submit', '#userCreateForm', function(e) {
+        //     e.preventDefault();
+        //     const url = STORE_URL;
+        //     const data = $createForm.serialize();
+
+        //     $.ajax({
+        //         type: 'POST',
+        //         url,
+        //         data,
+        //         dataType: 'json',
+        //         headers: {
+        //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //         },
+        //         success: function(res) {
+        //             const el = document.getElementById('userCreateModal');
+        //             const inst = bootstrap.Modal.getOrCreateInstance(el);
+        //             document.activeElement && document.activeElement.blur();
+        //             el.addEventListener('hidden.bs.modal', function onH() {
+        //                 el.removeEventListener('hidden.bs.modal', onH);
+        //                 $('.AjaxDataTable').DataTable().ajax.reload(() => $('.AjaxDataTable')
+        //                     .DataTable().page('first').draw('page'), false);
+        //                 Swal && Swal.fire({
+        //                     icon: 'success',
+        //                     title: 'Success',
+        //                     text: res.msg || 'User created',
+        //                     timer: 1200,
+        //                     showConfirmButton: false
+        //                 });
+        //             });
+        //             inst.hide();
+        //         },
+        //         error: function(xhr) {
+        //             if (xhr.status === 422) {
+        //                 const errs = xhr.responseJSON?.errors || {};
+        //                 for (const k in errs) $createForm.find(`.${k}-error`).text(errs[k][0]).show();
+        //             } else if (xhr.status === 403) {
+        //                 Swal && Swal.fire({
+        //                     icon: 'warning',
+        //                     title: 'Forbidden',
+        //                     text: xhr.responseJSON?.message || 'Permission denied'
+        //                 });
+        //             } else {
+        //                 Swal && Swal.fire({
+        //                     icon: 'error',
+        //                     title: 'Failed',
+        //                     text: 'Something went wrong'
+        //                 });
+        //             }
+        //         }
+        //     });
+        // });
 
  
 
-        window.UsersIndex = {
-        
-            onLoad($modal){
-                $modal.find('.js-select2').each(function(){
-                const $el = $(this);
-                if ($el.hasClass('select2-hidden-accessible')) return;
-                $el.select2({
-                    dropdownParent: $modal,
-                    width: '100%',
-                    placeholder: 'Select a role',
-                    allowClear: true,
-                    ajax: {
-                    url: "{{ route('usermanage.users.roles') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({ q: params.term || '' }),
-                    processResults: data => ({ results: data?.results || [] })
-                    }
-                });
-                });
-            },
+    window.UsersIndex = {
+  onLoad($modal){
+    // Role select
+    $modal.find('.js-role-select').each(function(){
+      const $el = $(this);
+      if ($el.hasClass('select2-hidden-accessible')) return;
+      $el.select2({
+        dropdownParent: $modal,
+        width: '100%',
+        placeholder: 'Select role',
+        allowClear: true,
+        ajax: {
+          url: "{{ route('usermanage.users.roles') }}",
+          dataType: 'json',
+          delay: 250,
+          data: params => ({ q: params.term || '' }),
+          processResults: data => ({ results: data?.results || [] })
+        }
+      });
+    });
 
-            onSaved(res){
-            //console.log('Saved', res);
-                if ($('.AjaxDataTable').length && $.fn.DataTable) {
-                $('.AjaxDataTable').DataTable().ajax.reload(null, false);
-                }
-                
-            }
+    // Branch select
+    $modal.find('.js-branch-select').each(function(){
+      const $el = $(this);
+      if ($el.hasClass('select2-hidden-accessible')) return;
+      $el.select2({
+        dropdownParent: $modal,
+        width: '100%',
+        placeholder: 'Select branch',
+        allowClear: true,
+        ajax: {
+          url: "{{ route('org.branches.select2') }}", // <- আগেরটাই
+          dataType: 'json',
+          delay: 250,
+          data: params => ({ q: params.term || '' }),
+          processResults: data => data // {results:[{id,text}]}
+        }
+      });
+    });
+  },
+
+  onSaved(res){
+    if ($('.AjaxDataTable').length && $.fn.DataTable) {
+      $('.AjaxDataTable').DataTable().ajax.reload(null, false);
+    }
+    if (window.Swal) {
+      Swal.fire({icon:'success', title: res?.msg || 'Saved', timer:1000, showConfirmButton:false});
+    }
+  }
+
     };
     </script>
 @endsection

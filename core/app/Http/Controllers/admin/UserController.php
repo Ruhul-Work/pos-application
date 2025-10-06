@@ -8,6 +8,8 @@ use App\Support\PermCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Rule;
+
 
 class UserController extends Controller
 {
@@ -113,36 +115,73 @@ class UserController extends Controller
         ]);
     }
 
+    // public function store(Request $req)
+    // {
+    //     $data = $req->validate([
+    //         'name'      => ['required', 'string', 'max:150'],
+    //         'email'     => ['nullable', 'email', 'max:191', 'unique:users,email'],
+    //         'username'  => ['nullable', 'string', 'max:100', 'unique:users,username'],
+    //         'phone'     => ['nullable', 'string', 'max:50', 'unique:users,phone'],
+    //         'password'  => ['required', 'string', 'min:6', 'confirmed'],
+    //         'role_id'   => ['required', 'integer', 'exists:roles,id'],
+    //         'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
+    //         'status'    => ['required', 'in:0,1'],
+    //     ]);
+
+    //     $user            = new User();
+    //     $user->name      = $data['name'];
+    //     $user->email     = $data['email'] ?? null;
+    //     $user->username  = $data['username'] ?? null;
+    //     $user->phone     = $data['phone'] ?? null;
+    //     $user->password  = Hash::make($data['password']);
+    //     $user->role_id   = (int) $data['role_id'];
+    //     $user->branch_id = $data['branch_id'] ?? null;
+    //     $user->status    = (int) $data['status'];
+    //     $user->meta      = null;
+    //     $user->save();
+
+
+    //     if ($req->ajax() || $req->wantsJson()) {
+    //         return response()->json(['ok' => true, 'id' => $user->id, 'msg' => 'User created & role assigned.']);
+    //     }
+    //     return redirect()->route('usermanage.users.index')->with('success', 'User created & role assigned.');
+    // }
+
     public function store(Request $req)
-    {
-        $data = $req->validate([
-            'name'      => ['required', 'string', 'max:150'],
-            'email'     => ['nullable', 'email', 'max:191', 'unique:users,email'],
-            'username'  => ['nullable', 'string', 'max:100', 'unique:users,username'],
-            'phone'     => ['nullable', 'string', 'max:50', 'unique:users,phone'],
-            'password'  => ['required', 'string', 'min:6', 'confirmed'],
-            'role_id'   => ['required', 'integer', 'exists:roles,id'],
-            'branch_id' => ['nullable', 'integer'],
-            'status'    => ['required', 'in:0,1'],
-        ]);
+{
+    $data = $req->validate([
+        'name'      => ['required','string','max:150'],
+        'email'     => ['nullable','email','max:191','unique:users,email'],
+        'username'  => ['nullable','string','max:100','unique:users,username'],
+        'phone'     => ['nullable','string','max:50','unique:users,phone'],
+        'password'  => ['required','string','min:6','confirmed'],
+        'role_id'   => ['required','integer','exists:roles,id'],
+        'branch_id' => ['nullable','integer','exists:branches,id'],
+        'status'    => ['required','in:0,1'],
+    ]);
 
-        $user            = new User();
-        $user->name      = $data['name'];
-        $user->email     = $data['email'] ?? null;
-        $user->username  = $data['username'] ?? null;
-        $user->phone     = $data['phone'] ?? null;
-        $user->password  = Hash::make($data['password']);
-        $user->role_id   = (int) $data['role_id'];
-        $user->branch_id = $data['branch_id'] ?? null;
-        $user->status    = (int) $data['status'];
-        $user->meta      = null;
-        $user->save();
-
-        if ($req->ajax() || $req->wantsJson()) {
-            return response()->json(['ok' => true, 'id' => $user->id, 'msg' => 'User created & role assigned.']);
-        }
-        return redirect()->route('usermanage.users.index')->with('success', 'User created & role assigned.');
+    // ⛑ non-super হলে যে-ই আসুক, নিজের branch enforce
+    if (! $req->user()?->isSuper()) {
+        $data['branch_id'] = $req->user()->branch_id; // force own branch
     }
+
+    $user            = new User();
+    $user->name      = $data['name'];
+    $user->email     = $data['email'] ?? null;
+    $user->username  = $data['username'] ?? null;
+    $user->phone     = $data['phone'] ?? null;
+    $user->password  = Hash::make($data['password']);
+    $user->role_id   = (int) $data['role_id'];
+    $user->branch_id = $data['branch_id'] ?? null;
+    $user->status    = (int) $data['status'];
+    $user->meta      = null;
+    $user->save();
+
+    if ($req->ajax() || $req->wantsJson()) {
+        return response()->json(['ok'=>true,'id'=>$user->id,'msg'=>'User created & role assigned.']);
+    }
+    return redirect()->route('usermanage.users.index')->with('success','User created & role assigned.');
+}
 
     // public function show(Request $req, User $user)
     // {
@@ -182,57 +221,110 @@ class UserController extends Controller
         ]);
     }
 
+    // public function update(Request $req, User $user)
+    // {
+    //     // validation: unique ignore current user
+    //     $data = $req->validate([
+    //         'name'      => ['required', 'string', 'max:150'],
+    //         'email'     => ['nullable', 'email', 'max:191'],
+    //         'username'  => ['nullable', 'string', 'max:100'],
+    //         'phone'     => ['nullable', 'string', 'max:50'],
+    //         'password'  => ['nullable', 'string', 'min:6', 'confirmed'],
+    //         'role_id'   => ['required', 'integer'],
+    //         'branch_id' => ['nullable', 'integer'],
+    //         'status'    => ['required', 'in:0,1'],
+    //     ]);
+
+    //     // কমপক্ষে email/username একটাও না থাকলে ব্লক করুন
+    //     if (empty($data['email']) && empty($data['username'])) {
+    //         return back()->withInput()->withErrors([
+    //             'email'    => 'Email বা Username—অন্তত একটি দিতে হবে।',
+    //             'username' => 'Email বা Username—অন্তত একটি দিতে হবে।',
+    //         ]);
+    //     }
+
+    //     // super guard: non-super ইউজার যেন super রোলে সেট করতে না পারে/সুপার ইউজার এডিট না করে
+    //     $acting  = $req->user();
+    //     $newRole = Role::findOrFail((int) $data['role_id']);
+    //     if (! ($acting?->isSuper())) {
+    //         if (($user->role->is_super ?? false) || $newRole->is_super) {
+    //             abort(403, 'Insufficient permission to set/edit super role.');
+    //         }
+    //     }
+
+    //     // explicit assignment
+    //     $user->name     = $data['name'];
+    //     $user->email    = $data['email'] ?? null;
+    //     $user->username = $data['username'] ?? null;
+    //     $user->phone    = $data['phone'] ?? null;
+    //     if (! empty($data['password'])) {
+    //         $user->password = Hash::make($data['password']);
+    //     }
+    //     $user->role_id   = (int) $data['role_id'];
+    //     $user->branch_id = $data['branch_id'] ?? null;
+    //     $user->status    = (int) $data['status'];
+    //     $user->save();
+
+    //     PermCache::forgetUser((int) $user->id);
+
+    //     if ($req->ajax() || $req->wantsJson()) {
+    //         return response()->json(['ok' => true, 'msg' => 'User updated successfully.']);
+    //     }
+    //     return redirect()->route('usermanage.users.index')->with('success', 'User updated successfully.');
+    // }
+
     public function update(Request $req, User $user)
-    {
-        // validation: unique ignore current user
-        $data = $req->validate([
-            'name'      => ['required', 'string', 'max:150'],
-            'email'     => ['nullable', 'email', 'max:191'],
-            'username'  => ['nullable', 'string', 'max:100'],
-            'phone'     => ['nullable', 'string', 'max:50'],
-            'password'  => ['nullable', 'string', 'min:6', 'confirmed'],
-            'role_id'   => ['required', 'integer'],
-            'branch_id' => ['nullable', 'integer'],
-            'status'    => ['required', 'in:0,1'],
-        ]);
+{
+    $data = $req->validate([
+        'name'      => ['required','string','max:150'],
+        'email'     => ['nullable','email','max:191'],
+        'username'  => ['nullable','string','max:100'],
+        'phone'     => ['nullable','string','max:50'],
+        'password'  => ['nullable','string','min:6','confirmed'],
+        'role_id'   => ['required','integer','exists:roles,id'],
+        'branch_id' => ['nullable','integer','exists:branches,id'],
+        'status'    => ['required','in:0,1'],
+    ]);
 
-        // কমপক্ষে email/username একটাও না থাকলে ব্লক করুন
-        if (empty($data['email']) && empty($data['username'])) {
-            return back()->withInput()->withErrors([
-                'email'    => 'Email বা Username—অন্তত একটি দিতে হবে।',
-                'username' => 'Email বা Username—অন্তত একটি দিতে হবে।',
-            ]);
-        }
-
-        // super guard: non-super ইউজার যেন super রোলে সেট করতে না পারে/সুপার ইউজার এডিট না করে
-        $acting  = $req->user();
-        $newRole = Role::findOrFail((int) $data['role_id']);
-        if (! ($acting?->isSuper())) {
-            if (($user->role->is_super ?? false) || $newRole->is_super) {
-                abort(403, 'Insufficient permission to set/edit super role.');
-            }
-        }
-
-        // explicit assignment
-        $user->name     = $data['name'];
-        $user->email    = $data['email'] ?? null;
-        $user->username = $data['username'] ?? null;
-        $user->phone    = $data['phone'] ?? null;
-        if (! empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
-        }
-        $user->role_id   = (int) $data['role_id'];
-        $user->branch_id = $data['branch_id'] ?? null;
-        $user->status    = (int) $data['status'];
-        $user->save();
-
-        PermCache::forgetUser((int) $user->id);
-
-        if ($req->ajax() || $req->wantsJson()) {
-            return response()->json(['ok' => true, 'msg' => 'User updated successfully.']);
-        }
-        return redirect()->route('usermanage.users.index')->with('success', 'User updated successfully.');
+    // কমপক্ষে email/username একটা থাকা চাই
+    if (empty($data['email']) && empty($data['username'])) {
+        return response()->json([
+            'message' => 'Validation error',
+            'errors'  => [
+                'email'    => ['Email বা Username—অন্তত একটি দিতে হবে।'],
+                'username' => ['Email বা Username—অন্তত একটি দিতে হবে।'],
+            ]
+        ], 422);
     }
+
+    // super guard
+    $acting  = $req->user();
+    $newRole = Role::findOrFail((int)$data['role_id']);
+    if (! $acting?->isSuper()) {
+        if (($user->role->is_super ?? false) || $newRole->is_super) {
+            abort(403, 'Insufficient permission to set/edit super role.');
+        }
+        // (ঐচ্ছিক) non-super যেন অন্য branch সেট করতে না পারে:
+        // $data['branch_id'] = $acting->branch_id;
+    }
+
+    // update
+    $user->name     = $data['name'];
+    $user->email    = $data['email'] ?? null;
+    $user->username = $data['username'] ?? null;
+    $user->phone    = $data['phone'] ?? null;
+    if (!empty($data['password'])) {
+        $user->password = \Illuminate\Support\Facades\Hash::make($data['password']);
+    }
+    $user->role_id   = (int)$data['role_id'];
+    $user->branch_id = $data['branch_id'] ?? null;
+    $user->status    = (int)$data['status'];
+    $user->save();
+
+    PermCache::forgetUser((int)$user->id);
+
+    return response()->json(['ok'=>true,'msg'=>'User updated successfully.']);
+}
 
     public function destroy(Request $req, User $user)
     {
@@ -282,7 +374,8 @@ class UserController extends Controller
     public function editModal(User $user, Request $request)
     {
         abort_unless($request->ajax(), 404);
-        $user->load('role:id,name');
+        // $user->load('role:id,name');
+        $user->load(['role','branch']);
         return view('backend.modules.users.edit_modal', compact('user'));
     }
 
