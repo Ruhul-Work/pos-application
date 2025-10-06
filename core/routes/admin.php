@@ -23,7 +23,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         // Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
         Route::get('users-roles', [UserController::class, 'rolesForSelect'])->name('users.roles');
         Route::get('users/{encrypted}/profile', [UserController::class, 'showProfile'])->name('users.profile');
-        Route::get('users/{user}/edit-modal', [UserController::class, 'b b   '])->name('users.edit.modal');
+        Route::get('users/{user}/edit-modal', [UserController::class, 'editModal'])->name('users.edit.modal');
             
 
         //=== Individual User Permission Overrides
