@@ -18,11 +18,18 @@
       <label class="form-label">Precision (0-6)</label>
       <input name="precision" type="number" min="0" max="6" value="{{ $unit->precision ?? 0 }}" class="form-control" required>
     </div>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active"
-        {{ ($unit->is_active ?? true) ? 'checked' : '' }}>
-      <label class="form-check-label" for="is_active">Active</label>
-    </div>
+    
+      <div class="col-12 mb-8">
+        <label class="form-label text-sm mb-8">Active?</label>
+        <div class="form-switch switch-purple d-flex align-items-center gap-3">
+          <input type="hidden" name="is_active" value="0">
+           <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active"
+            {{ ($unit->is_active ?? true) ? 'checked' : '' }}>
+          <label class="form-check-label" for="branchIsActive">Enable this Unit</label>
+        </div>
+        <div class="invalid-feedback d-block is_active-error" style="display:none"></div>
+      </div>
+
   </div>
   <div class="modal-footer">
     <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
