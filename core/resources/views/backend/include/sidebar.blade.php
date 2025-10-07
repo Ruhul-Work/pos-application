@@ -275,7 +275,7 @@
                 @endpermgroup
             @endpermgroup
             {{-- organization settings module end --}}
-            {{-- dont add any menu without my permission --}}
+            
 
         </ul>
         {{-- Units (main level item) --}}
