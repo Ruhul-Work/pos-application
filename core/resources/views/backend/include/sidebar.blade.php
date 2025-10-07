@@ -274,9 +274,6 @@
                     @endpermgroup
                 @endpermgroup
             @endpermgroup
-
-
-            @endpermgroup
             {{-- organization settings module end --}}
 
         </ul>
