@@ -247,7 +247,7 @@
                                 </a>
                             </li>
                             </li>
-                            
+
                             <li class="{{ Route::is('units.index') ? 'active' : '' }}">
                                 <a href="{{ route('units.index') }}">
                                     <i class="ri-weight-line"></i>
@@ -261,7 +261,7 @@
                                     <span>Color</span>
                                 </a>
                            </li>
-                    @endperm
+                 
                             </li>
                             
                             <li class="{{ Route::is('sizes.index') ? 'active' : '' }}">
