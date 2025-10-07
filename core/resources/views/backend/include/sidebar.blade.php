@@ -256,6 +256,13 @@
                                     <span>Unit</span>
                                 </a>
                            </li>
+
+                            <li class="{{ Route::is('color.colors.index') ? 'active' : '' }}">
+                                <a href="{{ route('color.colors.index') }}">
+                                    <i class="ri-weight-line"></i>
+                                    <span>Color</span>
+                                </a>
+                           </li>
                     @endperm
                 @endpermgroup
             @endpermgroup

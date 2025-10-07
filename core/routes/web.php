@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
+use App\Http\Controllers\backend\ColorController;
 use App\Http\Controllers\backend\CountryController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
@@ -144,6 +145,22 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::post('/', [UnitController::class, 'store'])->name('store');
     Route::put('/{unit}', [UnitController::class, 'update'])->whereNumber('unit')->name('update');
     Route::delete('/{unit}', [UnitController::class, 'destroy'])->whereNumber('unit')->name('destroy');
+    });
+
+    //color management
+       Route::prefix('color')->name('color.')->group(function () {
+
+        Route::get('colors', [ColorController::class, 'index'])->name('colors.index');
+        Route::get('colors/create-modal', [ColorController::class, 'createModal'])->name('colors.createModal');
+        Route::post('colors/list', [ColorController::class, 'listAjax'])->name('colors.list.ajax');
+        Route::post('colors', [ColorController::class, 'store'])->name('colors.store');
+        Route::get('colors/edit-modal/{color}', [ColorController::class, 'editModal'])->whereNumber('color')->name('colors.editModal');
+        Route::put('colors/{color}', [ColorController::class, 'update'])->name('colors.update');
+        Route::get('colors/{color}', [ColorController::class, 'show'])->name('colors.show');
+        Route::delete('colors/{color}', [ColorController::class, 'destroy'])->name('colors.destroy');
+
+       
+
     });
 
 

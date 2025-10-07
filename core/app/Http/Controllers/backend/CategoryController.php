@@ -251,7 +251,7 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        // $inUse = DB::table('users')->where('branch_id', $district->district_id)->count();
+        // $inUse = DB::table('users')->where('category_id', $district->district_id)->count();
         // if ($inUse > 0) {
         //     return response()->json([
         //         'ok'  => false,
