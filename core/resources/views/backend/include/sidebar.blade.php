@@ -247,14 +247,31 @@
                                 </a>
                             </li>
                             </li>
-                            
+
                             <li class="{{ Route::is('units.index') ? 'active' : '' }}">
                                 <a href="{{ route('units.index') }}">
                                     <i class="ri-weight-line"></i>
                                     <span>Unit</span>
                                 </a>
                            </li>
-                    @endperm
+
+                            <li class="{{ Route::is('color.colors.index') ? 'active' : '' }}">
+                                <a href="{{ route('color.colors.index') }}">
+                                    <i class="ri-weight-line"></i>
+                                    <span>Color</span>
+                                </a>
+                           </li>
+                 
+                            </li>
+                            
+                            <li class="{{ Route::is('sizes.index') ? 'active' : '' }}">
+                                <a href="{{ route('sizes.index') }}">
+                                    <i class="ri-ruler-line text-xl me-14 d-flex w-auto"></i>
+                                    <span>Sizes</span>
+                                </a>
+                            </li>
+                        @endperm
+                    @endpermgroup
                 @endpermgroup
             @endpermgroup
 
