@@ -11,6 +11,7 @@ use App\Http\Controllers\backend\UpazilaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\backend\UnitController;
+use App\Http\Controllers\backend\SizeController;
 
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
@@ -133,15 +134,11 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     // Unit Management
     Route::prefix('units')->name('units.')->group(function () {
 
-         // Page
     Route::get('/', [UnitController::class, 'index'])->name('index');
-    // DataTables
     Route::post('/list', [UnitController::class, 'listAjax'])->name('list.ajax');
-    // AjaxModal forms
     Route::get('/create-modal', [UnitController::class, 'createModal'])->name('createModal');
     Route::get('/{unit}/edit-modal', [UnitController::class, 'editModal'])
         ->whereNumber('unit')->name('editModal');
-    // Web form submit (AjaxModal posts) — CSRF applies
     Route::post('/', [UnitController::class, 'store'])->name('store');
     Route::put('/{unit}', [UnitController::class, 'update'])->whereNumber('unit')->name('update');
     Route::delete('/{unit}', [UnitController::class, 'destroy'])->whereNumber('unit')->name('destroy');
@@ -162,6 +159,19 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
        
 
     });
+
+
+    // Size Management
+    Route::prefix('sizes')->name('sizes.')->group(function () {
+
+    Route::get('/', [SizeController::class, 'index'])->name('index');
+    Route::post('/list', [SizeController::class, 'listAjax'])->name('list.ajax');
+    Route::get('/create-modal', [SizeController::class, 'createModal'])->name('createModal');
+    Route::get('/{size}/edit-modal', [SizeController::class, 'editModal'])->whereNumber('size')->name('editModal');
+    Route::post('/', [SizeController::class, 'store'])->name('store');
+    Route::put('/{size}', [SizeController::class, 'update'])->whereNumber('size')->name('update');
+    Route::delete('/{size}', [SizeController::class, 'destroy'])->whereNumber('size')->name('destroy');
+  });
 
 
 });
