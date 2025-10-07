@@ -124,7 +124,7 @@
         },
         error: function(xhr){
           if (xhr.status === 422){
-            const msg = xhr.responseJSON?.msg || 'Cannot delete this category.';
+            const msg = xhr.responseJSON?.msg || 'Cannot delete this subcategory.';
             Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
           } else if (xhr.status === 403){
             Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
@@ -138,14 +138,14 @@
     if (window.Swal){
       Swal.fire({
         icon: 'warning',
-        title: 'Delete category?',
+        title: 'Delete subcategory?',
         text: 'This action cannot be undone.',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete',
         confirmButtonColor: '#d33'
       }).then(r => { if (r.isConfirmed) doDelete(); });
     } else {
-      if (confirm('Delete this category?')) doDelete();
+      if (confirm('Delete this subcategory?')) doDelete();
     }
   });
 

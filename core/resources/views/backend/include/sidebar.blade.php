@@ -247,56 +247,25 @@
                                             <iconify-icon icon="ri-price-tag-3-line" class="menu-icon"></iconify-icon>
                                             <span>Brand List</span>
                                         </a>
-                                    </li>
+                            </li>
                         </li>
+                        
+                           <li class="{{ Route::is('units.index') ? 'active' : '' }}">
+                                <a href="{{ route('units.index') }}">
+                                    <i class="ri-weight-line"></i>
+                                    <span>Unit</span>
+                                </a>
+                           </li>
                     @endperm
                 @endpermgroup
             @endpermgroup
-
-                {{-- categories managemnt module end --}}
-
-        {{-- brand management module start --}}
-            {{-- @permgroup(['org.branches'])
-                <li class="sidebar-menu-group-title">Brand Management</li>
-                @permgroup(['org.branches'])
-                    @perm('org.branches.index')
-                        <li class=" dropdown ">
-                            <a href="javascript:void(0)">
-                                <i class="ri-store-3-line"></i>
-                                <span>Brand</span>
-                            </a>
-
-                            <ul class="sidebar-submenu">
-
-                                @perm('org.branches.index')
-                                    <li>
-                                        <a class="{{ Route::is('brand.brands.index') ? 'active' : '' }}"
-                                            href="{{ route('brand.brands.index') }}">
-                                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
-                                            <span>Brand List</span>
-                                        </a>
-                                    </li>
-                                @endperm
-                            </ul>
-                        </li>
-                    @endperm
-                @endpermgroup
-            @endpermgroup --}}
-
-
-            {{-- brand management module end --}}
 
                 
 
 
-            @endpermgroup
+        @endpermgroup
             {{-- organization settings module end --}}
-            <li class="{{ Route::is('units.index') ? 'active' : '' }}">
-                <a href="{{ route('units.index') }}">
-                    <i class="ri-weight-line"></i>
-                    <span>Unit</span>
-                </a>
-            </li>
+         
         </ul>
         {{-- Units (main level item) --}}
 

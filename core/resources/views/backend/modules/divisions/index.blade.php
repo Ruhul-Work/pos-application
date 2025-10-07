@@ -125,7 +125,7 @@
         confirmButtonColor: '#d33'
       }).then(r => { if (r.isConfirmed) doDelete(); });
     } else {
-      if (confirm('Delete this branch?')) doDelete();
+      if (confirm('Delete this Division?')) doDelete();
     }
   });
 

@@ -57,7 +57,7 @@ class CountryController extends Controller
                     title="Edit">
                     <iconify-icon icon="lucide:edit"></iconify-icon>
                 </a>
-                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center bg-danger-focus text-danger-main btn-branch-delete"
+                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center bg-danger-focus text-danger-main btn-country-delete"
                     data-id="' . $b->id . '"
                     data-url="' . route('country.countries.destroy', $b->id) . '"
                     title="Delete">

@@ -22,9 +22,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('countries/{country}/edit-modal', [CountryController::class, 'editModal'])->whereNumber('country')->name('countries.editModal');
         Route::get('countries/{country}', [CountryController::class, 'show'])->name('countries.show');
         Route::put('countries/{country}', [CountryController::class, 'update'])->name('countries.update');
-        Route::delete('countries/{country}', [CountryController::class, 'destroy'])->name('countries.destroy');
-
-        
+        Route::delete('countries/{country}', [CountryController::class, 'destroy'])->name('countries.destroy'); 
 
     });
    
@@ -45,7 +43,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     });
 
-    
     // District Management
 
     Route::prefix('district')->name('district.')->group(function () {
@@ -132,12 +129,10 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     });
 
 
-});
+    // Unit Management
+    Route::prefix('units')->name('units.')->group(function () {
 
-
-
-Route::middleware(['web', 'auth'])->prefix('units')->name('units.')->group(function () {
-    // Page
+         // Page
     Route::get('/', [UnitController::class, 'index'])->name('index');
     // DataTables
     Route::post('/list', [UnitController::class, 'listAjax'])->name('list.ajax');
@@ -149,4 +144,10 @@ Route::middleware(['web', 'auth'])->prefix('units')->name('units.')->group(funct
     Route::post('/', [UnitController::class, 'store'])->name('store');
     Route::put('/{unit}', [UnitController::class, 'update'])->whereNumber('unit')->name('update');
     Route::delete('/{unit}', [UnitController::class, 'destroy'])->whereNumber('unit')->name('destroy');
+    });
+
+
 });
+
+
+

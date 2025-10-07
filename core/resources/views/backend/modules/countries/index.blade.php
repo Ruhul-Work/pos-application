@@ -83,7 +83,7 @@
   };
 
 
-  $(document).on('click', '.btn-branch-delete', function(e){
+  $(document).on('click', '.btn-country-delete', function(e){
     e.preventDefault();
     const url = $(this).data('url');
 
@@ -102,7 +102,7 @@
         },
         error: function(xhr){
           if (xhr.status === 422){
-            const msg = xhr.responseJSON?.msg || 'Cannot delete this branch.';
+            const msg = xhr.responseJSON?.msg || 'Cannot delete this country.';
             Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
           } else if (xhr.status === 403){
             Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
@@ -116,14 +116,14 @@
     if (window.Swal){
       Swal.fire({
         icon: 'warning',
-        title: 'Delete branch?',
+        title: 'Delete country?',
         text: 'This action cannot be undone.',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete',
         confirmButtonColor: '#d33'
       }).then(r => { if (r.isConfirmed) doDelete(); });
     } else {
-      if (confirm('Delete this branch?')) doDelete();
+      if (confirm('Delete this country?')) doDelete();
     }
   });
 

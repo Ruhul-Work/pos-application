@@ -104,7 +104,7 @@
         },
         error: function(xhr){
           if (xhr.status === 422){
-            const msg = xhr.responseJSON?.msg || 'Cannot delete this branch.';
+            const msg = xhr.responseJSON?.msg || 'Cannot delete this Upazila.';
             Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
           } else if (xhr.status === 403){
             Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
