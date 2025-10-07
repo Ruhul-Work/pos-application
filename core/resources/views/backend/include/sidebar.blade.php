@@ -257,7 +257,7 @@
 
                             <li class="{{ Route::is('color.colors.index') ? 'active' : '' }}">
                                 <a href="{{ route('color.colors.index') }}">
-                                    <i class="ri-weight-line"></i>
+                                    <i class="ri-palette-line"></i>
                                     <span>Color</span>
                                 </a>
                            </li>
