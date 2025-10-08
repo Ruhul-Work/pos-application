@@ -4,18 +4,17 @@ namespace App\Models\backend;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class ProductType extends Model
 {
-    protected $table = 'products';
+    protected $table = 'product_types';
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
         'deleted_at'
     ];
-
-    public function product_type()
+    public function product()
     {
-        return $this->belongsTo(ProductType::class);
+        return $this->hasMany(Product::class);
     }
 }
