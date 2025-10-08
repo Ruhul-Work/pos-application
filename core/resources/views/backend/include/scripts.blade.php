@@ -135,7 +135,7 @@
                                 // first: 0 (SL) বাদ, আর দরকার হলে last বাদ দিন
                                 if (idx === 0) return;
                                 const title = $(this.header()).text()
-                                .trim() || ('Column ' + (idx + 1));
+                                    .trim() || ('Column ' + (idx + 1));
                                 const vis = this.visible();
                                 html += `
                     <div class="form-check mb-1 text-start">
@@ -160,10 +160,10 @@
                                         cb => {
                                             const idx = parseInt(cb
                                                 .dataset.idx, 10
-                                                );
+                                            );
                                             table.column(idx)
                                                 .visible(cb
-                                                .checked);
+                                                    .checked);
                                         });
                                 }
                             });
@@ -335,7 +335,7 @@
                 },
             });
         }
-    });+
+    }); +
 
 
     // ====== Minimal Global AjaxModal Manager (keep this once in layout) ======
@@ -393,7 +393,7 @@
             // loading
             $content.html(
                 '<div class="p-5 text-center"><div class="spinner-border"></div><div class="mt-2">Loading...</div></div>'
-                );
+            );
 
             // build final URL
             let finalUrl = url;
@@ -434,162 +434,107 @@
                 });
         });
 
-        // $(document).on('submit', `${MODAL_ID} form[data-ajax="true"]`, function(e) {
-        //     e.preventDefault();
-        //     const $form = $(this);
-        //     const $modal = $(MODAL_ID);
-        //     const url = $form.attr('action');
-        //     const data = $form.serialize();
-        //     const $btn = $form.find('[type="submit"]');
+        // Ajax form submit inside modal
+        $(document).on('submit', '#AjaxModal form[data-ajax="true"]', function(e) {
+            e.preventDefault();
 
-        //     $btn.prop('disabled', true);
-        //     $form.find('.invalid-feedback.d-block').hide().text('');
-        //     $form.find('.is-invalid').removeClass('is-invalid');
+            const $form = $(this);
+            const $modal = $('#AjaxModal');
+            const url = $form.attr('action');
+            const $btn = $form.find('[type="submit"]');
 
-        //     $.ajax({
-        //             type: 'POST',
-        //             url,
-        //             data,
-        //             dataType: 'json',
-        //             headers: {
-        //                 'X-CSRF-TOKEN': csrf()
-        //             }
-        //         })
-        //         .done(function(res) {
-        //             // 🔥 SUCCESS: callback 
-        //             const succName = $modal.data('onsuccess-fn') || null;
-        //             const key = $modal.data('modal-key') || null;
+            // IMPORTANT: use FormData (not serialize) to include files
+            const formData = new FormData(this);
 
-        //             if (succName) {
-        //                 callFnByName(succName, [res]); // e.g., UsersIndex.onSaved(res)
-        //             } else if (key && window.ModalHooks && window.ModalHooks[key] && typeof window
-        //                 .ModalHooks[key].onSuccess === 'function') {
-        //                 try {
-        //                     window.ModalHooks[key].onSuccess(res);
-        //                 } catch (e) {}
-        //             }
+            $btn.prop('disabled', true);
+            $form.find('.invalid-feedback.d-block').hide().text('');
+            $form.find('.is-invalid').removeClass('is-invalid');
 
-        //             //  modal hide
-        //             const el = $modal.get(0);
-        //             bootstrap.Modal.getOrCreateInstance(el).hide();
+            $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || ''
+                    }
+                })
+                .done(function(res) {
+                    // success callbacks (unchanged)
+                    const succName = $modal.data('onsuccess-fn') || null;
+                    const key = $modal.data('modal-key') || null;
 
-        //             if (window.Swal) {
-        //                 Swal.fire({
-        //                     icon: 'success',
-        //                     title: 'Success',
-        //                     text: res?.msg || 'Saved',
-        //                     timer: 1000,
-        //                     showConfirmButton: false
-        //                 });
-        //             }
-        //         })
-        //         .fail(function(xhr) {
-        //             if (xhr.status === 422) {
-        //                 const errs = xhr.responseJSON?.errors || {};
-        //                 Object.keys(errs).forEach(function(k) {
-        //                     const $c = $form.find(`.${k}-error`);
-        //                     if ($c.length) {
-        //                         $c.text(errs[k][0]).show();
-        //                     }
-        //                     const $f = $form.find(`[name="${k}"]`);
-        //                     if ($f.length) {
-        //                         $f.addClass('is-invalid');
-        //                         let $fb = $f.siblings('.invalid-feedback');
-        //                         if (!$fb.length) {
-        //                             $fb = $('<div class="invalid-feedback"></div>');
-        //                             $f.after($fb);
-        //                         }
-        //                         $fb.text(errs[k][0]).show();
-        //                     }
-        //                 });
-        //             } else if (xhr.status === 403) {
-        //                 window.Swal && Swal.fire({
-        //                     icon: 'warning',
-        //                     title: 'Forbidden',
-        //                     text: xhr.responseJSON?.message || 'Permission denied'
-        //                 });
-        //             } else {
-        //                 window.Swal && Swal.fire({
-        //                     icon: 'error',
-        //                     title: 'Failed',
-        //                     text: 'Something went wrong'
-        //                 });
-        //             }
-        //         })
-        //         .always(function() {
-        //             $btn.prop('disabled', false);
-        //         });
-        // });
-          $(document).on('submit', '#AjaxModal form[data-ajax="true"]', function (e) {
-  e.preventDefault();
- 
-  const $form  = $(this);
-  const $modal = $('#AjaxModal');
-  const url    = $form.attr('action');
-  const $btn   = $form.find('[type="submit"]');
- 
-  // IMPORTANT: use FormData (not serialize) to include files
-  const formData = new FormData(this);
- 
-  $btn.prop('disabled', true);
-  $form.find('.invalid-feedback.d-block').hide().text('');
-  $form.find('.is-invalid').removeClass('is-invalid');
- 
-  $.ajax({
-    url: url,
-    type: 'POST',               
-    data: formData,
-    processData: false,         
-    contentType: false,           
-    dataType: 'json',
-    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '' }
-  })
-  .done(function (res) {
-    // success callbacks (unchanged)
-    const succName = $modal.data('onsuccess-fn') || null;
-    const key      = $modal.data('modal-key')   || null;
- 
-    if (succName) {
-      try { (function call(){ 
-        const parts = String(succName).split('.'); let ctx = window, fn = null;
-        while (parts.length > 1) { ctx = ctx[parts.shift()]; if (!ctx) return; }
-        fn = ctx[parts[0]]; if (typeof fn === 'function') fn(res);
-      })(); } catch(e){}
-    } else if (key && window.ModalHooks && window.ModalHooks[key] && typeof window.ModalHooks[key].onSuccess === 'function'){
-      try { window.ModalHooks[key].onSuccess(res); } catch(e){}
-    }
- 
-    const el = $modal.get(0);
-    bootstrap.Modal.getOrCreateInstance(el).hide();
- 
-    if (window.Swal) {
-      Swal.fire({ icon:'success', title:'Success', text: res?.msg || 'Saved', timer: 1000, showConfirmButton:false });
-    }
-  })
-  .fail(function (xhr) {
-    if (xhr.status === 422) {
-      const errs = xhr.responseJSON?.errors || {};
-      Object.keys(errs).forEach(function (k) {
-        const msg = errs[k][0];
-        $form.find(`.${k}-error`).text(msg).show();
-        const $f = $form.find(`[name="${k}"]`);
-        if ($f.length) {
-          $f.addClass('is-invalid');
-          let $fb = $f.siblings('.invalid-feedback');
-          if (!$fb.length) { $fb = $('<div class="invalid-feedback"></div>'); $f.after($fb); }
-          $fb.text(msg).show();
-        }
-      });
-    } else if (xhr.status === 403) {
-      window.Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
-    } else {
-      window.Swal && Swal.fire({ icon:'error', title:'Failed', text:'Something went wrong' });
-    }
-  })
-  .always(function () {
-    $btn.prop('disabled', false);
-  });
-});
+                    if (succName) {
+                        try {
+                            (function call() {
+                                const parts = String(succName).split('.');
+                                let ctx = window,
+                                    fn = null;
+                                while (parts.length > 1) {
+                                    ctx = ctx[parts.shift()];
+                                    if (!ctx) return;
+                                }
+                                fn = ctx[parts[0]];
+                                if (typeof fn === 'function') fn(res);
+                            })();
+                        } catch (e) {}
+                    } else if (key && window.ModalHooks && window.ModalHooks[key] && typeof window
+                        .ModalHooks[key].onSuccess === 'function') {
+                        try {
+                            window.ModalHooks[key].onSuccess(res);
+                        } catch (e) {}
+                    }
+
+                    const el = $modal.get(0);
+                    bootstrap.Modal.getOrCreateInstance(el).hide();
+
+                    if (window.Swal) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res?.msg || 'Saved',
+                            timer: 1000,
+                            showConfirmButton: false
+                        });
+                    }
+                })
+                .fail(function(xhr) {
+                    if (xhr.status === 422) {
+                        const errs = xhr.responseJSON?.errors || {};
+                        Object.keys(errs).forEach(function(k) {
+                            const msg = errs[k][0];
+                            $form.find(`.${k}-error`).text(msg).show();
+                            const $f = $form.find(`[name="${k}"]`);
+                            if ($f.length) {
+                                $f.addClass('is-invalid');
+                                let $fb = $f.siblings('.invalid-feedback');
+                                if (!$fb.length) {
+                                    $fb = $('<div class="invalid-feedback"></div>');
+                                    $f.after($fb);
+                                }
+                                $fb.text(msg).show();
+                            }
+                        });
+                    } else if (xhr.status === 403) {
+                        window.Swal && Swal.fire({
+                            icon: 'warning',
+                            title: 'Forbidden',
+                            text: xhr.responseJSON?.message || 'Permission denied'
+                        });
+                    } else {
+                        window.Swal && Swal.fire({
+                            icon: 'error',
+                            title: 'Failed',
+                            text: 'Something went wrong'
+                        });
+                    }
+                })
+                .always(function() {
+                    $btn.prop('disabled', false);
+                });
+        });
 
 
         // Cleanup
@@ -600,24 +545,10 @@
             $m.removeData('modal-key onload-fn onsuccess-fn');
         });
     })();
-  
-    // const banglaMap = {
-    //      "অ": "o", "আ": "a", "ই": "i", "ঈ": "ii", "উ": "u", "ঊ": "uu",
-    //     "ঋ": "ri", "এ": "e", "ঐ": "oi", "ও": "o", "ঔ": "ou",
-    //     "ক": "k", "খ": "kh", "গ": "g", "ঘ": "gh", "ঙ": "ng",
-    //     "চ": "ch", "ছ": "chh", "জ": "j", "ঝ": "jh", "ঞ": "n",
-    //     "ট": "t", "ঠ": "th", "ড": "d", "ঢ": "dh", "ণ": "n",
-    //     "ত": "t", "থ": "th", "দ": "d", "ধ": "dh", "ন": "n",
-    //     "প": "p", "ফ": "ph", "ব": "b", "ভ": "bh", "ম": "m",
-    //     "য": "z", "র": "r", "ল": "l", "শ": "sh", "ষ": "sh",
-    //     "স": "s", "হ": "h", "ড়": "r", "ঢ়": "rh", "য়": "y",
-    //     "ঁ": "n", "ং": "ng", "ঃ": "h", "্": "",
-    //     "া": "a", "ি": "i", "ী": "ii", "ু": "u", "ূ": "uu",
-    //     "ৃ": "ri", "ে": "e", "ৈ": "oi", "ো": "o", "ৌ": "ou",
-    //     "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
-    //     "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
-    //     " ": "_", "।": "", "ঃ": "", ",": "", ".": "", "?": ""
-    // };
+
+    // ====== Bangla Slugify ======
+    // Usage: slugify("বাংলা টেক্সট") → "bangla_text"
+   
 
     window.slugify = function(text) {
         const clusters = {
@@ -660,6 +591,7 @@
             "ওয়া": "wa",
             "ওয়": "wa"
         };
+
 
         const banglaMap = {
             "অ": "o",
@@ -754,4 +686,5 @@
 
         return final.toLowerCase();
     }
+    
 </script>
