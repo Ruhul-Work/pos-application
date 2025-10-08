@@ -25,6 +25,18 @@
                placeholder="e.g. DHA-MAIN" required id="slugInput">
         <div class="invalid-feedback d-block code-error" style="display:none"></div>
       </div>
+
+       <div class="col-md-6 mb-16">
+         <label class="form-label text-sm mb-8">Category Type</label>
+    <select name="category_type_id" id="division-dropdown" class="form-control">
+    <option value="{{$category->category_type->id}}">{{$category->category_type->name}}</option>
+    @foreach ($types as $type)
+        
+    <option value="{{$type->id}}">{{$type->name}}</option>
+    @endforeach
+  </select>
+      </div>
+
        
        <div class="col-md-6 mb-20">
         <label class="form-label text-sm mb-8">Meta Title </label>

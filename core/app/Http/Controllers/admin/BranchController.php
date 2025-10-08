@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
@@ -90,7 +91,7 @@ class BranchController extends Controller
 
     public function createModal()
     {
-                                                              // @perm গার্ড চাইলে দিন
+        // @perm গার্ড চাইলে দিন
         return view('backend.modules.branches.create_modal'); // partial only
     }
 
@@ -105,8 +106,8 @@ class BranchController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-         $branch = Branch::create([
-             'name'      => $data['name'],
+        $branch = Branch::create([
+            'name'      => $data['name'],
             'code'      => strtoupper($data['code']),
             'phone'     => $data['phone'] ?? null,
             'email'     => $data['email'] ?? null,
@@ -192,24 +193,23 @@ class BranchController extends Controller
         return response()->json(['ok' => true, 'msg' => 'Branch types updated']);
     }
 
-        public function select2(Request $req)
+    public function select2(Request $req)
     {
-        $q = trim($req->get('q',''));
+        $q = trim($req->get('q', ''));
         $rows = Branch::query()
-            ->where('is_active',1)
-            ->when($q, fn($w)=> $w->where('name','like',"%{$q}%")
-                                ->orWhere('code','like',"%{$q}%"))
+            ->where('is_active', 1)
+            ->when($q, fn($w) => $w->where('name', 'like', "%{$q}%")
+                ->orWhere('code', 'like', "%{$q}%"))
             ->orderBy('name')
             ->limit(20)
-            ->get(['id','name','code']);
+            ->get(['id', 'name', 'code']);
 
         // select2 format: {id,text}
         return response()->json([
-            'results' => $rows->map(fn($b)=>[
+            'results' => $rows->map(fn($b) => [
                 'id'   => $b->id,
                 'text' => $b->name . ($b->code ? " ({$b->code})" : '')
             ])
         ]);
     }
-
 }

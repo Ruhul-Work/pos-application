@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
+use App\Http\Controllers\backend\CategoryTypeController;
 use App\Http\Controllers\backend\ColorController;
 use App\Http\Controllers\backend\CountryController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
+use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\SubCategoryController;
 use App\Http\Controllers\backend\UpazilaController;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +80,22 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
 
     });
+//category type management
+     Route::prefix('category-type')->name('category-type.')->group(function () {
+
+        Route::get('category-types', [CategoryTypeController::class, 'index'])->name('category-types.index');
+        Route::get('category-types/create-modal', [CategoryTypeController::class, 'createModal'])->name('category-types.createModal');
+        Route::post('category-types/list', [CategoryTypeController::class, 'listAjax'])->name('category-types.list.ajax');
+        Route::post('category-types', [CategoryTypeController::class, 'store'])->name('category-types.store');
+        Route::get('category-types/{categoryType}/edit-modal', [CategoryTypeController::class, 'editModal'])->whereNumber('categoryType')->name('category-types.editModal');
+        Route::put('category-types/{categoryType}', [CategoryTypeController::class, 'update'])->name('category-types.update');
+        Route::get('category-types/{CategoryType}', [CategoryTypeController::class, 'show'])->name('category-types.show');
+        Route::delete('category-types/{CategoryType}', [CategoryTypeController::class, 'destroy'])->name('category-types.destroy');
+        
+
+      
+
+    });
 
      // Category Management
 
@@ -91,9 +109,10 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+        //live serach
+        Route::get('categories/select2', [CategoryController::class,'select2'])->name('categories.category-type');
 
-      
-
+    
     });
 
      // Subcategory Management
@@ -171,6 +190,20 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::post('/', [SizeController::class, 'store'])->name('store');
     Route::put('/{size}', [SizeController::class, 'update'])->whereNumber('size')->name('update');
     Route::delete('/{size}', [SizeController::class, 'destroy'])->whereNumber('size')->name('destroy');
+  });
+
+   // Product Management
+    Route::prefix('product')->name('product.')->group(function () {
+
+   Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        Route::get('products/create-modal', [ColorController::class, 'createModal'])->name('products.createModal');
+        Route::post('products/list', [ColorController::class, 'listAjax'])->name('products.list.ajax');
+        Route::post('products', [ColorController::class, 'store'])->name('products.store');
+        Route::get('products/edit-modal/{color}', [ColorController::class, 'editModal'])->whereNumber('color')->name('products.editModal');
+        Route::put('products/{color}', [ColorController::class, 'update'])->name('products.update');
+        Route::get('products/{color}', [ColorController::class, 'show'])->name('products.show');
+        Route::delete('products/{color}', [ColorController::class, 'destroy'])->name('products.destroy');
+
   });
 
 

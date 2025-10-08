@@ -7,8 +7,10 @@ use App\Models\backend\User;
 use App\Support\PermCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Rule;
+
 
 
 class UserController extends Controller
@@ -338,12 +340,12 @@ class UserController extends Controller
             abort(403, 'Insufficient permission to delete a super user.');
         }
 
-        \DB::transaction(function () use ($user) {
+        DB::transaction(function () use ($user) {
             // soft delete user
             $user->delete();
 
             //  orphan clean-up: user overrides
-            \DB::table('user_permissions')->where('user_id', $user->id)->delete();
+            DB::table('user_permissions')->where('user_id', $user->id)->delete();
 
             // cache bust
             PermCache::forgetUser((int) $user->id);

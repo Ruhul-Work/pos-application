@@ -223,6 +223,14 @@
                                 <ul class="sidebar-submenu">
 
                                     @perm('org.branches.index')
+                                     <li class="mb-8">
+                                            <a class="{{ Route::is('category-type.category-types.index') ? 'active' : '' }}"
+                                                href="{{ route('category-type.category-types.index') }}">
+                                                <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                                                <span>Category Type</span>
+                                            </a>
+                                        </li>
+
                                         <li class="mb-8">
                                             <a class="{{ Route::is('category.categories.index') ? 'active' : '' }}"
                                                 href="{{ route('category.categories.index') }}">
@@ -268,6 +276,13 @@
                                 <a href="{{ route('sizes.index') }}">
                                     <i class="ri-ruler-line text-xl me-14 d-flex w-auto"></i>
                                     <span>Sizes</span>
+                                </a>
+                            </li>
+
+                             <li class="{{ Route::is('product.products.index') ? 'active' : '' }}">
+                                <a href="{{ route('product.products.index') }}">
+                                    <i class="ri-ruler-line text-xl me-14 d-flex w-auto"></i>
+                                    <span>Product</span>
                                 </a>
                             </li>
                         @endperm

@@ -10,6 +10,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'category_type_id',
         'is_active',
         'icon',
         'meta_title',
@@ -21,5 +22,9 @@ class Category extends Model
     public function subcategory()
     {
         return $this->hasMany(Subcategory::class);
+    }
+    public function category_type()
+    {
+        return $this->belongsTo(CategoryType::class);
     }
 }
