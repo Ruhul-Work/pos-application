@@ -2,14 +2,14 @@
 @extends('backend.layouts.master')
 
 @section('meta')
-  <title>Categories</title>
+  <title>Category-types</title>
 @endsection
 
 @section('content')
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
     <div>
-      <h6 class="fw-semibold mb-0">Category List</h6>
-      <p class="m-0" >Manage Categories</p>
+      <h6 class="fw-semibold mb-0">Category-type List</h6>
+      <p class="m-0" >Manage category-types</p>
     </div>
     <ul class="d-flex align-items-center gap-2">
       <li class="fw-medium">
@@ -18,7 +18,7 @@
         </a>
       </li>
       <li>-</li>
-      <li class="fw-medium">Categories</li>
+      <li class="fw-medium">Category-types</li>
     </ul>
   </div>
 
@@ -37,10 +37,10 @@
         @perm('org.branch.store')
             <button 
                 class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 AjaxModal"
-                data-ajax-modal="{{ route('category.categories.createModal') }}"  
+                data-ajax-modal="{{ route('category-type.category-types.createModal') }}"  
                 data-size="lg"
                 data-onsuccess="BranchesIndex.onSaved">
-                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Add Category
+                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Add Category-type
         </button>
         @endperm
       </div>
@@ -56,10 +56,9 @@
                 <label class="form-check-label">S.L</label>
               </div>
             </th>
-            <th>Category</th>
-            <th>Slug</th>
-            <th>Category Type</th>
-            <th>Icon</th>
+            <th>Category-type</th>
+            <th>Code</th>
+            <th>Sort</th>
             <th>Status</th>
             <th style="width:120px">Action</th>
           </tr>
@@ -74,7 +73,7 @@
 
 @section('script')
   <script>
-    var DATATABLE_URL = "{{ route('category.categories.list.ajax') }}";
+    var DATATABLE_URL = "{{ route('category-type.category-types.list.ajax') }}";
 
     window.BranchesIndex = {
     onSaved: function (res) {
@@ -105,7 +104,7 @@
         },
         error: function(xhr){
           if (xhr.status === 422){
-            const msg = xhr.responseJSON?.msg || 'Cannot delete this category.';
+            const msg = xhr.responseJSON?.msg || 'Cannot delete this category-type.';
             Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
           } else if (xhr.status === 403){
             Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
@@ -119,14 +118,14 @@
     if (window.Swal){
       Swal.fire({
         icon: 'warning',
-        title: 'Delete category?',
+        title: 'Delete category-type?',
         text: 'This action cannot be undone.',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete',
         confirmButtonColor: '#d33'
       }).then(r => { if (r.isConfirmed) doDelete(); });
     } else {
-      if (confirm('Delete this category?')) doDelete();
+      if (confirm('Delete this category-type?')) doDelete();
     }
   });
 

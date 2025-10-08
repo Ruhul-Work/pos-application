@@ -4,18 +4,20 @@ namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\backend\Category;
+use App\Models\backend\CategoryType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
-     public function index()
+    public function index()
     {
         return view('backend.modules.categories.index');
     }
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'name', 'slug','icon', 'is_active'];
+        $columns   = ['id', 'name', 'slug', 'category_type_id', 'icon', 'is_active'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -23,7 +25,7 @@ class CategoryController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Category::query()->select(['id', 'name', 'slug','icon', 'is_active']);
+        $base = Category::query()->select(['id', 'name', 'slug', 'category_type_id', 'icon', 'is_active']);
 
         $total = (clone $base)->count();
 
@@ -31,7 +33,6 @@ class CategoryController extends Controller
             $base->where(function ($q) use ($searchVal) {
                 $q->where('name', 'like', "%{$searchVal}%")
                     ->orWhere('slug', 'like', "%{$searchVal}%");
-                    
             });
         }
 
@@ -67,12 +68,13 @@ class CategoryController extends Controller
                 </a>
             </div>';
 
-               $icon = '<div  style="width:70px"><img src="'.image($b->icon).'" alt="img"></div>';
+            $icon = '<div  style="width:70px"><img src="' . image($b->icon) . '" alt="img"></div>';
 
             $data[] = [
                 $b->id,
                 $nameCol,
                 $slug = $b->slug,
+                $category_type = $b->category_type->name,
                 $icon,
                 $active,
                 $actions,
@@ -89,8 +91,8 @@ class CategoryController extends Controller
 
     public function createModal()
     {
-                                                              // @perm গার্ড চাইলে দিন
-        return view('backend.modules.categories.create_modal'); // partial only
+        $types = CategoryType::select('id', 'name')->where('is_active', 1)->get();
+        return view('backend.modules.categories.create_modal', compact('types')); // partial only
     }
 
     public function store(Request $req)
@@ -99,30 +101,32 @@ class CategoryController extends Controller
         $data = $req->validate([
             'name'      => ['required', 'string', 'max:150', 'unique:categories,name'],
             'slug'      => ['required', 'string', 'max:50', 'unique:categories,slug'],
+            'category_type_id'      => ['required', 'integer'],
             'icon' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title' =>['required', 'string', 'max:150'],
-            'meta_description' =>['required', 'string', 'max:150'],
-            'meta_keywords' =>['required', 'string', 'max:150'],
-            'is_active' =>['required','integer'],
-      
-           
+            'meta_title' => ['required', 'string', 'max:150'],
+            'meta_description' => ['required', 'string', 'max:150'],
+            'meta_keywords' => ['required', 'string', 'max:150'],
+            'is_active' => ['required', 'integer'],
+
+
         ]);
 
-         $iconPath =uploadImage($req->file('icon'), 'category/icons');
-         $metaImagePath = null;
+        $iconPath = uploadImage($req->file('icon'), 'category/icons');
+        $metaImagePath = null;
         if ($req->hasFile('meta_image')) {
-            $metaImagePath =uploadImage($req->file('meta_image'), 'category/meta_images');
+            $metaImagePath = uploadImage($req->file('meta_image'), 'category/meta_images');
         }
 
-         $category = Category::create([
-             'name'      => ucwords($data['name']),
-            'slug'      => ($data['slug']),
-            'icon'  =>$iconPath,
+        $category = Category::create([
+            'name'      => ucwords($data['name']),
+            'slug'      =>  $data['slug'],
+            'category_type_id'      => $data['category_type_id'],
+            'icon'      =>      $iconPath,
             'meta_image' => $metaImagePath,
             'meta_title' => $data['meta_title'],
-              'meta_description' => $data['meta_description'],
-               'meta_keywords' => $data['meta_keywords'],
+            'meta_description' => $data['meta_description'],
+            'meta_keywords' => $data['meta_keywords'],
             'is_active'     => $data['is_active'] ?? null,
 
         ]);
@@ -132,9 +136,9 @@ class CategoryController extends Controller
 
     public function editModal(Category $category)
     {
-        
-   
-        return view('backend.modules.categories.edit_modal', compact('category'));
+
+        $types = CategoryType::select('id', 'name')->where('is_active', 1)->get();
+        return view('backend.modules.categories.edit_modal', compact('category', 'types'));
     }
 
     public function show(Category $category)
@@ -159,8 +163,8 @@ class CategoryController extends Controller
     //         'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
     //         'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
     //         'is_active' =>['required','integer'],
-      
-           
+
+
     //     ]);
 
     //          $category = Category::findOrFail($req->id);
@@ -201,72 +205,74 @@ class CategoryController extends Controller
     //     return response()->json(['ok' => true, 'msg' => 'Category updated']);
     // }
     public function update(Request $req, Category $category)
-{
-    $data = $req->validate([
-        'name'      => ['required', 'string', 'max:150'],
-        'slug'      => ['required', 'string', 'max:50'],
-        'meta_title' => ['nullable','string','max:150'],
-        'meta_description' => ['nullable','string','max:150'],
-        'meta_keywords' => ['nullable','string','max:150'],
-        'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        'is_active' => ['required','integer'],
-    ]);
+    {
+        $data = $req->validate([
+            'name'      => ['required', 'string', 'max:150'],
+            'slug'      => ['required', 'string', 'max:50'],
+            'category_type_id'      => ['required', 'integer'],
+            'meta_title' => ['nullable', 'string', 'max:150'],
+            'meta_description' => ['nullable', 'string', 'max:150'],
+            'meta_keywords' => ['nullable', 'string', 'max:150'],
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_active' => ['required', 'integer'],
+        ]);
 
-    
 
-    $previousIcon = $category->icon;
-    $previousMetaImage = $category->meta_image;
 
-    if ($req->hasFile('icon')) {
-        $iconPath = uploadImage($req->file('icon'), 'category/icons');
-        $category->icon = $iconPath;
+        $previousIcon = $category->icon;
+        $previousMetaImage = $category->meta_image;
 
-        if ($previousIcon && file_exists($previousIcon)) {
-            unlink($previousIcon);
+        if ($req->hasFile('icon')) {
+            $iconPath = uploadImage($req->file('icon'), 'category/icons');
+            $category->icon = $iconPath;
+
+            if ($previousIcon && file_exists($previousIcon)) {
+                unlink($previousIcon);
+            }
         }
-    }
 
-    if ($req->hasFile('meta_image')) {
-        $metaImagePath = uploadImage($req->file('meta_image'), 'category/meta_images');
-        $category->meta_image = $metaImagePath;
+        if ($req->hasFile('meta_image')) {
+            $metaImagePath = uploadImage($req->file('meta_image'), 'category/meta_images');
+            $category->meta_image = $metaImagePath;
 
-        if ($previousMetaImage && file_exists($previousMetaImage)) {
-            unlink($previousMetaImage);
+            if ($previousMetaImage && file_exists($previousMetaImage)) {
+                unlink($previousMetaImage);
+            }
         }
+
+        $category->name = ucwords($data['name']);
+        $category->slug = $data['slug'];
+        $category->category_type_id = $data['category_type_id'];
+        $category->meta_title = $data['meta_title'] ?? null;
+        $category->meta_description = $data['meta_description'] ?? null;
+        $category->meta_keywords = $data['meta_keywords'] ?? null;
+        $category->is_active = $data['is_active'];
+
+        $category->save();
+
+        return response()->json(['ok' => true, 'msg' => 'Category updated']);
     }
-
-    $category->name =ucwords($data['name']) ;
-    $category->slug = $data['slug'];
-    $category->meta_title = $data['meta_title'] ?? null;
-    $category->meta_description = $data['meta_description'] ?? null;
-    $category->meta_keywords = $data['meta_keywords'] ?? null;
-    $category->is_active = $data['is_active'];
-
-    $category->save();
-
-    return response()->json(['ok' => true, 'msg' => 'Category updated']);
-}
 
 
     public function destroy(Category $category)
     {
-        // $inUse = DB::table('users')->where('category_id', $district->district_id)->count();
-        // if ($inUse > 0) {
-        //     return response()->json([
-        //         'ok'  => false,
-        //         'msg' => "This district has {$inUse} user(s). Reassign them first.",
-        //     ], 422);
-        // }
+        $inUse = DB::table('subcategories')->where('category_id', $category->id)->count();
+        if ($inUse > 0) {
+            return response()->json([
+                'ok'  => false,
+                'msg' => "This category has {$inUse} subcategorie(s). Reassign them first.",
+            ], 422);
+        }
 
-        // DB::table('branch_business')->where('branch_id', $district->district_id)->delete();
+
 
         $iconPath = $category->icon;
         $metaImagePath = $category->meta_image;
 
         $category->delete();
 
-         
+
         if (isset($iconPath) && file_exists($iconPath)) {
             unlink($iconPath);
         }
@@ -276,4 +282,6 @@ class CategoryController extends Controller
 
         return response()->json(['ok' => true, 'msg' => 'Category deleted']);
     }
+
+ 
 }
