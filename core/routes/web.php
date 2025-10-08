@@ -110,7 +110,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         //live serach
-        Route::get('categories/select2', [CategoryController::class,'select2'])->name('categories.category-type');
+        // Route::get('categories/select2', [CategoryController::class,'select2'])->name('categories.category-type');
+        Route::get('category-types/select2', [CategoryTypeController::class, 'select2'])->name('types.select2');
 
     
     });

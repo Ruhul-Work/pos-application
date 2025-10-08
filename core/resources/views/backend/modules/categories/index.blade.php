@@ -37,9 +37,10 @@
         @perm('org.branch.store')
             <button 
                 class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 AjaxModal"
-                data-ajax-modal="{{ route('category.categories.createModal') }}"  
-                data-size="lg"
-                data-onsuccess="BranchesIndex.onSaved">
+                        data-ajax-modal="{{ route('category.categories.createModal') }}"
+                        data-size="lg"
+                        data-onload="CategoryIndex.onLoad"
+                        data-onsuccess="CategoryIndex.onSaved">
                 <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Add Category
         </button>
         @endperm
@@ -76,7 +77,7 @@
   <script>
     var DATATABLE_URL = "{{ route('category.categories.list.ajax') }}";
 
-    window.BranchesIndex = {
+    window.CategoryIndex = {
     onSaved: function (res) {
       // DataTable current page reload
       $('.AjaxDataTable').DataTable().ajax.reload(null, false);

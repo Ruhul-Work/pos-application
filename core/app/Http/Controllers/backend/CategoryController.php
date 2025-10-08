@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
@@ -25,7 +24,9 @@ class CategoryController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Category::query()->select(['id', 'name', 'slug', 'category_type_id', 'icon', 'is_active']);
+        $base = Category::query()
+            ->with('category_type:id,name,code')
+            ->select(['id', 'name', 'slug', 'category_type_id', 'icon', 'is_active']);
 
         $total = (clone $base)->count();
 
@@ -38,7 +39,7 @@ class CategoryController extends Controller
 
         $filtered = (clone $base)->count();
 
-        $orderCol = $columns[$orderIdx] ?? 'district_id';
+        $orderCol = $columns[$orderIdx] ?? 'id';
 
         $rows = $base->orderBy($orderCol, $orderDir)
             ->skip($start)->take($length)->get();
@@ -56,7 +57,8 @@ class CategoryController extends Controller
                     bg-success-focus text-success-main AjaxModal"
                     data-ajax-modal="' . route('category.categories.editModal', $b->id) . '"
                     data-size="lg"
-                    data-onsuccess="BranchesIndex.onSaved"
+                    data-onload="CategoryIndex.onLoad"
+                    data-onsuccess="CategoryIndex.onSaved"
                     title="Edit">
                     <iconify-icon icon="lucide:edit"></iconify-icon>
                 </a>
@@ -70,11 +72,13 @@ class CategoryController extends Controller
 
             $icon = '<div  style="width:70px"><img src="' . image($b->icon) . '" alt="img"></div>';
 
+            $typeName = $b->category_type->name ?? '—';
+
             $data[] = [
                 $b->id,
                 $nameCol,
-                $slug = $b->slug,
-                $category_type = $b->category_type->name,
+                e($b->slug),
+                e($typeName),
                 $icon,
                 $active,
                 $actions,
@@ -99,35 +103,34 @@ class CategoryController extends Controller
     {
         // dd($req->all());
         $data = $req->validate([
-            'name'      => ['required', 'string', 'max:150', 'unique:categories,name'],
-            'slug'      => ['required', 'string', 'max:50', 'unique:categories,slug'],
-            'category_type_id'      => ['required', 'integer'],
-            'icon' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title' => ['required', 'string', 'max:150'],
+            'name'             => ['required', 'string', 'max:150', 'unique:categories,name'],
+            'slug'             => ['required', 'string', 'max:50', 'unique:categories,slug'],
+            'category_type_id' => ['required', 'integer'],
+            'icon'             => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'meta_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'meta_title'       => ['required', 'string', 'max:150'],
             'meta_description' => ['required', 'string', 'max:150'],
-            'meta_keywords' => ['required', 'string', 'max:150'],
-            'is_active' => ['required', 'integer'],
-
+            'meta_keywords'    => ['required', 'string', 'max:150'],
+            'is_active'        => ['required', 'integer'],
 
         ]);
 
-        $iconPath = uploadImage($req->file('icon'), 'category/icons');
+        $iconPath      = uploadImage($req->file('icon'), 'category/icons');
         $metaImagePath = null;
         if ($req->hasFile('meta_image')) {
             $metaImagePath = uploadImage($req->file('meta_image'), 'category/meta_images');
         }
 
         $category = Category::create([
-            'name'      => ucwords($data['name']),
-            'slug'      =>  $data['slug'],
-            'category_type_id'      => $data['category_type_id'],
-            'icon'      =>      $iconPath,
-            'meta_image' => $metaImagePath,
-            'meta_title' => $data['meta_title'],
+            'name'             => ucwords($data['name']),
+            'slug'             => $data['slug'],
+            'category_type_id' => $data['category_type_id'],
+            'icon'             => $iconPath,
+            'meta_image'       => $metaImagePath,
+            'meta_title'       => $data['meta_title'],
             'meta_description' => $data['meta_description'],
-            'meta_keywords' => $data['meta_keywords'],
-            'is_active'     => $data['is_active'] ?? null,
+            'meta_keywords'    => $data['meta_keywords'],
+            'is_active'        => $data['is_active'] ?? null,
 
         ]);
 
@@ -145,9 +148,9 @@ class CategoryController extends Controller
     {
 
         return response()->json([
-            'id'        => $category->id,
-            'name'      => $category->name,
-            'slug'      => $category->slug,
+            'id'   => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
 
         ]);
     }
@@ -163,7 +166,6 @@ class CategoryController extends Controller
     //         'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
     //         'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
     //         'is_active' =>['required','integer'],
-
 
     //     ]);
 
@@ -192,7 +194,6 @@ class CategoryController extends Controller
 
     //     }
 
-
     //     $category->name      = $data['name'];
     //     $category->slug      = $data['slug'];
     //     $category->meta_title = $data['meta_title'];
@@ -207,24 +208,22 @@ class CategoryController extends Controller
     public function update(Request $req, Category $category)
     {
         $data = $req->validate([
-            'name'      => ['required', 'string', 'max:150'],
-            'slug'      => ['required', 'string', 'max:50'],
-            'category_type_id'      => ['required', 'integer'],
-            'meta_title' => ['nullable', 'string', 'max:150'],
+            'name'             => ['required', 'string', 'max:150'],
+            'slug'             => ['required', 'string', 'max:50'],
+            'category_type_id' => ['required', 'integer'],
+            'meta_title'       => ['nullable', 'string', 'max:150'],
             'meta_description' => ['nullable', 'string', 'max:150'],
-            'meta_keywords' => ['nullable', 'string', 'max:150'],
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'is_active' => ['required', 'integer'],
+            'meta_keywords'    => ['nullable', 'string', 'max:150'],
+            'icon'             => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'meta_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_active'        => ['required', 'integer'],
         ]);
 
-
-
-        $previousIcon = $category->icon;
+        $previousIcon      = $category->icon;
         $previousMetaImage = $category->meta_image;
 
         if ($req->hasFile('icon')) {
-            $iconPath = uploadImage($req->file('icon'), 'category/icons');
+            $iconPath       = uploadImage($req->file('icon'), 'category/icons');
             $category->icon = $iconPath;
 
             if ($previousIcon && file_exists($previousIcon)) {
@@ -233,7 +232,7 @@ class CategoryController extends Controller
         }
 
         if ($req->hasFile('meta_image')) {
-            $metaImagePath = uploadImage($req->file('meta_image'), 'category/meta_images');
+            $metaImagePath        = uploadImage($req->file('meta_image'), 'category/meta_images');
             $category->meta_image = $metaImagePath;
 
             if ($previousMetaImage && file_exists($previousMetaImage)) {
@@ -241,19 +240,18 @@ class CategoryController extends Controller
             }
         }
 
-        $category->name = ucwords($data['name']);
-        $category->slug = $data['slug'];
+        $category->name             = ucwords($data['name']);
+        $category->slug             = $data['slug'];
         $category->category_type_id = $data['category_type_id'];
-        $category->meta_title = $data['meta_title'] ?? null;
+        $category->meta_title       = $data['meta_title'] ?? null;
         $category->meta_description = $data['meta_description'] ?? null;
-        $category->meta_keywords = $data['meta_keywords'] ?? null;
-        $category->is_active = $data['is_active'];
+        $category->meta_keywords    = $data['meta_keywords'] ?? null;
+        $category->is_active        = $data['is_active'];
 
         $category->save();
 
         return response()->json(['ok' => true, 'msg' => 'Category updated']);
     }
-
 
     public function destroy(Category $category)
     {
@@ -265,13 +263,10 @@ class CategoryController extends Controller
             ], 422);
         }
 
-
-
-        $iconPath = $category->icon;
+        $iconPath      = $category->icon;
         $metaImagePath = $category->meta_image;
 
         $category->delete();
-
 
         if (isset($iconPath) && file_exists($iconPath)) {
             unlink($iconPath);
@@ -283,5 +278,4 @@ class CategoryController extends Controller
         return response()->json(['ok' => true, 'msg' => 'Category deleted']);
     }
 
- 
 }
