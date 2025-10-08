@@ -8,6 +8,7 @@ use App\Http\Controllers\backend\CountryController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
 use App\Http\Controllers\backend\ProductController;
+use App\Http\Controllers\backend\ProductTypeController;
 use App\Http\Controllers\backend\SubCategoryController;
 use App\Http\Controllers\backend\UpazilaController;
 use Illuminate\Support\Facades\Route;
@@ -196,13 +197,27 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('product')->name('product.')->group(function () {
 
    Route::get('products', [ProductController::class, 'index'])->name('products.index');
-        Route::get('products/create-modal', [ColorController::class, 'createModal'])->name('products.createModal');
-        Route::post('products/list', [ColorController::class, 'listAjax'])->name('products.list.ajax');
-        Route::post('products', [ColorController::class, 'store'])->name('products.store');
-        Route::get('products/edit-modal/{color}', [ColorController::class, 'editModal'])->whereNumber('color')->name('products.editModal');
-        Route::put('products/{color}', [ColorController::class, 'update'])->name('products.update');
-        Route::get('products/{color}', [ColorController::class, 'show'])->name('products.show');
-        Route::delete('products/{color}', [ColorController::class, 'destroy'])->name('products.destroy');
+        Route::get('products/create-modal', [ProductController::class, 'createModal'])->name('products.createModal');
+        Route::post('products/list', [ProductController::class, 'listAjax'])->name('products.list.ajax');
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('products/edit-modal/{color}', [ProductController::class, 'editModal'])->whereNumber('product')->name('products.editModal');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+  });
+
+  // Product type Management
+    Route::prefix('product-type')->name('product-type.')->group(function () {
+
+   Route::get('product-types', [ProductTypeController::class, 'index'])->name('product-types.index');
+        Route::get('product-types/create-modal', [ProductTypeController::class, 'createModal'])->name('product-types.createModal');
+        Route::post('product-types/list', [ProductTypeController::class, 'listAjax'])->name('product-types.list.ajax');
+        Route::post('product-types', [ProductTypeController::class, 'store'])->name('product-types.store');
+        Route::get('product-types/edit-modal/{productType}', [ProductTypeController::class, 'editModal'])->whereNumber('productType')->name('product-types.editModal');
+        Route::put('product-types/{productType}', [ProductTypeController::class, 'update'])->name('product-types.update');
+        Route::get('product-types/{productType}', [ProductTypeController::class, 'show'])->name('product-types.show');
+        Route::delete('product-types/{productType}', [ProductTypeController::class, 'destroy'])->name('product-types.destroy');
 
   });
 

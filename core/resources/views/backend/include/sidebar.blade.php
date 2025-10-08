@@ -279,9 +279,16 @@
                                 </a>
                             </li>
 
+                             <li class="{{ Route::is('product-type.product-types.index') ? 'active' : '' }}">
+                                <a href="{{ route('product-type.product-types.index') }}">
+                                    <i class="ri-function-line text-xl me-14 d-flex w-auto"></i>
+                                    <span>Product Type</span>
+                                </a>
+                            </li>
+
                              <li class="{{ Route::is('product.products.index') ? 'active' : '' }}">
                                 <a href="{{ route('product.products.index') }}">
-                                    <i class="ri-ruler-line text-xl me-14 d-flex w-auto"></i>
+                                    <i class="ri-shopping-bag-3-line text-xl me-14 d-flex w-auto"></i>
                                     <span>Product</span>
                                 </a>
                             </li>
