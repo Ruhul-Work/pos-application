@@ -25,4 +25,8 @@ class Unit extends Model
               ->orWhere('code','like',"%$s%");
         });
     }
+    public function product()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

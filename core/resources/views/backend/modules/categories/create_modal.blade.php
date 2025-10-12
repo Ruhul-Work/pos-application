@@ -101,32 +101,6 @@
     });
 
 
-// (function(){
-//   const $form  = $('#categoryCreateForm');
-//   const $modal = $form.closest('.modal'); // current AjaxModal container
-//   const $sel   = $('#categoryTypeSelect');
-
-//   // already-initialized হলে destroy করে আবার init
-//   if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
-
-//   $sel.select2({
-//     dropdownParent: $modal,
-//     width: '100%',
-//     placeholder: 'Select Category Type',
-//     allowClear: true,
-//     ajax: {
-//       url: "{{ route('category.types.select2') }}",
-//       dataType: 'json',
-//       delay: 250,
-//       data: params => ({ q: params.term || '' }),
-//       processResults: data => ({ results: data?.results || [] })
-//     }
-//   });
-
-//   // (optional) clear on show
-//   // $sel.val(null).trigger('change');
-// })();
-
 
 // select2 init function
  function initCategorySelect($el, $modal) {
@@ -139,7 +113,7 @@
       allowClear: true,
       width: '100%',
       ajax: {
-        url: "{{ route('category.types.select2') }}",
+        url: "{{ route('category.types.select2')}}",
         dataType: 'json',
         delay: 200,
         data: params => ({ q: params.term || '' }),

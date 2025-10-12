@@ -278,4 +278,31 @@ class CategoryController extends Controller
         return response()->json(['ok' => true, 'msg' => 'Category deleted']);
     }
 
+    public function select2(Request $r)
+    {
+        
+        $q = trim($r->input('q', ''));
+        $type = $r->type;
+        $base = Category::query()->where('category_type_id',$type)->where('is_active', 1);
+      
+
+        if ($q !== '') {
+            $base->where(function($x) use ($q){
+                $x->where('name','like',"%{$q}%")
+                ;
+            });
+        }
+
+        $items = $base->orderBy('id')->orderBy('name')
+                      ->limit(20)->get(['id','name']);
+
+
+        return response()->json([
+            'results' => $items->map(fn($t)=>[
+                'id'   => $t->id,
+                'text' => $t->name 
+            ])
+        ]);
+    }
+
 }
