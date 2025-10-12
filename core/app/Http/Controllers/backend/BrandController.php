@@ -5,6 +5,7 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\backend\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BrandController extends Controller
 {
@@ -205,15 +206,14 @@ public function update(Request $req, Brand $brand)
 
     public function destroy(Brand $brand)
     {
-        // $inUse = DB::table('users')->where('branch_id', $district->district_id)->count();
-        // if ($inUse > 0) {
-        //     return response()->json([
-        //         'ok'  => false,
-        //         'msg' => "This district has {$inUse} user(s). Reassign them first.",
-        //     ], 422);
-        // }
+        $inUse = DB::table('products')->where('brand_id', $brand->id)->count();
+        if ($inUse > 0) {
+            return response()->json([
+                'ok'  => false,
+                'msg' => "This Brand has {$inUse} product(s). Reassign them first.",
+            ], 422);
+        }
 
-        // DB::table('branch_business')->where('branch_id', $district->district_id)->delete();
 
         $imagePath = $brand->image;
         $metaImagePath = $brand->meta_image;
@@ -230,5 +230,30 @@ public function update(Request $req, Brand $brand)
         }
 
         return response()->json(['ok' => true, 'msg' => 'Brand deleted']);
+    }
+
+     public function select2(Request $r)
+    {
+
+        $q = trim($r->input('q', ''));
+        $base = Brand::query()->where('is_active', 1);
+
+
+        if ($q !== '') {
+            $base->where(function ($x) use ($q) {
+                $x->where('name', 'like', "%{$q}%");
+            });
+        }
+
+        $items = $base->orderBy('id')->orderBy('name')
+            ->limit(20)->get(['id', 'name']);
+
+
+        return response()->json([
+            'results' => $items->map(fn($t) => [
+                'id'   => $t->id,
+                'text' => $t->name
+            ])
+        ]);
     }
 }

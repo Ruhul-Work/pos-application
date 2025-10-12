@@ -183,6 +183,7 @@ class CategoryTypeController extends Controller
         $items = $base->orderBy('sort')->orderBy('name')
                       ->limit(20)->get(['id','name','code']);
 
+
         return response()->json([
             'results' => $items->map(fn($t)=>[
                 'id'   => $t->id,

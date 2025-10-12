@@ -2,13 +2,13 @@
 @extends('backend.layouts.master')
 
 @section('meta')
-  <title>products</title>
+  <title>Products</title>
 @endsection
 
 @section('content')
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
     <div>
-      <h6 class="fw-semibold mb-0">product List</h6>
+      <h6 class="fw-semibold mb-0">Product List</h6>
       <p class="m-0">Manage products</p>
     </div>
     <ul class="d-flex align-items-center gap-2">
@@ -18,7 +18,7 @@
         </a>
       </li>
       <li>-</li>
-      <li class="fw-medium">products</li>
+      <li class="fw-medium">Products</li>
     </ul>
   </div>
 
@@ -34,13 +34,13 @@
           @include('backend.include.buttons')
         </ul>
 
+        {{-- data-ajax-modal="{{ route('product.products.createModal') }}"   --}}
         @perm('org.branches.store')
             <button 
-                class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 AjaxModal"
-                data-ajax-modal="{{ route('product.products.createModal') }}"  
+                class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8"
                 data-size="lg"
                 data-onsuccess="BranchesIndex.onSaved">
-                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Add product
+                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a href="{{ route('product.products.create') }}">Add Product</a>
         </button>
         @endperm
       </div>
@@ -56,10 +56,16 @@
                 <label class="form-check-label">S.L</label>
               </div>
             </th>
-            <th>product Name</th>
-            <th>Code</th>
-            <th>Hex</th>
-            <th>Sort</th>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Category Type</th>
+            <th>Category</th>
+            <th>Sub-Category</th>
+            <th>Product Type</th>
+            <th>Brand</th>
+            <th>Color</th>
+            <th>Size</th>
+            <th>Image</th>
             <th>Status</th>
          
             <th style="width:120px">Action</th>

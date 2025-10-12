@@ -6,17 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\backend\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ProductController extends Controller
 {
-       public function index()
+    public function index()
     {
         return view('backend.modules.products.index');
     }
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'name', 'bn_name','url'];
+        $columns   = ['id','price','is_active', 'name','category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -24,7 +25,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name', 'bn_name','url']);
+        $base = Product::query()->select(['id', 'name','is_active','price','category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image']);
 
         $total = (clone $base)->count();
 
@@ -47,34 +48,44 @@ class ProductController extends Controller
         foreach ($rows as $b) {
             $nameCol = '<strong>' . e($b->name) . '</strong>';
 
-            // $active = $b->is_active
-            //     ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
-            //     : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
+            $active = $b->is_active
+                ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
+                : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
 
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
-                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
-                    bg-success-focus text-success-main AjaxModal"
+                <a href="'. route('product.products.editModal', $b->id) .'" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                    bg-success-focus text-success-main "
                     data-ajax-modal="' . route('product.products.editModal', $b->id) . '"
                     data-size="lg"
                     data-onsuccess="BranchesIndex.onSaved"
                     title="Edit">
                     <iconify-icon icon="lucide:edit"></iconify-icon>
                 </a>
-                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center bg-danger-focus text-danger-main btn-branch-delete"
+                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center bg-danger-focus text-danger-main btn-product-delete"
                     data-id="' . $b->id . '"
                     data-url="' . route('product.products.destroy', $b->id) . '"
                     title="Delete">
                     <iconify-icon icon="mdi:delete"></iconify-icon>
                 </a>
             </div>';
+            $image = '<div  style="width:70px"><img src="' . image($b->image) . '" alt="img"></div>';
+            $status =  $b->is_active
+                ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
+                : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
 
             $data[] = [
                 $b->id,
                 $nameCol,
-                // e($b->phone ?? '—'),
-                // e($b->address ??
-                $b->bn_name,
-                $b->url,
+                $b->price,
+                $b->category_type->name,
+                $b->category->name,
+                $b->subcategory->name,
+                $b->product_type->name,
+                $b->brand->name,
+                $b->color->name,
+                $b->size->name,
+                $image,
+                $status,
                 $actions,
             ];
         }
@@ -89,35 +100,96 @@ class ProductController extends Controller
 
     public function createModal()
     {
-                                                              // @perm গার্ড চাইলে দিন
-        return view('backend.modules.products.create_modal'); // partial only
+        // @perm গার্ড চাইলে দিন
+        return view('backend.modules.products.create'); // partial only
     }
 
     public function store(Request $req)
     {
         $data = $req->validate([
-            'name'      => ['required', 'string', 'max:150'],
-            'bn_name'      => ['required', 'string', 'max:50', 'unique:products,bn_name'],
-            'url'     => ['nullable', 'string', 'max:50'],
-          
+            'name'      => ['required', 'string', 'max:150', 'unique:products,name'],
+            'slug'      => ['required', 'string', 'max:150', 'unique:products,slug'],
+            'category_id' => ['required', 'integer'],
+            'category_type_id' => ['required', 'integer'],
+            'subcategory_id' => ['required', 'integer'],
+            'product_type_id' => ['required', 'integer'],
+            'brand_id' => ['required', 'integer'],
+            'color_id' => ['required', 'integer'],
+            'unit_id' => ['required', 'integer'],
+            'size_id' => ['required', 'integer'],
+            'cost_price' => ['required', 'numeric'],
+            'mrp' => ['required', 'numeric'],
+            'discount_type' => ['required', 'integer'],
+            'discount_value' => ['required', 'numeric'],
+            'price' => ['required', 'numeric'],
+           
+            'is_active' => ['required', 'integer'],
+            'material'     => ['nullable', 'string', 'max:150'],
+            'description'     => ['nullable', 'string', 'max:350'],
+            'short_description'     => ['nullable', 'string', 'max:250'],
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'thumbnail_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'size_chart_image' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'meta_title'     => ['nullable', 'string', 'max:150'],
+            'meta_description'     => ['nullable', 'string', 'max:350'],
+            'meta_keywords'     => ['nullable', 'string', 'max:250'],
+            'meta_image ' => 'image|mimes:jpeg,png,jpg|max:2048',
+
         ]);
 
-         $product = product::create([
-             'name'      => ucwords($data['name']),
-            'bn_name'      => $data['bn_name'],
-            'url'     => $data['url'] ?? null,
-           
+
+        $imagePath = uploadImage($req->file('image'), 'product/images');
+        $thumbnail_image = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
+        $size_chart_image = null;
+        if ($req->hasFile('meta_image')) {
+            $size_chart_image = uploadImage($req->file('size_chart_image'), 'product/size_chart_images');
+        }
+        $metaImagePath = null;
+        if ($req->hasFile('meta_image')) {
+            $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
+        }
+
+        $product = product::create([
+            'name'      => ucwords($data['name']),
+            'slug' => $data['slug'],
+            'category_type_id' => $data['category_type_id'],
+            'category_id'      => $data['category_id'],
+            'subcategory_id'      => $data['subcategory_id'],
+            'product_type_id'      => $data['product_type_id'],
+            'brand_id'      => $data['brand_id'],
+            'size_id'      => $data['size_id'],
+            'color_id'      => $data['color_id'],
+            'unit_id' =>$data['unit_id'],
+            'cost_price'      => $data['cost_price'],
+            'mrp'      => $data['mrp'],
+            'discount_type'      => $data['discount_type'],
+            'discount_value'      => $data['discount_value'],
+            'price'      =>  $data['price'],
+            'material' => $data['material'],
+            'description' => $data['description'],
+            'short_description' => $data['short_description'],
+            'is_active' => $data['is_active'],
+            'meta_title' => $data['meta_title'],
+            'meta_keywords' => $data['meta_keywords'],
+            'meta_description' => $data['meta_description'],
+            'image' => $imagePath,
+            'thumbnail_image' => $thumbnail_image,
+            'size_chart_image' => $size_chart_image,
+            'meta_image' => $metaImagePath,
+
+
+
         ]);
 
         return response()->json(['ok' => true, 'msg' => 'product created', 'id' => $product->id]);
     }
 
-    public function editModal(product $product)
+    public function editModal(Product $product)
     {
-        return view('backend.modules.products.edit_modal', compact('product'));
+        return view('backend.modules.products.edit', compact('product'));
     }
 
-    public function show(product $product)
+    public function show(Product $product)
     {
 
         return response()->json([
@@ -125,41 +197,147 @@ class ProductController extends Controller
             'name'      => $product->name,
             'bn_name'      => $product->bn_mame,
             'url' => $product->url,
-       
+
         ]);
     }
 
-    public function update(Request $req, product $product)
+    public function update(Request $req, Product $product)
     {
         $data = $req->validate([
             'name'      => ['required', 'string', 'max:150'],
-            'bn_name'      => ['required', 'string', 'max:50', 'unique:products,bn_name,' . $product->id],
-            'url'     => ['nullable', 'string', 'max:50'],
-        
+            'slug'      => ['required', 'string', 'max:150'],
+            'category_type_id' => ['required', 'integer'],
+            'category_id' => ['required', 'integer'],
+            'subcategory_id' => ['required', 'integer'],
+            'product_type_id' => ['required', 'integer'],
+            'brand_id' => ['required', 'integer'],
+            'color_id' => ['required', 'integer'],
+            'unit_id' => ['required', 'integer'],
+            'size_id' => ['required', 'integer'],
+            'cost_price' => ['required', 'numeric'],
+            'mrp' => ['required', 'numeric'],
+            'discount_type' => ['required', 'integer'],
+            'discount_value' => ['required', 'numeric'],
+            'price' => ['required', 'numeric'],
+           
+            'is_active' => ['required', 'integer'],
+            'material'     => ['nullable', 'string', 'max:150'],
+            'description'     => ['nullable', 'string', 'max:350'],
+            'short_description'     => ['nullable', 'string', 'max:250'],
+            'image' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'thumbnail_image' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'size_chart_image' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'meta_title'     => ['nullable', 'string', 'max:150'],
+            'meta_description'     => ['nullable', 'string', 'max:350'],
+            'meta_keywords'     => ['nullable', 'string', 'max:250'],
+            'meta_image ' => 'image|mimes:jpeg,png,jpg|max:2048',
+
         ]);
 
+         $previousImage = $product->image;
+         $previousThumbnailImage = $product->thumbnail_image;
+         $previousSizeImage = $product->size_chart_image;
+    $previousMetaImage = $product->meta_image;
+
+   
+
+    if ($req->hasFile('image')) {
+        $imagePath = uploadImage($req->file('image'), 'product/images');
+        $product->image = $imagePath;
+
+        if ($previousImage && file_exists($previousImage)) {
+            unlink($previousImage);
+        }
+    }
+
+    if ($req->hasFile('meta_image')) {
+        $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
+        $product->meta_image = $metaImagePath;
+
+        if ($previousMetaImage && file_exists($previousMetaImage)) {
+            unlink($previousMetaImage);
+        }
+    }
+
+    if ($req->hasFile('thumbnail_image')) {
+        $thumbnail_imagePath = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
+        $product->image = $thumbnail_imagePath;
+
+        if ($previousThumbnailImage && file_exists($previousThumbnailImage)) {
+            unlink($previousThumbnailImage);
+        }
+    }
+
+    if ($req->hasFile('size_chart_image')) {
+        $sizeImagePath = uploadImage($req->file('size_chart_image'), 'product/size_chart_images');
+        $product->size_chart_image = $sizeImagePath;
+
+        if ($previousSizeImage && file_exists($previousSizeImage)) {
+            unlink($previousSizeImage);
+        }
+    }
+
         $product->name      = ucwords($data['name']);
-        $product->bn_name      = $data['bn_name'];
-        $product->url     = $data['url'] ?? null;
-  
+        $product->slug      = $data['slug'];
+        $product->category_type_id = $data['category_type_id'];
+        $product->category_id = $data['category_id'];
+        $product->subcategory_id = $data['subcategory_id'];
+        $product->size_id = $data['size_id'];
+        $product->color_id = $data['color_id'];
+        $product->brand_id = $data['brand_id'];
+        $product->unit_id = $data['unit_id'];
+        $product->product_type_id = $data['product_type_id'];
+        $product->cost_price     = $data['cost_price'];
+        $product->mrp     = $data['mrp'];
+        $product->discount_type     = $data['discount_type'];
+        $product->discount_value     = $data['discount_value'];
+        $product->price     = $data['price'];
+        $product->material     = $data['material'];
+        $product->description     = $data['description'];
+        $product->short_description     = $data['short_description'];
+        $product->is_active     = $data['is_active'];
+        $product->meta_description     = $data['meta_description'];
+        $product->meta_title     = $data['meta_title'];
+        $product->meta_keywords     = $data['meta_keywords'];
+
         $product->save();
 
         return response()->json(['ok' => true, 'msg' => 'product updated']);
     }
 
-    public function destroy(product $product)
+    public function destroy(Product $product)
     {
-        $inUse = DB::table('districts')->where('district_product_id', $product->id)->count();
-        if ($inUse > 0) {
-            return response()->json([
-                'ok'  => false,
-                'msg' => "This product has {$inUse} district(s). Reassign them first.",
-            ], 422);
-        }
+        // $inUse = DB::table('districts')->where('district_product_id', $product->id)->count();
+        // if ($inUse > 0) {
+        //     return response()->json([
+        //         'ok'  => false,
+        //         'msg' => "This product has {$inUse} district(s). Reassign them first.",
+        //     ], 422);
+        // }
 
         // DB::table('branch_business')->where('branch_id', $branch->id)->delete();
 
+       $imagePath = $product->image;
+        $metaImagePath = $product->meta_image;
+       $thumbnailImagePath = $product->thumbnail_image;
+        $sizeImagePath = $product->size_chart_image;
+
+
         $product->delete();
+
+      
+        if (isset($imagePath) && file_exists($imagePath)) {
+            unlink($imagePath);
+        }
+        if (isset($metaImagePath) && file_exists($metaImagePath)) {
+            unlink($metaImagePath);
+        }
+        if (isset($thumbnailImagePath) && file_exists($thumbnailImagePath)) {
+            unlink($thumbnailImagePath);
+        }
+        if (isset($sizeImagePath) && file_exists($sizeImagePath)) {
+            unlink($sizeImagePath);
+        }
 
         return response()->json(['ok' => true, 'msg' => 'product deleted']);
     }

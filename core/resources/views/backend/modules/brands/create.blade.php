@@ -179,11 +179,11 @@
         </div>
     </form> --}}
 
-     <form action="" id="createSubcategory" method="post">
+    <form action="" id="createSubcategory" method="post">
         @csrf
-       
+
         <div class="card ">
-             <div class="card-body  ">
+            <div class="card-body  ">
                 <div class="accordion-card-one accordion mb-6" id="accordionExample">
                     <div class="accordion-item">
                         <div class="accordion-header" id="headingOne">
@@ -218,12 +218,12 @@
                                             <input type="text" class="form-control" id="slug" name="slug">
                                         </div>
                                     </div>
-                                   
+
 
 
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-5 col-sm-6 col-12">
+                                    <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3 add-product">
                                             <label class="form-label">Image<span class="star-sign">*</span></label>
 
@@ -235,12 +235,19 @@
                                         </div>
                                     </div>
 
-                                     <div class="col-lg-5 col-sm-4 col-12">
-                                        <label class="form-label">Status</label>
-                                        <select class="form-select"  name="is_active">
-                                            <option value="1">Active</option>
-                                            <option value="0">Inactive</option>
-                                        </select>
+                                    <div class="row">
+                                        <div class="col-12 mb-8">
+                                            <label class="form-label text-sm mb-8">Active?</label>
+                                            <div class="form-switch switch-purple d-flex align-items-center gap-3">
+                                                <input type="hidden" name="is_active" value="0">
+                                                <input class="form-check-input" type="checkbox" name="is_active"
+                                                    value="1" id="categoryIsActive" checked>
+                                                <label class="form-check-label" for="categoryIsActive">Enable this
+                                                    Brand</label>
+                                            </div>
+                                            <div class="invalid-feedback d-block is_active-error" style="display:none">
+                                            </div>
+                                        </div>
                                     </div>
 
 
@@ -295,23 +302,23 @@
 
                                         </div>
                                         <div class="row mt-2">
-                                        <div class="col-lg-5 col-sm-6 col-12 mt-8">
-                                            <label class="form-label"> Meta Image</label>
-                                            <div class="form-group">
-                                                <div class="row" id="meta_image">
+                                            <div class="col-lg-3 col-sm-6 col-12 mt-8">
+                                                <label class="form-label"> Meta Image</label>
+                                                <div class="form-group">
+                                                    <div class="row" id="meta_image">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-5 col-sm-6 col-12 ">
+                                                <div class="add-product list ">
+                                                    <label class="form-label "> Meta Description</label>
+                                                    <textarea rows="8" cols="5" class="form-control h-100" name="meta_description"
+                                                        placeholder="Enter text here">{{ old('meta_description') }}</textarea>
 
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-lg-5 col-sm-6 col-12 ">
-                                            <div class="add-product list ">
-                                                <label class="form-label "> Meta Description</label>
-                                                <textarea rows="8" cols="5" class="form-control h-100" name="meta_description"
-                                                    placeholder="Enter text here">{{ old('meta_description') }}</textarea>
-
-                                            </div>
-                                        </div>
-                                            </div>
                                     </div>
 
 
@@ -326,7 +333,7 @@
 
         <div class="col-lg-12 mt-3">
             <div class="btn-addproduct mb-4">
-                <button type="submit" class="btn btn-outline-secondary text-white ">Save All</button>
+                <button type="submit" class="btn btn-primary ">Save All</button>
             </div>
         </div>
     </form>
@@ -410,6 +417,8 @@
             });
 
 
+
+
             $("#brand_image").spartanMultiImagePicker({
                 fieldName: 'image',
                 maxCount: 1,
@@ -444,7 +453,7 @@
                 }
             });
 
-
+           
 
         });
     </script>

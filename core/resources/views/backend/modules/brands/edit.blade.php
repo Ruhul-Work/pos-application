@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <form action="{{ route('brand.brands.update', $brand->id) }}" id="createSubcategory" method="post"
+    <form action="{{ route('brand.brands.update', $brand->id) }}" id="edit_brand" method="post"
         enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -72,14 +72,16 @@
                                         </div>
                                     </div>
 
+                                    
+
 
                                 </div>
 
                                 <div class="row mt-3 gap-1">
-                                   
+
 
                                     <!-- Image -->
-                                    <div class="col-lg-5 col-sm-6 col-12">
+                                    <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3 add-product">
                                             <label class="form-label">Image <span class="star-sign">*</span></label>
                                             <div class="form-group">
@@ -89,16 +91,22 @@
                                             </div>
                                         </div>
                                     </div>
-                                     <!-- Status -->
-                                    <div class="col-lg-5 col-sm-6 col-12">
-                                        <label class="form-label">Status</label>
-                                        <select class="form-select" name="is_active">
-                                            <option value="1" {{ $brand->is_active == 1 ? 'selected' : '' }}>Active
-                                            </option>
-                                            <option value="0" {{ $brand->is_active == 0 ? 'selected' : '' }}>Inactive
-                                            </option>
-                                        </select>
+                                    <!-- Status -->
+                                     <div class="row">
+                                        <div class="col-12 mb-8">
+                                            <label class="form-label text-sm mb-8">Active?</label>
+                                            <div class="form-switch switch-purple d-flex align-items-center gap-3">
+                                                <input type="hidden" name="is_active" value="0">
+                                                <input class="form-check-input" type="checkbox" name="is_active"
+                                                    value="1" id="brandIsActive" {{$brand->is_active?'checked':''}}>
+                                                <label class="form-check-label" for="categoryIsActive">Enable this
+                                                    Brand</label>
+                                            </div>
+                                            <div class="invalid-feedback d-block is_active-error" style="display:none">
+                                            </div>
+                                        </div>
                                     </div>
+                                    
                                 </div>
 
 
@@ -148,7 +156,7 @@
 
                                             <div class="row mt-3">
                                                 <!-- Meta Image -->
-                                                <div class="col-lg-5 col-sm-12">
+                                                <div class="col-lg-3 col-sm-12">
                                                     <label class="form-label">Meta Image</label>
                                                     <div class="form-group">
                                                         <div class="row" id="meta_image">
@@ -158,7 +166,7 @@
                                                 </div>
 
                                                 <!-- Meta Description -->
-                                                <div class="col-lg-5 col-sm-12 m-2">
+                                                <div class="col-lg-3 col-sm-12 m-2">
                                                     <label class="form-label">Meta Description</label>
                                                     <textarea rows="7" cols="8" class="form-control h-full" name="meta_description"
                                                         placeholder="Enter text here">{{ $brand->meta_description }}</textarea>
@@ -179,7 +187,7 @@
 
         <div class="col-lg-12 mt-3">
             <div class="btn-addproduct mb-4">
-                <button type="submit" class="btn btn-outline-secondary text-white ">Save All</button>
+                <button type="submit" class="btn btn-primary text-white ">Save All</button>
             </div>
         </div>
     </form>
@@ -206,23 +214,46 @@
             @if (!empty($brand->image))
 
 
-                // Add it manually
-                $("#brand_image").append(
-                    '<div class="img_" style="position:relative; display:inline-block; margin:5px;">' +
-                    '<img src="{{ image($brand->image) }}" class="img-responsive" style="height:200px; width:auto;">' +
-                    '</div>'
-                );
+
+                var previousImageUrl = "{{ image($brand->image) }}"; // Blade variable
+                if (previousImageUrl) {
+                    $("#brand_image").append(
+                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                        '<img src="' + previousImageUrl +
+                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                        '</div>'
+                    );
+                }
+
+                // When user clicks cancel on previous image
+                $(document).on('click', '.btn-cancel-old', function() {
+                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                    $('#remove_old_image').val(1); // Mark for backend deletion
+                });
             @endif
+
+
 
             @if (!empty($brand->meta_image))
 
 
-                // Add it manually
-                $("#meta_image").append(
-                    '<div class="img_" style="position:relative; display:inline-block; margin:5px;">' +
-                    '<img src="{{ image($brand->meta_image) }}" class="img-responsive" style="height:200px; width:auto;">' +
-                    '</div>'
-                );
+               var previousImageUrl = "{{ image($brand->meta_image) }}"; // Blade variable
+                if (previousImageUrl) {
+                    $("#meta_image").append(
+                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                        '<img src="' + previousImageUrl +
+                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                        '</div>'
+                    );
+                }
+
+                // When user clicks cancel on previous image
+                $(document).on('click', '.btn-cancel-old', function() {
+                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                    $('#remove_old_image').val(1); // Mark for backend deletion
+                });
             @endif
 
             // Event listener for name field
