@@ -295,12 +295,42 @@
                         @endperm
                     @endpermgroup
                 @endpermgroup
+            {{-- category managemnt module end --}}
+
+            {{-- Stock/warehouse managemnt module start --}}
+             
+            @permgroup(['org.branches'])
+                <li class="sidebar-menu-group-title">Stock Management</li>
+                @permgroup(['org.branches'])
+                    @perm('org.branches.index')
+                        <li class=" dropdown ">
+                            <a href="javascript:void(0)">
+                                <i class="ri-store-3-line"></i>
+                                <span>Stock</span>
+                            </a>
+
+                            <ul class="sidebar-submenu">
+
+                                @perm('org.branches.index')
+                                    <li class="{{ Route::is('warehouses.*') ? 'active' : '' }}">
+                                    <a href="{{ route('warehouses.index') }}">
+                                        <i class="ri-building-4-line me-1"></i>
+                                        <span>Warehouses</span>
+                                    </a>
+                                    </li>
+
+                                @endperm
+                            </ul>
+                        </li>
+                    @endperm
+                @endpermgroup
             @endpermgroup
-            {{-- organization settings module end --}}
-            
+            {{-- branch management module end --}}
+
+            @endpermgroup
 
         </ul>
-        {{-- Units (main level item) --}}
+      
 
     </div>
 </aside>
