@@ -158,8 +158,8 @@
                                                 <option value="0">Percentage(%)</option>
                                                 <option value="1">Flat</option>
                                             </select>
-                                            <input type="text" name="discount_value" class="form-control"
-                                                placeholder="Enter discount" id="discount_value">
+                                            <input type="number" name="discount_value" min="0"  class="form-control"
+                                                placeholder="Enter discount" id="discount_value" value="0" required>
                                         </div>
                                     </div>
 
@@ -169,7 +169,7 @@
                                         <div class="mb-3">
                                             <label class="form-label">Sale Price<span class="star-sign">*</span></label>
                                             <input type="number" class="form-control" name="price" id="sale_price"
-                                                value="">
+                                                value="" readonly>
                                         </div>
                                     </div>
 
@@ -361,6 +361,18 @@
         type="text/javascript"></script>
     <script>
         $(document).ready(function() {
+
+             function setDiscountRange() {
+                const type = $('#discount_type').val();
+                const mrp = parseInt($('#mrp').val());
+                if (type == '1') {
+                    $('#discount_value').attr('max', mrp);
+                } else {
+                    $('#discount_value').attr('max', 100);
+                }
+            }
+            setDiscountRange();
+            $('#discount_type,#mrp').on('input', setDiscountRange);
 
            
             function calculatePrice() {

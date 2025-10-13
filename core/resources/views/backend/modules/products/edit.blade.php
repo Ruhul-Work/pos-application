@@ -154,7 +154,7 @@
                                     </div>
 
 
-                                   
+
 
                                     <div class="col-lg-3 col-sm-6 col-12">
                                         <label class="form-label text-sm mb-8">Size</label>
@@ -165,7 +165,7 @@
                                         </div>
                                     </div>
 
-                                      <div class="col-lg-3 col-sm-6 col-12">
+                                    <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3 ">
                                             <label class="form-label">Materials<span class="star-sign">*</span></label>
                                             <input type="text" class="form-control" name="material"
@@ -196,14 +196,15 @@
                                         <div class="input-group">
                                             <select name="discount_type" class="form-select" id="discount_type">
                                                 <option value="0"
-                                                    {{ $product->discount_type == 0 ? 'selected' : '' }}>
+                                                    {{ $product->discount_type === 0 ? 'selected' : '' }}>
                                                     Percentage(%)</option>
                                                 <option value="1"
-                                                    {{ $product->discount_type == 1 ? 'selected' : '' }}>Flat
+                                                    {{ $product->discount_type === 1 ? 'selected' : '' }}>
+                                                    Flat
                                                 </option>
                                             </select>
-                                            <input type="number" min="0" max="100" name="discount_value" class="form-control"
-                                                placeholder="Enter discount" id="discount_value"
+                                            <input type="number" min="0" name="discount_value"
+                                                class="form-control" placeholder="Enter discount" id="discount_value"
                                                 value="{{ $product->discount_value }}">
                                         </div>
                                     </div>
@@ -213,14 +214,14 @@
                                     <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3">
                                             <label class="form-label">Sale Price<span class="star-sign">*</span></label>
-                                            <input type="number" class="form-control" name="price" id="sale_price"
-                                                value="{{ $product->price }}">
+                                            <input type="number" class="form-control" readonly name="price"
+                                                id="sale_price" value="{{ $product->price }}">
                                         </div>
                                     </div>
 
-                                   
 
-                                    
+
+
 
                                     <div class="col-lg-6 col-sm-6 col-12 ">
                                         <div class="">
@@ -240,13 +241,14 @@
                                         </div>
                                     </div>
 
-                                   <div class="row mt-2">
+                                    <div class="row mt-2">
                                         <div class="col-12 mb-8">
                                             <label class="form-label text-sm mb-8">Active?</label>
                                             <div class="form-switch switch-purple d-flex align-items-center gap-3">
                                                 <input type="hidden" name="is_active" value="0">
                                                 <input class="form-check-input" type="checkbox" name="is_active"
-                                                    value="1" id="categoryIsActive" {{$product->is_active?'checked':''}}>
+                                                    value="1" id="categoryIsActive"
+                                                    {{ $product->is_active ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="categoryIsActive">Enable this
                                                     category</label>
                                             </div>
@@ -334,7 +336,7 @@
                                                 <div class=" ">
                                                     <label class="form-label">Meta Title</label>
                                                     <input type="text" class="form-control" name="meta_title"
-                                                        value="{{ old('meta_title') }}">
+                                                        value="{{ $product->meta_title }}">
                                                 </div>
                                             </div>
 
@@ -342,7 +344,7 @@
                                                 <div class="">
                                                     <label class="form-label">Meta Keywords</label>
                                                     <input type="text" class="form-control" name="meta_keywords"
-                                                        value="{{ old('meta_title') }}">
+                                                        value="{{ $product->meta_keywords }}">
                                                 </div>
                                             </div>
 
@@ -363,7 +365,7 @@
                                                 <div class=" list ">
                                                     <label class="form-label "> Meta Description</label>
                                                     <textarea rows="8" cols="5" class="form-control h-100" name="meta_description"
-                                                        placeholder="Enter text here">{{ old('meta_description') }}</textarea>
+                                                        placeholder="Enter text here">{{ $product->meta_description }}</textarea>
 
                                                 </div>
                                             </div>
@@ -400,6 +402,17 @@
         $(document).ready(function() {
 
 
+            function setDiscountRange() {
+                const type = $('#discount_type').val();
+                const mrp = parseInt($('#mrp').val());
+                if (type == '1') {
+                    $('#discount_value').attr('max', mrp);
+                } else {
+                    $('#discount_value').attr('max', 100);
+                }
+            }
+            setDiscountRange();
+            $('#discount_type,#mrp').on('input', setDiscountRange);
 
             function calculatePrice() {
                 const discountType = $('#discount_type').val(); // string
@@ -416,7 +429,7 @@
 
                 $('#sale_price').val(salePrice.toFixed(2));
             };
-    
+
             $('#mrp,#discount_type,#discount_value').on('input', calculatePrice);
 
             $('#category_type').select2({
@@ -681,89 +694,89 @@
             });
         });
 
-          @if (!empty($product->image))
+        @if (!empty($product->image))
 
 
 
-                var previousImageUrl = "{{ image($product->image) }}"; // Blade variable
-                if (previousImageUrl) {
-                    $("#image").append(
-                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
-                        '<img src="' + previousImageUrl +
-                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
-                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
-                        '</div>'
-                    );
-                }
+            var previousImageUrl = "{{ image($product->image) }}"; // Blade variable
+            if (previousImageUrl) {
+                $("#image").append(
+                    '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                    '<img src="' + previousImageUrl +
+                    '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                    '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                    '</div>'
+                );
+            }
 
-                // When user clicks cancel on previous image
-                $(document).on('click', '.btn-cancel-old', function() {
-                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
-                    $('#remove_old_image').val(1); // Mark for backend deletion
-                });
-            @endif
-              @if (!empty($product->thumbnail_image))
-
-
-
-                var previousImageUrl = "{{ image($product->thumbnail_image) }}"; // Blade variable
-                if (previousImageUrl) {
-                    $("#thumbnail_image").append(
-                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
-                        '<img src="' + previousImageUrl +
-                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
-                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
-                        '</div>'
-                    );
-                }
-
-                // When user clicks cancel on previous image
-                $(document).on('click', '.btn-cancel-old', function() {
-                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
-                    $('#remove_old_image').val(1); // Mark for backend deletion
-                });
-            @endif
-              @if (!empty($product->size_chart_image))
+            // When user clicks cancel on previous image
+            $(document).on('click', '.btn-cancel-old', function() {
+                $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                $('#remove_old_image').val(1); // Mark for backend deletion
+            });
+        @endif
+        @if (!empty($product->thumbnail_image))
 
 
 
-                var previousImageUrl = "{{ image($product->size_chart_image) }}"; // Blade variable
-                if (previousImageUrl) {
-                    $("#size_chart_image").append(
-                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
-                        '<img src="' + previousImageUrl +
-                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
-                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
-                        '</div>'
-                    );
-                }
+            var previousImageUrl = "{{ image($product->thumbnail_image) }}"; // Blade variable
+            if (previousImageUrl) {
+                $("#thumbnail_image").append(
+                    '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                    '<img src="' + previousImageUrl +
+                    '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                    '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                    '</div>'
+                );
+            }
 
-                // When user clicks cancel on previous image
-                $(document).on('click', '.btn-cancel-old', function() {
-                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
-                    $('#remove_old_image').val(1); // Mark for backend deletion
-                });
-            @endif
-              @if (!empty($product->meta_image))
+            // When user clicks cancel on previous image
+            $(document).on('click', '.btn-cancel-old', function() {
+                $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                $('#remove_old_image').val(1); // Mark for backend deletion
+            });
+        @endif
+        @if (!empty($product->size_chart_image))
 
 
-                var previousImageUrl = "{{ image($product->meta_image) }}"; // Blade variable
-                if (previousImageUrl) {
-                    $("#meta_image").append(
-                        '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
-                        '<img src="' + previousImageUrl +
-                        '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
-                        '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
-                        '</div>'
-                    );
-                }
 
-                // When user clicks cancel on previous image
-                $(document).on('click', '.btn-cancel-old', function() {
-                    $(this).closest('.existing-image-wrapper').remove(); // Remove preview
-                    $('#remove_old_image').val(1); // Mark for backend deletion
-                });
-            @endif
+            var previousImageUrl = "{{ image($product->size_chart_image) }}"; // Blade variable
+            if (previousImageUrl) {
+                $("#size_chart_image").append(
+                    '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                    '<img src="' + previousImageUrl +
+                    '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                    '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                    '</div>'
+                );
+            }
+
+            // When user clicks cancel on previous image
+            $(document).on('click', '.btn-cancel-old', function() {
+                $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                $('#remove_old_image').val(1); // Mark for backend deletion
+            });
+        @endif
+        @if (!empty($product->meta_image))
+
+
+            var previousImageUrl = "{{ image($product->meta_image) }}"; // Blade variable
+            if (previousImageUrl) {
+                $("#meta_image").append(
+                    '<div class="existing-image-wrapper" style="position:relative; display:inline-block; margin:5px;">' +
+                    '<img src="' + previousImageUrl +
+                    '" style="height:200px; width:auto; border:1px solid #ccc; border-radius:5px;">' +
+                    '<button type="button" class="btn-cancel-old bg-red px-1 py-0 " style="position:absolute; top:5px; right:5px;">✕</button>' +
+                    '</div>'
+                );
+            }
+
+            // When user clicks cancel on previous image
+            $(document).on('click', '.btn-cancel-old', function() {
+                $(this).closest('.existing-image-wrapper').remove(); // Remove preview
+                $('#remove_old_image').val(1); // Mark for backend deletion
+            });
+        @endif
 
 
         $("#image").spartanMultiImagePicker({
