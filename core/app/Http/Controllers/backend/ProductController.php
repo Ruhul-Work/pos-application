@@ -17,7 +17,7 @@ class ProductController extends Controller
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id','price','is_active', 'name','category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
+        $columns   = ['id', 'price', 'is_active', 'name', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -25,7 +25,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name','is_active','price','category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image']);
+        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image']);
 
         $total = (clone $base)->count();
 
@@ -48,12 +48,8 @@ class ProductController extends Controller
         foreach ($rows as $b) {
             $nameCol = '<strong>' . e($b->name) . '</strong>';
 
-            $active = $b->is_active
-                ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
-                : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
-
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
-                <a href="'. route('product.products.editModal', $b->id) .'" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                <a href="' . route('product.products.editModal', $b->id) . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
                     bg-success-focus text-success-main "
                     data-ajax-modal="' . route('product.products.editModal', $b->id) . '"
                     data-size="lg"
@@ -73,17 +69,19 @@ class ProductController extends Controller
                 ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
                 : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
 
+            $size_color = '<p>' . $b->size->name . '<br><span class="text-sm">' . $b->color->name . '</span></p>';
+            $category = '<span class="text-sm">Category Type : ' . $b->category_type->name . '</span><br>
+                        <span class="text-sm">Category: ' . $b->category->name . '</span><br>
+                        <span class="text-sm">Sub-Category: ' . $b->subcategory->name . '</span>';
+
             $data[] = [
                 $b->id,
                 $nameCol,
-                $b->price,
-                $b->category_type->name,
-                $b->category->name,
-                $b->subcategory->name,
+                $category,
                 $b->product_type->name,
                 $b->brand->name,
-                $b->color->name,
-                $b->size->name,
+                $b->price,
+                $size_color,
                 $image,
                 $status,
                 $actions,
@@ -122,7 +120,7 @@ class ProductController extends Controller
             'discount_type' => ['required', 'integer'],
             'discount_value' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
-           
+
             'is_active' => ['required', 'integer'],
             'material'     => ['nullable', 'string', 'max:150'],
             'description'     => ['nullable', 'string', 'max:350'],
@@ -137,6 +135,14 @@ class ProductController extends Controller
 
         ]);
 
+        $final_price = 0;
+
+        if ($data['discount_type'] === '1') {
+
+            $final_price = $data['mrp'] - $data['discount_value'];
+        } else {
+            $final_price = $data['mrp'] - (($data['mrp'] * $data['discount_value']) / 100);
+        }
 
         $imagePath = uploadImage($req->file('image'), 'product/images');
         $thumbnail_image = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
@@ -159,12 +165,12 @@ class ProductController extends Controller
             'brand_id'      => $data['brand_id'],
             'size_id'      => $data['size_id'],
             'color_id'      => $data['color_id'],
-            'unit_id' =>$data['unit_id'],
+            'unit_id' => $data['unit_id'],
             'cost_price'      => $data['cost_price'],
             'mrp'      => $data['mrp'],
             'discount_type'      => $data['discount_type'],
             'discount_value'      => $data['discount_value'],
-            'price'      =>  $data['price'],
+            'price'      =>  $final_price,
             'material' => $data['material'],
             'description' => $data['description'],
             'short_description' => $data['short_description'],
@@ -219,7 +225,7 @@ class ProductController extends Controller
             'discount_type' => ['required', 'integer'],
             'discount_value' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
-           
+
             'is_active' => ['required', 'integer'],
             'material'     => ['nullable', 'string', 'max:150'],
             'description'     => ['nullable', 'string', 'max:350'],
@@ -234,48 +240,56 @@ class ProductController extends Controller
 
         ]);
 
-         $previousImage = $product->image;
-         $previousThumbnailImage = $product->thumbnail_image;
-         $previousSizeImage = $product->size_chart_image;
-    $previousMetaImage = $product->meta_image;
+        $previousImage = $product->image;
+        $previousThumbnailImage = $product->thumbnail_image;
+        $previousSizeImage = $product->size_chart_image;
+        $previousMetaImage = $product->meta_image;
 
-   
 
-    if ($req->hasFile('image')) {
-        $imagePath = uploadImage($req->file('image'), 'product/images');
-        $product->image = $imagePath;
 
-        if ($previousImage && file_exists($previousImage)) {
-            unlink($previousImage);
+        if ($req->hasFile('image')) {
+            $imagePath = uploadImage($req->file('image'), 'product/images');
+            $product->image = $imagePath;
+
+            if ($previousImage && file_exists($previousImage)) {
+                unlink($previousImage);
+            }
         }
-    }
 
-    if ($req->hasFile('meta_image')) {
-        $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
-        $product->meta_image = $metaImagePath;
+        if ($req->hasFile('meta_image')) {
+            $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
+            $product->meta_image = $metaImagePath;
 
-        if ($previousMetaImage && file_exists($previousMetaImage)) {
-            unlink($previousMetaImage);
+            if ($previousMetaImage && file_exists($previousMetaImage)) {
+                unlink($previousMetaImage);
+            }
         }
-    }
 
-    if ($req->hasFile('thumbnail_image')) {
-        $thumbnail_imagePath = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
-        $product->image = $thumbnail_imagePath;
+        if ($req->hasFile('thumbnail_image')) {
+            $thumbnail_imagePath = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
+            $product->image = $thumbnail_imagePath;
 
-        if ($previousThumbnailImage && file_exists($previousThumbnailImage)) {
-            unlink($previousThumbnailImage);
+            if ($previousThumbnailImage && file_exists($previousThumbnailImage)) {
+                unlink($previousThumbnailImage);
+            }
         }
-    }
 
-    if ($req->hasFile('size_chart_image')) {
-        $sizeImagePath = uploadImage($req->file('size_chart_image'), 'product/size_chart_images');
-        $product->size_chart_image = $sizeImagePath;
+        if ($req->hasFile('size_chart_image')) {
+            $sizeImagePath = uploadImage($req->file('size_chart_image'), 'product/size_chart_images');
+            $product->size_chart_image = $sizeImagePath;
 
-        if ($previousSizeImage && file_exists($previousSizeImage)) {
-            unlink($previousSizeImage);
+            if ($previousSizeImage && file_exists($previousSizeImage)) {
+                unlink($previousSizeImage);
+            }
         }
-    }
+        $final_price = 0;
+
+        if ($data['discount_type'] === '1') {
+
+            $final_price = $data['mrp'] - $data['discount_value'];
+        } else {
+            $final_price = $data['mrp'] - (($data['mrp'] * $data['discount_value']) / 100);
+        }
 
         $product->name      = ucwords($data['name']);
         $product->slug      = $data['slug'];
@@ -291,7 +305,7 @@ class ProductController extends Controller
         $product->mrp     = $data['mrp'];
         $product->discount_type     = $data['discount_type'];
         $product->discount_value     = $data['discount_value'];
-        $product->price     = $data['price'];
+        $product->price     =  $final_price;
         $product->material     = $data['material'];
         $product->description     = $data['description'];
         $product->short_description     = $data['short_description'];
@@ -317,15 +331,15 @@ class ProductController extends Controller
 
         // DB::table('branch_business')->where('branch_id', $branch->id)->delete();
 
-       $imagePath = $product->image;
+        $imagePath = $product->image;
         $metaImagePath = $product->meta_image;
-       $thumbnailImagePath = $product->thumbnail_image;
+        $thumbnailImagePath = $product->thumbnail_image;
         $sizeImagePath = $product->size_chart_image;
 
 
         $product->delete();
 
-      
+
         if (isset($imagePath) && file_exists($imagePath)) {
             unlink($imagePath);
         }
