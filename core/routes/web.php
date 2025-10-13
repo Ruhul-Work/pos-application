@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\backend\UnitController;
 use App\Http\Controllers\backend\SizeController;
+use App\Http\Controllers\backend\WarehouseController;
 
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
@@ -216,4 +216,26 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::delete('product-types/{productType}', [ProductTypeController::class, 'destroy'])->name('product-types.destroy');
         Route::get('product-types/select2/type', [ProductTypeController::class, 'select2'])->name('select2');
     });
-});
+
+  });
+
+
+    Route::prefix('warehouses')->name('warehouses.')->group(function () {
+         // Page
+        Route::get('/', [WarehouseController::class,'index'])->name('index');
+
+        // DataTables
+        Route::post('/list', [WarehouseController::class,'listAjax'])->name('list.ajax');
+
+        // AjaxModal forms
+        Route::get('/create-modal', [WarehouseController::class,'createModal'])->name('createModal');
+        Route::get('/{warehouse}/edit-modal', [WarehouseController::class,'editModal'])->name('editModal');
+        // CRUD
+        Route::post('/', [WarehouseController::class,'store'])->name('store');
+        Route::put('/{warehouse}', [WarehouseController::class,'update'])->name('update');
+        Route::delete('/{warehouse}', [WarehouseController::class,'destroy'])->name('destroy');
+
+        // Select2 (for dropdowns in other screens)
+        Route::get('/select2', [WarehouseController::class,'select2'])->name('select2');
+    
+  });
