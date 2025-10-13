@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
@@ -220,6 +219,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
   });
 
+
     Route::prefix('warehouses')->name('warehouses.')->group(function () {
          // Page
         Route::get('/', [WarehouseController::class,'index'])->name('index');
@@ -239,6 +239,3 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('/select2', [WarehouseController::class,'select2'])->name('select2');
     
   });
-
-
-});
