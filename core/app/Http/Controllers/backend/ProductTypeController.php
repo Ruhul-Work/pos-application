@@ -151,9 +151,9 @@ class ProductTypeController extends Controller
 
         return response()->json(['ok' => true, 'msg' => 'ProductType updated']);
     }
-    public function destroy(ProductType $ProductType)
+    public function destroy(ProductType $productType)
     {
-        $inUse = DB::table('products')->where('product_type_id', $ProductType->id)->count();
+        $inUse = DB::table('products')->where('product_type_id', $productType->id)->count();
         if ($inUse > 0) {
             return response()->json([
                 'ok'  => false,
@@ -162,7 +162,7 @@ class ProductTypeController extends Controller
         }
 
 
-        $ProductType->delete();
+        $productType->delete();
 
         return response()->json(['ok' => true, 'msg' => 'ProductType deleted']);
     }

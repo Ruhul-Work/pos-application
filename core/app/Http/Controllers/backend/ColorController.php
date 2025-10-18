@@ -109,7 +109,7 @@ class ColorController extends Controller
         ]);
 
          $color = Color::create([
-             'name'      => ucwords($data['name']),
+             'name'      => strtoupper($data['name']),
              'code' => $data['code'],
              'hex' => $data['hex'],
              'sort' => $data['sort'],
@@ -145,7 +145,7 @@ class ColorController extends Controller
         
         ]);
 
-        $color->name  = ucwords($data['name']);
+        $color->name  = strtoupper($data['name']);
         $color->code = $data['code'];
         $color->hex = $data['hex'];
         $color->sort = $data['sort'];

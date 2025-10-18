@@ -46,4 +46,8 @@ class Product extends Model
     {
         return $this->belongsTo(Color::class);
     }
+    public function paper_quality()
+    {
+        return $this->belongsTo(PaperQuality::class);
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\backend\ColorController;
 use App\Http\Controllers\backend\CountryController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
+use App\Http\Controllers\backend\PaperQualityController;
 use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\ProductTypeController;
 use App\Http\Controllers\backend\SubCategoryController;
@@ -181,6 +182,18 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('/{size}', [SizeController::class, 'update'])->whereNumber('size')->name('update');
         Route::delete('/{size}', [SizeController::class, 'destroy'])->whereNumber('size')->name('destroy');
         Route::get('size/select2/type', [SizeController::class, 'select2'])->name('select2');
+    });
+    // paper quality Management
+    Route::prefix('paper_quality')->name('paper_quality.')->group(function () {
+
+        Route::get('/', [PaperQualityController::class, 'index'])->name('index');
+        Route::post('paper_quality/list', [PaperQualityController::class, 'listAjax'])->name('list.ajax');
+        Route::get('paper_quality/create-modal', [PaperQualityController::class, 'createModal'])->name('createModal');
+        Route::get('paper_quality/{paperQuality}/edit-modal', [PaperQualityController::class, 'editModal'])->whereNumber('size')->name('editModal');
+        Route::post('/paper_quality', [PaperQualityController::class, 'store'])->name('store');
+        Route::put('paper_quality/{paperQuality}', [PaperQualityController::class, 'update'])->whereNumber('paperQuality')->name('update');
+        Route::delete('paper_quality/{paperQuality}', [PaperQualityController::class, 'destroy'])->whereNumber('paperQuality')->name('destroy');
+        Route::get('paper_quality/select2/type', [PaperQualityController::class, 'select2'])->name('select2');
     });
 
     // Product Management
