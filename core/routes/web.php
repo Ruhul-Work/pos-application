@@ -208,7 +208,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('products/color', [ProductController::class, 'select2Color'])->name('products.color');
         Route::get('products/size', [ProductController::class, 'select2Size'])->name('products.size');
         Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
-        Route::get('products/select2/type', [ProductTypeController::class, 'select2'])->name('select2');
+        Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
     });
 
     // Product type Management

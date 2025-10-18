@@ -25,7 +25,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image']);
+        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id',null);
 
         $total = (clone $base)->count();
 
@@ -505,4 +505,29 @@ class ProductController extends Controller
 
         return response()->json(['ok' => true, 'msg' => 'product deleted']);
     }
+      public function select2(Request $r)
+    {
+
+        $q = trim($r->input('q', ''));
+        $base = Product::query()->where('has_variant',0)->where('is_active', 1);
+
+
+        if ($q !== '') {
+            $base->where(function ($x) use ($q) {
+                $x->where('name', 'like', "%{$q}%");
+            });
+        }
+
+        $items = $base->orderBy('id')->orderBy('name')
+            ->limit(20)->get(['id', 'name']);
+
+
+        return response()->json([
+            'results' => $items->map(fn($t) => [
+                'id'   => $t->id,
+                'text' => $t->name
+            ])
+        ]);
+    }
+
 }

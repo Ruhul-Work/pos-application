@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProductTypeController extends Controller
 {
-    
+
     public function index()
     {
         return view('backend.modules.product_types.index');
@@ -167,30 +167,28 @@ class ProductTypeController extends Controller
         return response()->json(['ok' => true, 'msg' => 'ProductType deleted']);
     }
 
-      public function select2(Request $r)
+    public function select2(Request $r)
     {
-        
+
         $q = trim($r->input('q', ''));
         $base = ProductType::query()->where('is_active', 1);
-      
+
 
         if ($q !== '') {
-            $base->where(function($x) use ($q){
-                $x->where('name','like',"%{$q}%")
-                ;
+            $base->where(function ($x) use ($q) {
+                $x->where('name', 'like', "%{$q}%");
             });
         }
 
         $items = $base->orderBy('id')->orderBy('name')
-                      ->limit(20)->get(['id','name']);
+            ->limit(20)->get(['id', 'name']);
 
 
         return response()->json([
-            'results' => $items->map(fn($t)=>[
+            'results' => $items->map(fn($t) => [
                 'id'   => $t->id,
-                'text' => $t->name 
+                'text' => $t->name
             ])
         ]);
     }
-
 }
