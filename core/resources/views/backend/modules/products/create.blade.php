@@ -33,9 +33,9 @@
     <form id="product_form" method="post">
         @csrf
 
-        <div class="card ">
-            <div class="card-body  ">
-                <div class="accordion-card-one accordion mb-6" id="accordionExample">
+        <div class=" ">
+            <div class="  ">
+                <div class="accordion-card-one accordion mb-6 shadow-sm rounded-circle" id="accordionExample">
                     <div class="accordion-item">
                         <div class="accordion-header" id="headingOne">
                             <div class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
@@ -203,15 +203,15 @@
                                     </div>
 
                                     {{-- <div class="row"> --}}
-                                    <div class="col-lg-6 col-sm-6 col-12 " id="color_div">
+                                    <div class="col-lg-3 col-sm-6 col-12 " id="color_div">
                                         <label class="form-label text-sm mb-8">Color</label>
                                         <select name="color_id[]" id="color" multiple
-                                            class="form-control js-color-type-select "></select>
+                                            class="form-control js-color-type-select " ></select>
                                         <div class="invalid-feedback d-block color_type_id-error" style="display:none">
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-6 col-sm-6 col-12" id="size_div">
+                                    <div class="col-lg-3 col-sm-6 col-12" id="size_div">
                                         <label class="form-label text-sm mb-8">Size</label>
                                         <select name="size_id[]" id="size" multiple
                                             class="form-control js-color-type-select"></select>
@@ -226,7 +226,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-12 row shadow-lg m-auto rounded mb-2 dark-mode p-3"
+                                    <div class="col-12 row shadow-lg m-auto rounded mb-3 dark-mode p-3 mt-5"
                                         id="child_products">
 
                                     </div>
@@ -314,7 +314,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="accordion-card-one accordion " id="accordionExample2">
+                <div class="accordion-card-one accordion shadow-sm rounded-circle" id="accordionExample2">
                     <div class="accordion-item ">
                         <div class="accordion-header" id="headingTwo">
                             <div class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"

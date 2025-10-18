@@ -15775,13 +15775,13 @@ div.dt-container .dt-paging .dt-paging-button:hover, div.dt-container .dt-paging
     border: solid black 1px;
     outline: 0;
     padding: 2px;
-    width: 750px !important;
+    width: 350px !important;
     height: 44px !important;
 }
 .select2-container--default.select2-container--focus .select2-selection--multiple {
     border: solid black 1px;
     outline: 0;
-    width: 750px !important;
+    width: 350px !important;
     height: 44px !important;
 }
 
