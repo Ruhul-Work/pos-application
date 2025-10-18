@@ -57,7 +57,7 @@ class PermissionController extends Controller
                     'created_at'    => now(),
                     'updated_at'    => now(),
                 ], $routes);
-                PermissionRoute::upsert($rows, ['permission_id', 'route_name']);
+                PermissionRoute::upsert($rows, ['permission_id', 'route_name']); //upsert function accepts two parameter first one is array of rows and seocnd one is unique key like id. in this case its a composite key combination of id and name
             }
         });
 

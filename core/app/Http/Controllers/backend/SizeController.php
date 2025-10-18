@@ -115,6 +115,8 @@ class SizeController extends Controller
         ]);
         $val['is_active'] = $request->boolean('is_active');
         $val['sort']      = $val['sort'] ?? 0;
+        $val['name'] = ucwords($val['name']);
+        $val['code'] = strtoupper($val['code']);
 
         $size = Size::create($val);
 
@@ -131,6 +133,8 @@ class SizeController extends Controller
         ]);
         $val['is_active'] = $request->boolean('is_active');
         $val['sort']      = $val['sort'] ?? 0;
+             $val['name'] = ucwords($val['name']);
+        $val['code'] = strtoupper($val['code']);
 
         $size->update($val);
         return response()->json(['success'=>true,'msg'=>'Size updated']);
@@ -156,13 +160,13 @@ class SizeController extends Controller
         }
 
         $items = $base->orderBy('id')->orderBy('name')
-            ->limit(20)->get(['id', 'name']);
+            ->limit(20)->get(['id', 'code']);
 
 
         return response()->json([
             'results' => $items->map(fn($t) => [
                 'id'   => $t->id,
-                'text' => $t->name
+                'text' => $t->code
             ])
         ]);
     }

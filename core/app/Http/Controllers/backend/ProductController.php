@@ -68,8 +68,10 @@ class ProductController extends Controller
             $status =  $b->is_active
                 ? '<span class="badge text-sm fw-semibold bg-dark-success-gradient px-20 py-9 radius-4 text-white">Active</span>'
                 : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
+            $size  = ($b->size && $b->size->name)  ? $b->size->name  : '';
+            $color = ($b->color && $b->color->name) ? $b->color->name : '';
 
-            $size_color = '<p>' . $b->size->name . '<br><span class="text-sm">' . $b->color->name . '</span></p>';
+            $size_color = '<p>' . $size . '<br><span class="text-sm">' . $color . '</span></p>';
             $category = '<span class="text-sm">Category Type : ' . $b->category_type->name . '</span><br>
                         <span class="text-sm">Category: ' . $b->category->name . '</span><br>
                         <span class="text-sm">Sub-Category: ' . $b->subcategory->name . '</span>';
@@ -104,23 +106,27 @@ class ProductController extends Controller
 
     public function store(Request $req)
     {
+
         $data = $req->validate([
             'name'      => ['required', 'string', 'max:150', 'unique:products,name'],
             'slug'      => ['required', 'string', 'max:150', 'unique:products,slug'],
+            'sku'      => ['required', 'string', 'max:150', 'unique:products,sku'],
+            'has_variant' => ['required', 'integer'],
             'category_id' => ['required', 'integer'],
             'category_type_id' => ['required', 'integer'],
             'subcategory_id' => ['required', 'integer'],
             'product_type_id' => ['required', 'integer'],
             'brand_id' => ['required', 'integer'],
-            'color_id' => ['required', 'integer'],
+            'color_id.*' => 'nullable|integer',
             'unit_id' => ['required', 'integer'],
-            'size_id' => ['required', 'integer'],
+            'size_id.*' => ['nullable', 'integer'],
+            'paper_id.*' => ['integer'],
             'cost_price' => ['required', 'numeric'],
             'mrp' => ['required', 'numeric'],
             'discount_type' => ['required', 'integer'],
             'discount_value' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
-
+            'has_variant' => ['required', 'integer'],
             'is_active' => ['required', 'integer'],
             'material'     => ['nullable', 'string', 'max:150'],
             'description'     => ['nullable', 'string', 'max:350'],
@@ -134,6 +140,19 @@ class ProductController extends Controller
             'meta_image ' => 'image|mimes:jpeg,png,jpg|max:2048',
 
         ]);
+        $child_data = null;
+
+        if ($data['has_variant'] == 1) {
+            $child_data = $req->validate([
+                'child_name' => 'required',
+                'child_sku' => 'required',
+                'child_color_id.*' => 'nullable|integer',
+                'child_size_id.*' => 'nullable|integer',
+                'child_paper_id.*' => 'nullable|integer',
+                'child_price.*' => 'required|numeric',
+            ]);
+        }
+
 
         $final_price = 0;
 
@@ -155,22 +174,27 @@ class ProductController extends Controller
             $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
         }
 
+       
+
         $product = product::create([
             'name'      => ucwords($data['name']),
             'slug' => $data['slug'],
+            'sku' => $data['sku'],
             'category_type_id' => $data['category_type_id'],
             'category_id'      => $data['category_id'],
             'subcategory_id'      => $data['subcategory_id'],
             'product_type_id'      => $data['product_type_id'],
             'brand_id'      => $data['brand_id'],
-            'size_id'      => $data['size_id'],
-            'color_id'      => $data['color_id'],
+            'size_id'      => null,
+            'color_id'      => null,
             'unit_id' => $data['unit_id'],
             'cost_price'      => $data['cost_price'],
             'mrp'      => $data['mrp'],
             'discount_type'      => $data['discount_type'],
             'discount_value'      => $data['discount_value'],
             'price'      =>  $final_price,
+            'has_variants' => $data['has_variant'],
+            'is_sellable' => ($data['has_variant'] == 0 ? 1 : 0),
             'material' => $data['material'],
             'description' => $data['description'],
             'short_description' => $data['short_description'],
@@ -186,6 +210,132 @@ class ProductController extends Controller
 
 
         ]);
+        if ($data['has_variant'] == 1) {
+            $colors = $child_data['child_color_id']??[];
+            $sizes = $child_data['child_size_id'] ?? [];
+            $papers = $child_data['child_paper_id']??[];
+            // $variant = $data['variant_type'];
+            $names = $child_data['child_name'];
+            $skus = $child_data['child_sku'];
+            $prices = $child_data['child_price'];
+
+
+
+            if (sizeof($colors) > 0 && sizeof($sizes)> 0 ) {
+
+                for ($i = 0; $i < sizeof($colors); $i++) {
+                    $child_product = product::create([
+                        'parent_id' => $product->id,
+                        'name'      => ucwords($names[$i]),
+                        'slug' => $data['slug'],
+                        'sku' => $skus[$i],
+                        'category_type_id' => $data['category_type_id'],
+                        'category_id'      => $data['category_id'],
+                        'subcategory_id'      => $data['subcategory_id'],
+                        'product_type_id'      => $data['product_type_id'],
+                        'brand_id'      => $data['brand_id'],
+                        'size_id'      => $child_data['child_size_id'][$i],
+                        'color_id'      => $child_data['child_color_id'][$i],
+                        'unit_id' => $data['unit_id'],
+                        'cost_price'      => $data['cost_price'],
+                        'mrp'      => $data['mrp'],
+                        'discount_type'      => $data['discount_type'],
+                        'discount_value'      => $data['discount_value'],
+                        'price'      =>  $prices[$i],
+                        'has_variants' => 0,
+                        'is_sellable' => 1,
+                        'is_active' => $data['is_active'],
+                        'image' => $imagePath,
+                    ]);
+                }
+            } else {
+                if (sizeof($colors) > 0 ) {
+
+                    for ($i = 0; $i < sizeof($colors); $i++) {
+                        $child_product = product::create([
+                            'parent_id' => $product->id,
+                            'name'      => ucwords($names[$i]),
+                            'slug' => $data['slug'],
+                            'sku' => $skus[$i],
+                            'category_type_id' => $data['category_type_id'],
+                            'category_id'      => $data['category_id'],
+                            'subcategory_id'      => $data['subcategory_id'],
+                            'product_type_id'      => $data['product_type_id'],
+                            'brand_id'      => $data['brand_id'],
+                            // 'size_id'      => $sizes[$i],
+                            'color_id'      => $colors[$i],
+                            'unit_id' => $data['unit_id'],
+                            'cost_price'      => $data['cost_price'],
+                            'mrp'      => $data['mrp'],
+                            'discount_type'      => $data['discount_type'],
+                            'discount_value'      => $data['discount_value'],
+                            'price'      =>  $prices[$i],
+                            'has_variants' => 0,
+                            'is_sellable' => 1,
+                            'is_active' => $data['is_active'],
+                            'image' => $imagePath,
+                        ]);
+                    }
+                } elseif (sizeof($sizes) > 0 ) {
+
+                    for ($i = 0; $i < sizeof($sizes); $i++) {
+                        $child_product = product::create([
+                            'parent_id' => $product->id,
+                            'name'      => ucwords($names[$i]),
+                            'slug' => $data['slug'],
+                            'sku' => $skus[$i],
+                            'category_type_id' => $data['category_type_id'],
+                            'category_id'      => $data['category_id'],
+                            'subcategory_id'      => $data['subcategory_id'],
+                            'product_type_id'      => $data['product_type_id'],
+                            'brand_id'      => $data['brand_id'],
+                            'size_id'      => $sizes[$i],
+                            // 'color_id'      => $colors[$i],
+                            'unit_id' => $data['unit_id'],
+                            'cost_price'      => $data['cost_price'],
+                            'mrp'      => $data['mrp'],
+                            'discount_type'      => $data['discount_type'],
+                            'discount_value'      => $data['discount_value'],
+                            'price'      =>  $prices[$i],
+                            'has_variants' => 0,
+                            'is_sellable' => 1,
+                            'is_active' => $data['is_active'],
+                            'image' => $imagePath,
+                        ]);
+                    }
+                }
+                else{
+                   
+                   
+
+                    for ($i = 0; $i < sizeof($papers); $i++) {
+                        $child_product = product::create([
+                            'parent_id' => $product->id,
+                            'name'      => ucwords($names[$i]),
+                            'sku' => $skus[$i],
+                            'slug' => $data['slug'],
+                            'category_type_id' => $data['category_type_id'],
+                            'category_id'      => $data['category_id'],
+                            'subcategory_id'      => $data['subcategory_id'],
+                            'product_type_id'      => $data['product_type_id'],
+                            'brand_id'      => $data['brand_id'],
+                            'paper_id' => $papers[$i],
+                            'unit_id' => $data['unit_id'],
+                            'cost_price'      => $data['cost_price'],
+                            'mrp'      => $data['mrp'],
+                            'discount_type'      => $data['discount_type'],
+                            'discount_value'      => $data['discount_value'],
+                            'price'      =>  $prices[$i],
+                            'has_variants' => 0,
+                            'is_sellable' => 1,
+                            'is_active' => $data['is_active'],
+                            'image' => $imagePath,
+                        ]);
+                    
+                }
+                } 
+            }
+        }
 
         return response()->json(['ok' => true, 'msg' => 'product created', 'id' => $product->id]);
     }

@@ -287,6 +287,12 @@
                                     <span>Product Type</span>
                                 </a>
                             </li>
+                             <li class="{{ Route::is('paper_quality.index') ? 'active' : '' }}">
+                                <a href="{{ route('paper_quality.index') }}">
+                                    <i class="ri-book-open-line text-xl me-14 d-flex w-auto"></i>
+                                    <span>Paper Quality</span>
+                                </a>
+                            </li>
 
                              <li class="{{ Route::is('product.products.index') ? 'active' : '' }}">
                                 <a href="{{ route('product.products.index') }}">

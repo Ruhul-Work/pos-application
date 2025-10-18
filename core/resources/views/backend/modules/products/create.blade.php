@@ -71,6 +71,13 @@
                                         </div>
                                     </div>
 
+                                    <div class="col-lg-3 col-sm-6 col-12">
+                                        <label for="sku" class="form-label">Product SKU</label>
+                                        <input type="text" name="sku" class="form-control" placeholder="e.g. TS001"
+                                            id="sku">
+
+                                    </div>
+
                                     <div class="col-md-3 mb-16">
                                         <label class="form-label text-sm mb-8">Category Type</label>
                                         <select name="category_type_id" id="category_type"
@@ -123,14 +130,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- <div class="row"> --}}
-                                    <div class="col-lg-3 col-sm-6 col-12">
-                                        <label class="form-label text-sm mb-8">Color</label>
-                                        <select name="color_id" id="color"
-                                            class="form-control js-color-type-select"></select>
-                                        <div class="invalid-feedback d-block color_type_id-error" style="display:none">
-                                        </div>
-                                    </div>
+
 
 
 
@@ -147,7 +147,8 @@
                                     <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3 add-product">
                                             <label class="form-label">MRP Price<span class="star-sign">*</span></label>
-                                            <input type="number" class="form-control" name="mrp" id="mrp">
+                                            <input type="number" class="form-control" min="0" name="mrp"
+                                                id="mrp" value="0">
                                         </div>
                                     </div>
 
@@ -158,8 +159,9 @@
                                                 <option value="0">Percentage(%)</option>
                                                 <option value="1">Flat</option>
                                             </select>
-                                            <input type="number" name="discount_value" min="0"  class="form-control"
-                                                placeholder="Enter discount" id="discount_value" value="0" required>
+                                            <input type="number" name="discount_value" min="0"
+                                                class="form-control" placeholder="Enter discount" id="discount_value"
+                                                value="0" required>
                                         </div>
                                     </div>
 
@@ -180,29 +182,73 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-3 col-sm-6 col-12">
+                                    <div class="col-lg-3 col-sm-6 col-12 col">
+                                        <label for="has_variant" class="form-label">Has Variant?</label>
+                                        <select class="form-select " name="has_variant" id="has_variant">
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-6 col-12 col" id="variant_type_div">
+                                        <label for="has_variant" class="form-label">Variant Type</label>
+                                        <select class="form-select " name="variant_type" id="variant_type">
+                                            <option value="cloth">Cloth</option>
+                                            <option value="book">Book</option>
+
+                                        </select>
+
+                                    </div>
+
+                                    {{-- <div class="row"> --}}
+                                    <div class="col-lg-6 col-sm-6 col-12 " id="color_div">
+                                        <label class="form-label text-sm mb-8">Color</label>
+                                        <select name="color_id[]" id="color" multiple
+                                            class="form-control js-color-type-select "></select>
+                                        <div class="invalid-feedback d-block color_type_id-error" style="display:none">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-sm-6 col-12" id="size_div">
                                         <label class="form-label text-sm mb-8">Size</label>
-                                        <select name="size_id" id="size"
+                                        <select name="size_id[]" id="size" multiple
+                                            class="form-control js-color-type-select"></select>
+                                        <div class="invalid-feedback d-block color_type_id-error" style="display:none">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-6 col-12" id="paper_div">
+                                        <label class="form-label text-sm mb-8">Paper Quality</label>
+                                        <select name="paper_id[]" id="paper" multiple
                                             class="form-control js-color-type-select"></select>
                                         <div class="invalid-feedback d-block color_type_id-error" style="display:none">
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-6 col-sm-6 col-12 ">
-                                        <div class="">
-                                            <label class="form-label ">Description</label>
-                                            <textarea rows="4" cols="5" class="form-control h-100" name="description"
-                                                placeholder="Enter text here">{{ old('description') }}</textarea>
+                                    <div class="col-12 row shadow-lg m-auto rounded mb-2 dark-mode p-3"
+                                        id="child_products">
 
-                                        </div>
                                     </div>
 
-                                    <div class="col-lg-6 col-sm-6 col-12 ">
-                                        <div class="">
-                                            <label class="form-label ">Short Description</label>
-                                            <textarea rows="4" cols="5" class="form-control h-100" name="short_description"
-                                                placeholder="Enter text here">{{ old('short_description') }}</textarea>
 
+                                    <div class="col-lg-12 row mt-10">
+                                        <div class="col-lg-6 col-sm-6 col-12 ">
+                                            <div class="">
+                                                <label class="form-label ">Description</label>
+                                                <textarea rows="4" cols="5" class="form-control h-100" name="description"
+                                                    placeholder="Enter text here">{{ old('description') }}</textarea>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6 col-sm-6 col-12 ">
+                                            <div class="">
+                                                <label class="form-label ">Short Description</label>
+                                                <textarea rows="4" cols="5" class="form-control h-100" name="short_description"
+                                                    placeholder="Enter text here">{{ old('short_description') }}</textarea>
+
+                                            </div>
                                         </div>
                                     </div>
 
@@ -362,7 +408,195 @@
     <script>
         $(document).ready(function() {
 
-             function setDiscountRange() {
+
+            function showChildDiv()
+            {
+                if($('#has_variant').val()==1){
+                    $('#child_products').removeClass('d-none');
+                }else{
+                    $('#child_products').addClass('d-none');
+                    
+                }
+            }
+            showChildDiv();
+            $('#has_variant').on('change',showChildDiv);
+            
+            function generateSku() {
+                const name = ($('#name').val().slice(0, 3)).toUpperCase();
+
+                $('#sku').val(name ? name + Math.floor(100 + Math.random() * 900) : '');
+            }
+            $('#name').on('input', generateSku);
+
+            function appendChildProduct() {
+                $('#child_products').empty();
+                $('#child_products').append(`<h6>Product Variants</h6>`);
+
+                const colorIds = $('#color').val() || [];
+                const sizeIds = $('#size').val() || [];
+                const paperIds = $('#paper').val() || [];
+
+                const colorNames = $('#color option:selected').map(function() {
+                    return $(this).text();
+                }).get();
+
+                const sizeNames = $('#size option:selected').map(function() {
+                    return $(this).text();
+                }).get();
+                const paperNames = $('#paper option:selected').map(function() {
+                    return $(this).text();
+                }).get();
+
+                const name = $('#name').val();
+                const price = $('#sale_price').val();
+                const parentSKU = $('#sku').val() || 'SKU'; // fallback if empty
+
+                if ($('#variant_type').val() == 'cloth' && colorIds.length > 0 && sizeIds.length > 0) {
+                    colorIds.forEach((colorId, i) => {
+                        sizeIds.forEach((sizeId, j) => {
+                            const childSKU =
+                                `${parentSKU}-${colorNames[i].slice(0,2)}-${sizeNames[j]}`;
+                            $('#child_products').append(`
+                    <div class="col-lg-12 row mb-2 g-2">
+                        <div class="col-lg-2">
+                            <label class="form-label">Name</label>
+                            <input class="form-control" name="child_name[]" value="${name}-${colorNames[i]}-${sizeNames[j]}">
+                        </div>
+
+                        <div class="col-lg-2">
+                            <label class="form-label">Color</label>
+                            <input class="form-control" value="${colorNames[i]}" readonly>
+                            <input type="hidden" name="child_color_id[]" value="${colorId}">
+                        </div>
+
+                        <div class="col-lg-2">
+                            <label class="form-label">Size</label>
+                            <input class="form-control" value="${sizeNames[j]}" readonly>
+                            <input type="hidden" name="child_size_id[]" value="${sizeId}">
+                        </div>
+
+                       
+
+                          <div class="col-lg-2">
+                            <label class="form-label">SKU</label>
+                            <input class="form-control" name="child_sku[]" value="${childSKU}" >
+                        </div>
+
+                          <div class="col-lg-2">
+                            <label class="form-label">Price</label>
+                            <input type="number" min="0" class="form-control" name="child_price[]" value="${price}">
+                        </div>
+                    </div>
+                `);
+                        });
+                    });
+
+                } else if ($('#variant_type').val() == 'cloth' && colorIds.length > 0) {
+                    colorIds.forEach((colorId, i) => {
+                        const childSKU = `${parentSKU}-${colorNames[i].slice(0,2)}`;
+                        $('#child_products').append(`
+                <div class="col-lg-12 row mb-2 g-2">
+                    <div class="col-lg-2">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" name="child_name[]" value="${name}-${colorNames[i]}">
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label">Color</label>
+                        <input class="form-control" value="${colorNames[i]}" readonly>
+                        <input type="hidden" name="child_color_id[]" value="${colorId}">
+                    </div>
+
+
+                  
+
+                      <div class="col-lg-2">
+                        <label class="form-label">SKU</label>
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
+                    </div>
+
+                      <div class="col-lg-2">
+                        <label class="form-label">Price</label>
+                        <input type="number" min="0" class="form-control" name="child_price[]" value="${price}">
+                    </div>
+
+                </div>
+            `);
+                    });
+
+                } else if ($('#variant_type').val() == 'cloth' && sizeIds.length > 0) {
+                    sizeIds.forEach((sizeId, j) => {
+                        const childSKU = `${parentSKU}-${sizeNames[j]}`;
+                        $('#child_products').append(`
+                <div class="col-lg-12 row mb-2 g-2">
+                    <div class="col-lg-2">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" name="child_name[]" value="${name}-${sizeNames[j]}">
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label">Size</label>
+                        <input class="form-control" value="${sizeNames[j]}" readonly>
+                        <input type="hidden" name="child_size_id[]" value="${sizeId}">
+                    </div>
+
+                    
+
+                    <div class="col-lg-2">
+                        <label class="form-label">SKU</label>
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label">Price</label>
+                        <input type="number" min="0" class="form-control" name="child_price[]" value="${price}">
+                    </div>
+                </div>
+            `);
+                    });
+                } else if ($('#variant_type').val() == 'book' && paperIds.length > 0) {
+                    console.log(paperIds.length);
+                    paperIds.forEach((paper, j) => {
+
+                        const childSKU = `${parentSKU}-${paperNames[j].slice(0,2).toUpperCase()}`;
+                        $('#child_products').append(`
+                <div class="col-lg-12 row mb-2 g-2">
+                    <div class="col-lg-2">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" name="child_name[]" value="${name}-${paperNames[j]}">
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label">Paper Quality</label>
+                        <input class="form-control" value="${paperNames[j]}" readonly>
+                        <input type="hidden" name="child_paper_id[]" value="${paper}">
+                    </div>
+
+                    
+
+                    <div class="col-lg-2">
+                        <label class="form-label">SKU</label>
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label">Price</label>
+                        <input type="number" min="0" class="form-control" name="child_price[]" value="${price}">
+                    </div>
+                </div>`);
+
+                    });
+                }
+                console.log(paperIds.length);
+            }
+
+            // Trigger updates dynamically
+            $('#color, #size, #discount_value,#discount_type, #sku, #name,#variant_type,#paper,#mrp').on(
+                'input change', appendChildProduct);
+
+
+
+            function setDiscountRange() {
                 const type = $('#discount_type').val();
                 const mrp = parseInt($('#mrp').val());
                 if (type == '1') {
@@ -374,7 +608,7 @@
             setDiscountRange();
             $('#discount_type,#mrp').on('input', setDiscountRange);
 
-           
+
             function calculatePrice() {
                 const discountType = $('#discount_type').val(); // string
                 const mrp = parseFloat($('#mrp').val()) || 0;
@@ -390,8 +624,34 @@
 
                 $('#sale_price').val(salePrice.toFixed(2));
             };
-    
+
             $('#mrp,#discount_type,#discount_value').on('input', calculatePrice);
+
+            function handleVariant() {
+                if ($('#has_variant').val() == '0') {
+                    $('#color_div,#size_div,#paper_div,#variant_type_div').addClass('d-none');
+                    $('#size,color,paper').attr('disabled', 'disabled');
+                } else {
+                    $('#variant_type_div').removeClass('d-none');
+
+
+                    if ($('#variant_type').val() == 'cloth') {
+
+                        $('#color_div,#size_div').removeClass('d-none');
+                        $('#color,#size').removeAttr('disabled');
+                        $('#paper_div').addClass('d-none');
+                    } else {
+                        $('#paper_div').removeClass('d-none');
+                        $('#paper').removeAttr('disabled');
+                        $('#color_div,#size_div').addClass('d-none');
+                    }
+
+
+                }
+            }
+            handleVariant();
+
+            $('#has_variant,#variant_type').on('change', handleVariant);
 
 
             $('#category_type').select2({
@@ -575,6 +835,31 @@
             // important for AJAX search
             ajax: {
                 url: "{{ route('sizes.select2') }}", // Laravel route
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term
+
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+        $('#paper').select2({
+            width: '100%',
+            placeholder: 'Select Paper Type...',
+            allowClear: true,
+
+
+            // important for AJAX search
+            ajax: {
+                url: "{{ route('paper_quality.select2') }}", // Laravel route
                 dataType: 'json',
                 delay: 250,
                 data: function(params) {
