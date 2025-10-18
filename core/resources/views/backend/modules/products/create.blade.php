@@ -301,7 +301,7 @@
                                                 <input class="form-check-input" type="checkbox" name="is_active"
                                                     value="1" id="categoryIsActive" checked>
                                                 <label class="form-check-label" for="categoryIsActive">Enable this
-                                                    category</label>
+                                                    product</label>
                                             </div>
                                             <div class="invalid-feedback d-block is_active-error" style="display:none">
                                             </div>
