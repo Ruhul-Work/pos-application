@@ -31,7 +31,7 @@
         </ul>
 
         <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 AjaxModal"
-                data-ajax-modal="{{ route('warehouses.createModal') }}"
+                data-ajax-modal="{{ route('inventory.warehouses.createModal') }}"
                 data-size="md"
                 data-onload="WarehousesIndex.onLoad"
                 data-onsuccess="WarehousesIndex.onSaved">
@@ -61,7 +61,7 @@
 
 @section('script')
 <script>
-  var DATATABLE_URL = "{{ route('warehouses.list.ajax') }}";
+  var DATATABLE_URL = "{{ route('inventory.warehouses.list.ajax') }}";
 
   // Delete
   $(document).on('click', '.btn-warehouse-delete', function(e){

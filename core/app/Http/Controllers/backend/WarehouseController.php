@@ -63,7 +63,7 @@ class WarehouseController extends Controller
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
                 <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
                     bg-success-focus text-success-main AjaxModal"
-                    data-ajax-modal="' . route('warehouses.editModal', $w->id) . '"
+                    data-ajax-modal="' . route('inventory.warehouses.editModal', $w->id) . '"
                     data-size="md"
                     data-onload="WarehousesIndex.onLoad"
                     data-onsuccess="WarehousesIndex.onSaved"
@@ -72,7 +72,7 @@ class WarehouseController extends Controller
                 </a>
                 <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
                     bg-danger-focus text-danger-main btn-warehouse-delete"
-                    data-url="' . route('warehouses.destroy', $w->id) . '"
+                    data-url="' . route('inventory.warehouses.destroy', $w->id) . '"
                     title="Delete">
                     <iconify-icon icon="mdi:delete"></iconify-icon>
                 </a>
@@ -101,7 +101,7 @@ class WarehouseController extends Controller
     {
         return view('backend.modules.warehouse.modal', [
             'warehouse' => null,
-            'action'    => route('warehouses.store'),
+            'action'    => route('inventory.warehouses.store'),
             'method'    => 'POST',
             'title'     => 'Add Warehouse',
         ]);
@@ -111,7 +111,7 @@ class WarehouseController extends Controller
     {
         return view('backend.modules.warehouse.modal', [
             'warehouse' => $warehouse,
-            'action'    => route('warehouses.update', $warehouse->id),
+            'action'    => route('inventory.warehouses.update', $warehouse->id),
             'method'    => 'PUT',
             'title'     => 'Edit Warehouse',
         ]);

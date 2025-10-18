@@ -43,9 +43,9 @@
                             </a>
 
                             {{-- <ul class="sidebar-submenu">
-                       
+
                                 @perm('usermanage.users.index')
-                                    
+
                                     <li>
                                         <a class="{{ Route::is('usermanage.users.index') ? 'active' : '' }}"
                                             href="{{ route('usermanage.users.index') }}">
@@ -63,7 +63,7 @@
                                     </li>
                                 @endperm
 
-               
+
 
                                </ul> --}}
                         </li>
@@ -159,7 +159,7 @@
                 </li>
 
 
-                {{-- country managemnt module start --}}
+                {{-- Location managemnt module start --}}
 
                 @permgroup(['org.branches'])
                     <li class="sidebar-menu-group-title">Location Management</li>
@@ -209,7 +209,9 @@
                     @endpermgroup
                 @endpermgroup
 
-                {{-- category managemnt module end --}}
+                {{-- location managemnt module end --}}
+
+                {{-- category managemnt module start --}}
                 @permgroup(['org.branches'])
                     <li class="sidebar-menu-group-title">Item Management</li>
                     @permgroup(['org.branches'])
@@ -269,9 +271,9 @@
                                     <span>Color</span>
                                 </a>
                            </li>
-                 
+
                             </li>
-                            
+
                             <li class="{{ Route::is('sizes.index') ? 'active' : '' }}">
                                 <a href="{{ route('sizes.index') }}">
                                     <i class="ri-ruler-line text-xl me-14 d-flex w-auto"></i>
@@ -304,8 +306,8 @@
             {{-- category managemnt module end --}}
 
             {{-- Stock/warehouse managemnt module start --}}
-             
-            @permgroup(['org.branches'])
+
+            {{-- @permgroup(['org.branches'])
                 <li class="sidebar-menu-group-title">Stock Management</li>
                 @permgroup(['org.branches'])
                     @perm('org.branches.index')
@@ -330,13 +332,72 @@
                         </li>
                     @endperm
                 @endpermgroup
-            @endpermgroup
-            {{-- branch management module end --}}
+            @endpermgroup --}}
+            {{-- stock management module end --}}
+
+
+
+            {{-- inventory module start --}}
+            
+            @permgroup(['inventory'])
+                <li class="sidebar-menu-group-title">Inventory</li>
+                @permgroup(['inventory'])
+                        <li class=" dropdown ">
+                            <a href="javascript:void(0)">
+                                <i class="ri-stock-line"></i>
+                                <span>Stock</span>
+                            </a>
+
+                            <ul class="sidebar-submenu">
+                                {{-- warehouse --}}
+                                @perm('inventory.warehouses.index')
+                                    <li class="{{ Route::is('inventory.warehouses.index') ? 'active' : '' }}">
+                                    <a href="{{ route('inventory.warehouses.index') }}">
+                                        <i class="ri-building-4-line me-1"></i>
+                                        <span>Warehouses</span>
+                                    </a>
+                                    </li>
+
+                                @endperm
+                                {{-- opening stock --}}
+                                @perm('inventory.openingStock.index')
+                                    <li class="{{ Route::is('inventory.openingStock.index') ? 'active' : '' }}">
+                                    <a href="{{ route('inventory.openingStock.index') }}">
+                                        <i class="ri-upload-2-line"></i>
+                                        <span>Opening Stock</span>
+                                    </a>
+                                    </li>
+                                @endperm
+                                {{-- stock adjustment --}}
+                                @perm('inventory.adjustments.index')
+                                    <li class="{{ Route::is('inventory.adjustments.index') ? 'active' : '' }}">
+                                    <a href="{{ route('inventory.adjustments.index') }}">
+                                        <i class="ri-equalizer-line"></i>
+                                        <span>Adjustments</span>
+                                    </a>
+                                    </li>
+                                @endperm
+                                {{-- stock transfer --}}
+                                @perm('inventory.transfers.index')
+                                    <li class="{{ Route::is('inventory.transfers.index') ? 'active' : '' }}">
+                                    <a href="{{ route('inventory.transfers.index') }}">
+                                        <i class="ri-arrow-left-right-line"></i>
+                                        <span>Transfers</span>
+                                    </a>
+                                    </li>
+                                @endperm
+                            </ul>
+                        </li>
+                @endpermgroup
 
             @endpermgroup
+
+            
+
+        @endpermgroup
 
         </ul>
-      
+
 
     </div>
 </aside>

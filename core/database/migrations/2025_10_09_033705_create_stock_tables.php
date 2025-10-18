@@ -9,42 +9,62 @@ return new class extends Migration {
   public function up(): void {
 
     // বর্তমান স্টক (fast read)
-    Schema::create('stock_currents', function (Blueprint $t) {
-      $t->id();
-      $t->foreignId('product_id')->constrained('products')->cascadeOnUpdate()->cascadeOnDelete();
-      $t->foreignId('product_variant_id')->nullable()->constrained('product_variants')->nullOnDelete()->cascadeOnUpdate(); // future-ready
-      $t->foreignId('warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete()->cascadeOnUpdate(); // না থাকলে nullable রাখুন
-      $t->decimal('quantity', 18, 3)->default(0);
-      $t->timestamps();
+    // 2) stock_currents
+Schema::create('stock_currents', function (Blueprint $t) {
+    $t->id();
 
-      $t->unique(['product_id','product_variant_id','warehouse_id'], 'stock_currents_unique');
-      $t->index(['warehouse_id']);
-    });
+    $t->foreignId('product_id')
+      ->constrained('products')
+      ->cascadeOnUpdate()
+      ->cascadeOnDelete();
 
-    // মুভমেন্ট/লেজার (auditable history)
-    Schema::create('stock_ledgers', function (Blueprint $t) {
-      $t->id();
-      $t->dateTime('txn_date')->useCurrent();
-      $t->foreignId('product_id')->constrained('products')->cascadeOnUpdate()->cascadeOnDelete();
-      $t->foreignId('product_variant_id')->nullable()->constrained('product_variants')->nullOnDelete()->cascadeOnUpdate();
-      $t->foreignId('warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete()->cascadeOnUpdate();
+    $t->foreignId('warehouse_id')
+      ->nullable()
+      ->constrained('warehouses')
+      ->cascadeOnUpdate()
+      ->nullOnDelete();
 
-      // রেফারেন্স: কোন ট্রানজেকশন থেকে এন্ট্রি
-      $t->string('ref_type', 32)->nullable();   // e.g. 'purchase','sale','adjust','transfer'
-      $t->unsignedBigInteger('ref_id')->nullable();
+    $t->decimal('quantity', 18, 3)->default(0);
+    $t->timestamps();
 
-      // দিক ও পরিমাণ
-      $t->enum('direction', ['in','out']);
-      $t->decimal('quantity', 18, 3);
-      $t->decimal('unit_cost', 12, 4)->nullable(); // FIFO/Landed cost ইত্যাদি চাইলে
+    $t->unique(['product_id','warehouse_id'], 'sc_unique');
+    $t->index('warehouse_id');
+});
 
-      $t->string('note', 255)->nullable();
-      $t->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+   // 1) stock_ledgers
+Schema::create('stock_ledgers', function (Blueprint $t) {
+    $t->id();
+    $t->dateTime('txn_date'); // অথবা date()
 
-      $t->timestamps();
-      $t->index(['product_id','product_variant_id','warehouse_id']);
-      $t->index(['ref_type','ref_id']);
-    });
+    $t->foreignId('product_id')
+      ->constrained('products')
+      ->cascadeOnUpdate()
+      ->cascadeOnDelete(); // product delete => ledger delete (সাধারণত OK)
+
+    $t->foreignId('warehouse_id')
+      ->nullable() // চাইলে required করুন
+      ->constrained('warehouses')
+      ->cascadeOnUpdate()
+      ->nullOnDelete();
+
+    $t->string('ref_type', 50)->nullable(); // 'purchase','sale','transfer','adjustment','opening'
+    $t->unsignedBigInteger('ref_id')->nullable(); // external doc id
+
+    $t->enum('direction', ['IN','OUT']);
+    $t->decimal('quantity', 18, 3);
+    $t->decimal('unit_cost', 12, 2)->nullable(); // IN লাইনে লাগে; OUT এ optional
+
+    $t->string('note', 500)->nullable();
+    $t->foreignId('created_by')->nullable()
+      ->constrained('users')->nullOnDelete();
+
+    $t->timestamps();
+
+    // indexes
+    $t->index(['product_id','warehouse_id','txn_date'], 'sl_prod_wh_date_idx');
+    $t->index(['ref_type','ref_id'], 'sl_ref_idx');
+    $t->index('warehouse_id');
+});
   }
 
   public function down(): void {
