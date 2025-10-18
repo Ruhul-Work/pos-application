@@ -1,12 +1,12 @@
 <?php
 use App\Http\Controllers\admin\BranchController;
 use App\Http\Controllers\admin\BranchSwitchController;
+use App\Http\Controllers\admin\BusinessTypeController;
 use App\Http\Controllers\admin\FirewallController;
 use App\Http\Controllers\admin\PermissionController;
 use App\Http\Controllers\admin\RoleController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\admin\UserPermissionController;
-use App\Http\Controllers\admin\BusinessTypeController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
@@ -24,7 +24,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('users-roles', [UserController::class, 'rolesForSelect'])->name('users.roles');
         Route::get('users/{encrypted}/profile', [UserController::class, 'showProfile'])->name('users.profile');
         Route::get('users/{user}/edit-modal', [UserController::class, 'editModal'])->name('users.edit.modal');
-            
 
         //=== Individual User Permission Overrides
         Route::get('users/{encrypted}/userpermission', [UserPermissionController::class, 'edit'])
@@ -87,7 +86,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
         Route::delete('branches/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
         Route::post('branch/switch', [BranchSwitchController::class, 'switch'])->name('branch.switch');
-        Route::get('org/branches/select2', [BranchController::class,'select2'])->name('branches.select2');
+        Route::get('org/branches/select2', [BranchController::class, 'select2'])->name('branches.select2');
 
         // Business Types (Master)
         Route::get('btypes', [BusinessTypeController::class, 'index'])->name('btypes.index');
@@ -104,7 +103,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     });
 
-    
 
 
 });

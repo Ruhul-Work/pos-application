@@ -41,6 +41,7 @@
                             previous: '<i class="ri-arrow-left-s-line"></i>'
                         },
                     },
+                    
 
                     columnDefs: [{
                             targets: 0, // SL checkbox
@@ -97,6 +98,7 @@
                         $w.find('.dataTables_length select')
                             .addClass('form-select form-select-sm dt-len');
                     },
+                    
 
                     initComplete: function(settings) {
                         const $wrap = $(settings.nTableWrapper);
@@ -109,6 +111,7 @@
                         // Length select bootstrapize
                         $wrap.find('.dataTables_length select').addClass(
                             'form-select form-select-sm dt-len');
+                            
 
                         // ==== External buttons → internal buttons trigger (duplicate free)
                         $(document).off('click.dtbtn');
@@ -187,6 +190,8 @@
                         });
                     }
                 });
+                 $('#tableSearch input, #tableSearch').on('keyup change', function(){ t.search($(this).val()||'').draw(); });
+                
             }
 
             // Tooltips re-init after draw (error-safe)
@@ -335,7 +340,8 @@
                 },
             });
         }
-    }); +
+        // $('#tableSearch input, #tableSearch').on('keyup change', function(){ t.search($(this).val()||'').draw();
+    }); 
 
 
     // ====== Minimal Global AjaxModal Manager (keep this once in layout) ======
