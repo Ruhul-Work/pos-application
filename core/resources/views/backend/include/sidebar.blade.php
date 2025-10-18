@@ -374,7 +374,7 @@
                                     <a href="{{ route('inventory.adjustments.index') }}">
                                         <i class="ri-equalizer-line"></i>
                                         <span>Adjustments</span>
-                                    </a>
+                                    </a> 
                                     </li>
                                 @endperm
                                 {{-- stock transfer --}}

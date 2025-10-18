@@ -56,7 +56,7 @@
     <td>
       <select class="form-control js-s2-ajax"
         name="rows[__IDX__][product_id]"
-        {{-- data-url="{{ route('products.select2') }}?sellable=1" --}}
+        data-url="{{ route('product.select2') }}?sellable=1"
         data-placeholder="Select product" required></select>
       <div class="invalid-feedback d-block rows.__IDX__.product_id-error" style="display:none"></div>
     </td>
