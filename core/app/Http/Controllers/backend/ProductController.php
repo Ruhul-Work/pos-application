@@ -509,7 +509,7 @@ class ProductController extends Controller
     {
 
         $q = trim($r->input('q', ''));
-        $base = Product::query()->where('has_variant',0)->where('is_active', 1);
+        $base = Product::query()->where('has_variants',0)->where('is_active', 1);
 
 
         if ($q !== '') {
