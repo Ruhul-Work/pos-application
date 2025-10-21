@@ -2,10 +2,9 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\backend\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Models\backend\Warehouse;
-
 
 class WarehouseController extends Controller
 {
@@ -176,31 +175,61 @@ class WarehouseController extends Controller
     }
 
     // Select2 endpoint
+    // public function select2(Request $r)
+    // {
+    //     $q        = trim($r->input('q', ''));
+    //     $branchId = $r->input('branch_id');
+
+    //     $base = Warehouse::query()->where('is_active', 1);
+    //     if ($branchId) {
+    //         $base->where('branch_id', $branchId);
+    //     }
+
+    //     if ($q !== '') {
+    //         $base->where(function ($x) use ($q) {
+    //             $x->where('name', 'like', "%{$q}%")
+    //                 ->orWhere('code', 'like', "%{$q}%");
+    //         });
+    //     }
+
+    //     $items = $base->orderByDesc('is_default')->orderBy('name')
+    //         ->limit(20)->get(['id', 'name', 'code']);
+
+    //     return response()->json([
+    //         'results' => $items->map(fn($w) => [
+    //             'id'   => $w->id,
+    //             'text' => $w->name . ' (' . $w->code . ')',
+    //         ]),
+    //     ]);
+    // }
+
     public function select2(Request $r)
     {
-        $q        = trim($r->input('q', ''));
-        $branchId = $r->input('branch_id');
+        $q = Warehouse::query()
+            ->select('id', 'name', 'code', 'branch_id')
+            ->where('is_active', 1);
 
-        $base = Warehouse::query()->where('is_active', 1);
-        if ($branchId) {
-            $base->where('branch_id', $branchId);
+        // current branch guard
+        if (function_exists('current_branch_id')) {
+            $curr = current_branch_id(); // e.g. session('branch_id')
+            if ($curr !== null) {
+                $q->where('branch_id', $curr);
+            }
+            // else: superadmin mode হলে সব ব্রাঞ্চ দেখাতে চাইলে এই whereটি skip থাকবে
         }
 
-        if ($q !== '') {
-            $base->where(function ($x) use ($q) {
-                $x->where('name', 'like', "%{$q}%")
-                    ->orWhere('code', 'like', "%{$q}%");
-            });
+        if ($term = $r->get('q')) {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('code', 'like', "%{$term}%");
         }
-
-        $items = $base->orderByDesc('is_default')->orderBy('name')
-            ->limit(20)->get(['id', 'name', 'code']);
 
         return response()->json([
-            'results' => $items->map(fn($w) => [
+            'results' => $q->limit(20)->get()->map(fn($w) => [
                 'id'   => $w->id,
                 'text' => $w->name . ' (' . $w->code . ')',
             ]),
         ]);
+
     }
+
 }

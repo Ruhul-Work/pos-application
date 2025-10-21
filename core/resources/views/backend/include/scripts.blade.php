@@ -41,7 +41,7 @@
                             previous: '<i class="ri-arrow-left-s-line"></i>'
                         },
                     },
-                    
+
 
                     columnDefs: [{
                             targets: 0, // SL checkbox
@@ -98,7 +98,7 @@
                         $w.find('.dataTables_length select')
                             .addClass('form-select form-select-sm dt-len');
                     },
-                    
+
 
                     initComplete: function(settings) {
                         const $wrap = $(settings.nTableWrapper);
@@ -111,7 +111,7 @@
                         // Length select bootstrapize
                         $wrap.find('.dataTables_length select').addClass(
                             'form-select form-select-sm dt-len');
-                            
+
 
                         // ==== External buttons → internal buttons trigger (duplicate free)
                         $(document).off('click.dtbtn');
@@ -190,8 +190,10 @@
                         });
                     }
                 });
-                 $('#tableSearch input, #tableSearch').on('keyup change', function(){ t.search($(this).val()||'').draw(); });
-                
+                $('#tableSearch input, #tableSearch').on('keyup change', function() {
+                    t.search($(this).val() || '').draw();
+                });
+
             }
 
             // Tooltips re-init after draw (error-safe)
@@ -341,7 +343,7 @@
             });
         }
         // $('#tableSearch input, #tableSearch').on('keyup change', function(){ t.search($(this).val()||'').draw();
-    }); 
+    });
 
 
     // ====== Minimal Global AjaxModal Manager (keep this once in layout) ======
@@ -552,9 +554,30 @@
         });
     })();
 
+
+    // ====== Global Ajax Form Handler (for non-modal ajax forms) ======
+    $(document).on('submit', 'form[data-ajax="true"]', function(e) {
+        e.preventDefault();
+        const $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            method: $form.attr('method') || 'POST',
+            data: new FormData(this),
+            contentType: false,
+            processData: false,
+            success(res) {
+                $form.trigger('ajax:success', [res]);
+            },
+            error(err) {
+                // optional error handler
+            }
+        });
+    });
+
+
     // ====== Bangla Slugify ======
     // Usage: slugify("বাংলা টেক্সট") → "bangla_text"
-   
+
 
     window.slugify = function(text) {
         const clusters = {
@@ -695,80 +718,91 @@
 
 
     // ---- Global Select2 Helper ----
-    window.S2 = (function($){
-    // nearest modal কে dropdownParent বানাই (না থাকলে body)
-    function parentOf($el){
-        const $m = $el.closest('.modal');
-        return $m.length ? $m : $(document.body);
-    }
-
-    // core initializer
-    function init($el, opts = {}){
-        if (!$el || !$el.length) return;
-
-        // destroy before re-init (modal re-open edge-case)
-        if ($el.hasClass('select2-hidden-accessible')) {
-        $el.select2('destroy');
+    window.S2 = (function($) {
+        // nearest modal কে dropdownParent বানাই (না থাকলে body)
+        function parentOf($el) {
+            const $m = $el.closest('.modal');
+            return $m.length ? $m : $(document.body);
         }
 
-        // base config
-        const base = {
-        dropdownParent: parentOf($el),
-        width: '100%',
-        placeholder: $el.attr('placeholder') || 'Select an option',
-        allowClear: true
+        // core initializer
+        function init($el, opts = {}) {
+            if (!$el || !$el.length) return;
+
+            // destroy before re-init (modal re-open edge-case)
+            if ($el.hasClass('select2-hidden-accessible')) {
+                $el.select2('destroy');
+            }
+
+            // base config
+            const base = {
+                dropdownParent: parentOf($el),
+                width: '100%',
+                placeholder: $el.attr('placeholder') || 'Select an option',
+                allowClear: true
+            };
+
+            // merge + init
+            const cfg = $.extend(true, {}, base, opts);
+            $el.select2(cfg);
+
+            // preselected support (server side selected option থাকলে টিকে যাবে)
+            if ($el.find('option[selected]').length) {
+                $el.trigger('change.select2');
+            } else if ($el.data('initId') && $el.data('initText')) {
+                // data-init-id / data-init-text দিলে client-side প্রিসেট
+                const id = $el.data('initId');
+                const text = $el.data('initText');
+                if (!$el.find(`option[value="${id}"]`).length) {
+                    $el.append(new Option(text, id, true, true)).trigger('change');
+                }
+            }
+        }
+
+        // ajax shortcut: শুধু url দিলেই চলবে
+        function ajax($el, url, extra = {}) {
+            return init($el, {
+                ajax: {
+                    url: url,
+                    dataType: 'json',
+                    delay: 250,
+                    data: params => ({
+                        q: params?.term || ''
+                    }),
+                    processResults: data => (
+                        Array.isArray(data?.results) ? {
+                            results: data.results
+                        } : {
+                            results: data
+                        }
+                    )
+                },
+                ...extra
+            });
+        }
+
+        // scope-wise auto init: .js-s2, .js-s2-ajax[data-url]
+        function auto(scope) {
+            const $scope = scope ? $(scope) : $(document);
+            // normal select2
+            $scope.find('select.js-s2').each(function() {
+                init($(this));
+            });
+
+            // ajax select2 (declare with data-url)
+            $scope.find('select.js-s2-ajax').each(function() {
+                const $el = $(this);
+                const url = $el.data('url');
+                if (!url) return;
+                ajax($el, url);
+            });
+        }
+
+        // public API
+        return {
+            init,
+            ajax,
+            auto
         };
-
-        // merge + init
-        const cfg = $.extend(true, {}, base, opts);
-        $el.select2(cfg);
-
-        // preselected support (server side selected option থাকলে টিকে যাবে)
-        if ($el.find('option[selected]').length) {
-        $el.trigger('change.select2');
-        } else if ($el.data('initId') && $el.data('initText')) {
-        // data-init-id / data-init-text দিলে client-side প্রিসেট
-        const id   = $el.data('initId');
-        const text = $el.data('initText');
-        if (!$el.find(`option[value="${id}"]`).length){
-            $el.append(new Option(text, id, true, true)).trigger('change');
-        }
-        }
-    }
-
-    // ajax shortcut: শুধু url দিলেই চলবে
-    function ajax($el, url, extra = {}){
-        return init($el, {
-        ajax: {
-            url: url,
-            dataType: 'json',
-            delay: 250,
-            data: params => ({ q: params?.term || '' }),
-            processResults: data => (
-            Array.isArray(data?.results) ? { results: data.results } : { results: data }
-            )
-        },
-        ...extra
-        });
-    }
-
-    // scope-wise auto init: .js-s2, .js-s2-ajax[data-url]
-    function auto(scope){
-        const $scope = scope ? $(scope) : $(document);
-        // normal select2
-        $scope.find('select.js-s2').each(function(){ init($(this)); });
-
-        // ajax select2 (declare with data-url)
-        $scope.find('select.js-s2-ajax').each(function(){
-        const $el = $(this);
-        const url = $el.data('url');
-        if (!url) return;
-        ajax($el, url);
-        });
-    }
-
-    // public API
-    return { init, ajax, auto };
     })(jQuery);
-        
 </script>

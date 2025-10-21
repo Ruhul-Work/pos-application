@@ -5,8 +5,9 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\StockLedger;
+use App\Models\backend\StockLedger;
 use App\Services\StockService;
+
 
 class StockOpeningController extends Controller
 {
@@ -84,12 +85,28 @@ class StockOpeningController extends Controller
             $byCol   = e($r->created_by_name ?? '—');
             $dateCol = optional($r->txn_date)->format('Y-m-d H:i');
 
-            // action (edit/delete future হলে এখানে বাটন দিন)
-            $actions = '<div class="text-end">
-                <!-- e.g., view modal button -->
-                </div>';
+            // action (edit/delete future implementation)
+                $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
+                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                    bg-success-focus text-success-main AjaxModal"
+                  
+                    data-size="md"
+                    data-onload="OpeningIndex.onLoad"
+                    data-onsuccess="OpeningIndex.onSaved"
+                    title="Edit">
+                    <iconify-icon icon="lucide:edit"></iconify-icon>
+                </a>
+                <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                    bg-danger-focus text-danger-main btn-stock-delete"
+                   
+                    title="Delete">
+                    <iconify-icon icon="mdi:delete"></iconify-icon>
+                </a>
+            </div>';
+           
 
             $data[] = [
+                '',
                 $dateCol,
                 $whCol,
                 $prodCol,
@@ -100,6 +117,7 @@ class StockOpeningController extends Controller
                 $actions,
             ];
         }
+        
 
         return response()->json([
             'draw'                 => $draw,

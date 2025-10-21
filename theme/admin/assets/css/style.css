@@ -15762,7 +15762,7 @@ div.dt-container .dt-paging .dt-paging-button:hover, div.dt-container .dt-paging
   outline: 0;
 }
 
-/* ===== Multiple (Routes) ===== */
+/* ===== Multiple and single select2 dropdown (Routes) ===== */
 .select2-container--default .select2-selection--single {
     background-color: #fff;
     border: 1px solid #aaa;
@@ -15784,6 +15784,34 @@ div.dt-container .dt-paging .dt-paging-button:hover, div.dt-container .dt-paging
     width: 350px !important;
     height: 44px !important;
 }
+
+
+
+/* শুধুমাত্র .product-select এর select2 dropdown এর জন্য */
+.product-select + .select2-container--default .select2-selection--multiple {
+    border: 1px solid black;
+    outline: 0;
+    padding: 2px;
+    width: 1000px !important;
+    height: 50px !important;
+    padding-bottom: 20px !important;
+}
+
+.product-select + .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border: 1px solid black;
+    outline: 0;
+    width: 1000px !important;
+    height: 50px !important;
+    padding: 5px !important;
+}
+.product-select + .select2-container--default .select2-search--inline .select2-search__field {
+    background: transparent;
+    border: none;
+    outline: 0;
+    box-shadow: none;
+    padding-bottom: 20px !important;
+}
+
 
 
 

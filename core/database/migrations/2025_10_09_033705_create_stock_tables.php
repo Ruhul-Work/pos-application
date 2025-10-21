@@ -23,11 +23,14 @@ Schema::create('stock_currents', function (Blueprint $t) {
       ->constrained('warehouses')
       ->cascadeOnUpdate()
       ->nullOnDelete();
+      
+    $t->foreignId('branch_id')->nullable()->after('warehouse_id')
+      ->constrained('branches')->cascadeOnUpdate()->nullOnDelete();  
 
     $t->decimal('quantity', 18, 3)->default(0);
     $t->timestamps();
 
-    $t->unique(['product_id','warehouse_id'], 'sc_unique');
+    $t->unique(['branch_id','product_id','warehouse_id'],'sc_branch_unique');
     $t->index('warehouse_id');
 });
 
@@ -46,6 +49,9 @@ Schema::create('stock_ledgers', function (Blueprint $t) {
       ->constrained('warehouses')
       ->cascadeOnUpdate()
       ->nullOnDelete();
+      
+    $t->foreignId('branch_id')->nullable()->after('warehouse_id')
+      ->constrained('branches')->cascadeOnUpdate()->nullOnDelete();
 
     $t->string('ref_type', 50)->nullable(); // 'purchase','sale','transfer','adjustment','opening'
     $t->unsignedBigInteger('ref_id')->nullable(); // external doc id
@@ -63,7 +69,7 @@ Schema::create('stock_ledgers', function (Blueprint $t) {
     // indexes
     $t->index(['product_id','warehouse_id','txn_date'], 'sl_prod_wh_date_idx');
     $t->index(['ref_type','ref_id'], 'sl_ref_idx');
-    $t->index('warehouse_id');
+    $t->index(['branch_id','warehouse_id']);
 });
   }
 
@@ -72,4 +78,3 @@ Schema::create('stock_ledgers', function (Blueprint $t) {
     Schema::dropIfExists('stock_currents');
   }
 };
-
