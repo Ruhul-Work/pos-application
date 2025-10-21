@@ -363,7 +363,11 @@
                                 </div>
                                 <div class="row">
                                     <div class="my-3">Image Section</div>
-                                    <div class="col-lg-3 col-sm-6 col-12 ">
+                                    
+                                    <div class="col-12 row  m-auto rounded mb-3 dark-mode p-3 mt-5"
+                                        id="child_products">
+
+                                        <div class="col-lg-3 col-sm-6 col-12 ">
                                         <div class="mb-3">
                                             <label class="form-label">Image<span class="star-sign">*</span></label>
 
@@ -374,8 +378,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-12 row shadow-lg m-auto rounded mb-3 dark-mode p-3 mt-5"
-                                        id="child_products">
 
                                         <div class="col-lg-3 col-sm-6 col-12">
                                             <div class="mb-3 ">
@@ -496,13 +498,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
+             </div>
 
 
-            <div class="col-lg-12 mt-3">
+             <div class="col-lg-12 mt-3">
                 <div class="btn-addproduct mb-4">
                     <button type="submit" class="btn btn-primary ">Update All</button>
                 </div>
+            </div>
             </div>
     </form>
 @endsection
@@ -628,7 +631,7 @@
                 <div class="col-lg-12 row mb-2 g-2">
                     <div class="col-lg-2">
                         <label class="form-label">Name</label>
-                        <input class="form-control" name="child_name[]" value="${oldChild?.name??name+'-'+colorNames[i]}">
+                        <input class="form-control" name="child_name[]" value="${name+'-'+colorNames[i].trim()}">
                           <input type="hidden" name="child_id[]" value="${oldChild?.id??null}">
                     </div>
 
@@ -643,7 +646,7 @@
 
                       <div class="col-lg-2">
                         <label class="form-label">SKU</label>
-                        <input class="form-control" name="child_sku[]" value="${oldChild?.sku??childSKU}" >
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
                     </div>
 
                       <div class="col-lg-2">
@@ -663,7 +666,7 @@
                 <div class="col-lg-12 row mb-2 g-2">
                     <div class="col-lg-2">
                         <label class="form-label">Name</label>
-                        <input class="form-control" name="child_name[]" value="${oldChild?.name??name+'-'+sizeNames[j]}">
+                        <input class="form-control" name="child_name[]" value="${name+'-'+sizeNames[j].trim()}">
                           <input type="hidden" name="child_id[]" value="${oldChild?.id??null}">
                     </div>
 
@@ -677,7 +680,7 @@
 
                     <div class="col-lg-2">
                         <label class="form-label">SKU</label>
-                        <input class="form-control" name="child_sku[]" value="${oldChild?.sku??childSKU}" >
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
                     </div>
 
                     <div class="col-lg-2">
@@ -697,7 +700,7 @@
                 <div class="col-lg-12 row mb-2 g-2">
                     <div class="col-lg-2">
                         <label class="form-label">Name</label>
-                        <input class="form-control" name="child_name[]" value="${oldChild?.name??name+'-'+paperNames[j].trim()}">
+                        <input class="form-control" name="child_name[]" value="${name+'-'+paperNames[j].trim()}">
                          <input type="hidden" name="child_id[]" value="${oldChild?.id??null}">
                     </div>
 
@@ -711,7 +714,7 @@
 
                     <div class="col-lg-2">
                         <label class="form-label">SKU</label>
-                        <input class="form-control" name="child_sku[]" value="${oldChild?.sku??childSKU}" >
+                        <input class="form-control" name="child_sku[]" value="${childSKU}" >
                     </div>
 
                     <div class="col-lg-2">
@@ -729,8 +732,8 @@
             //    , #discount_value,#discount_type, #sku, #name,#variant_type,#paper,#sale_price
 
             // Trigger updates dynamically
-            $('#color, #size,#paper').on(
-                'change', appendChildProduct);
+            $('#color, #size,#paper,#name').on(
+                'change input', appendChildProduct);
 
             $('#mrp,#discount_type,#discount_value').on('input change', function() {
                 setTimeout(changePrice, 0); // wait one microtask
