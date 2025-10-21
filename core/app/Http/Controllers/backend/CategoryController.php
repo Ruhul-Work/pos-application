@@ -106,11 +106,11 @@ class CategoryController extends Controller
             'name'             => ['required', 'string', 'max:150', 'unique:categories,name'],
             'slug'             => ['required', 'string', 'max:50', 'unique:categories,slug'],
             'category_type_id' => ['required', 'integer'],
-            'icon'             => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'icon'             => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'meta_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title'       => ['required', 'string', 'max:150'],
-            'meta_description' => ['required', 'string', 'max:150'],
-            'meta_keywords'    => ['required', 'string', 'max:150'],
+            'meta_title'       => ['nullable', 'string', 'max:150'],
+            'meta_description' => ['nullable', 'string', 'max:150'],
+            'meta_keywords'    => ['nullable', 'string', 'max:150'],
             'is_active'        => ['required', 'integer'],
 
         ]);

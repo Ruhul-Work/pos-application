@@ -103,11 +103,11 @@ class SubCategoryController extends Controller
             'name'      => ['required', 'string', 'max:150', 'unique:subcategories,name'],
             'slug'      => ['required', 'string', 'max:50', 'unique:subcategories,slug'],
             'category_id' =>['required','integer'],
-           'icon' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+           'icon' => 'image|mimes:jpeg,png,jpg|max:2048',
             'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title' =>['required', 'string', 'max:150'],
-            'meta_description' =>['required', 'string', 'max:150'],
-            'meta_keywords' =>['required', 'string', 'max:150'],
+            'meta_title' =>['nullable', 'string', 'max:150'],
+            'meta_description' =>[ 'nullable','string', 'max:150'],
+            'meta_keywords' =>[  'nullable','string', 'max:150'],
             'is_active' =>['required','integer'],
       
            
