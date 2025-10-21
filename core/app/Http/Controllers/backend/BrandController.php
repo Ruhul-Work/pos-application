@@ -101,7 +101,7 @@ class BrandController extends Controller
         $data = $req->validate([
             'name'      => ['required', 'string', 'max:150', 'unique:brands,name'],
             'slug'      => ['required', 'string', 'max:50', 'unique:brands,slug'],
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'meta_title' =>['nullable','string', 'max:150'],
             'meta_description' =>['nullable','string', 'max:150'],

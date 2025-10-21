@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\backend\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Contracts\Service\Attribute\Required;
 
 class ProductController extends Controller
@@ -25,7 +26,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id',null);
+        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id', null);
 
         $total = (clone $base)->count();
 
@@ -174,7 +175,7 @@ class ProductController extends Controller
             $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
         }
 
-       
+
 
         $product = product::create([
             'name'      => ucwords($data['name']),
@@ -211,9 +212,9 @@ class ProductController extends Controller
 
         ]);
         if ($data['has_variant'] == 1) {
-            $colors = $child_data['child_color_id']??[];
+            $colors = $child_data['child_color_id'] ?? [];
             $sizes = $child_data['child_size_id'] ?? [];
-            $papers = $child_data['child_paper_id']??[];
+            $papers = $child_data['child_paper_id'] ?? [];
             // $variant = $data['variant_type'];
             $names = $child_data['child_name'];
             $skus = $child_data['child_sku'];
@@ -221,7 +222,7 @@ class ProductController extends Controller
 
 
 
-            if (sizeof($colors) > 0 && sizeof($sizes)> 0 ) {
+            if (sizeof($colors) > 0 && sizeof($sizes) > 0) {
 
                 for ($i = 0; $i < sizeof($colors); $i++) {
                     $child_product = product::create([
@@ -246,10 +247,13 @@ class ProductController extends Controller
                         'is_sellable' => 1,
                         'is_active' => $data['is_active'],
                         'image' => $imagePath,
+                        'thumbnail_image' => $thumbnail_image,
+                        'size_chart_image' => $size_chart_image,
+                        'meta_image' => $metaImagePath,
                     ]);
                 }
             } else {
-                if (sizeof($colors) > 0 ) {
+                if (sizeof($colors) > 0) {
 
                     for ($i = 0; $i < sizeof($colors); $i++) {
                         $child_product = product::create([
@@ -276,7 +280,7 @@ class ProductController extends Controller
                             'image' => $imagePath,
                         ]);
                     }
-                } elseif (sizeof($sizes) > 0 ) {
+                } elseif (sizeof($sizes) > 0) {
 
                     for ($i = 0; $i < sizeof($sizes); $i++) {
                         $child_product = product::create([
@@ -303,10 +307,9 @@ class ProductController extends Controller
                             'image' => $imagePath,
                         ]);
                     }
-                }
-                else{
-                   
-                   
+                } else {
+
+
 
                     for ($i = 0; $i < sizeof($papers); $i++) {
                         $child_product = product::create([
@@ -331,9 +334,8 @@ class ProductController extends Controller
                             'is_active' => $data['is_active'],
                             'image' => $imagePath,
                         ]);
-                    
+                    }
                 }
-                } 
             }
         }
 
@@ -342,7 +344,24 @@ class ProductController extends Controller
 
     public function editModal(Product $product)
     {
-        return view('backend.modules.products.edit', compact('product'));
+        $colors = Product::where('parent_id', $product->id)
+            ->with('color')
+            ->get()
+            ->unique('color_id'); // filter duplicates in PHP
+        $sizes = Product::where('parent_id', $product->id)
+            ->with('size')
+            ->get()
+            ->unique('size_id'); // filter duplicates in PHP
+        $papers = Product::where('parent_id', $product->id)
+            ->with('paper_quality')
+            ->get()
+            ->unique('paper_id'); // filter duplicates in PHP
+
+        $products = Product::where('parent_id', $product->id)->get();
+
+
+
+        return view('backend.modules.products.edit', compact('product'), ['colors' => $colors, 'sizes' => $sizes, 'papers' => $papers, 'products' => $products]);
     }
 
     public function show(Product $product)
@@ -359,7 +378,8 @@ class ProductController extends Controller
 
     public function update(Request $req, Product $product)
     {
-        $data = $req->validate([
+        //   dd($req->all());
+        $validator = Validator::make($req->all(), [
             'name'      => ['required', 'string', 'max:150'],
             'slug'      => ['required', 'string', 'max:150'],
             'category_type_id' => ['required', 'integer'],
@@ -367,36 +387,39 @@ class ProductController extends Controller
             'subcategory_id' => ['required', 'integer'],
             'product_type_id' => ['required', 'integer'],
             'brand_id' => ['required', 'integer'],
-            'color_id' => ['required', 'integer'],
             'unit_id' => ['required', 'integer'],
-            'size_id' => ['required', 'integer'],
             'cost_price' => ['required', 'numeric'],
             'mrp' => ['required', 'numeric'],
             'discount_type' => ['required', 'integer'],
             'discount_value' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
-
             'is_active' => ['required', 'integer'],
             'material'     => ['nullable', 'string', 'max:150'],
             'description'     => ['nullable', 'string', 'max:350'],
             'short_description'     => ['nullable', 'string', 'max:250'],
             'image' => 'image|mimes:jpeg,png,jpg|max:2048',
             'thumbnail_image' => 'image|mimes:jpeg,png,jpg|max:2048',
-            'size_chart_image' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'size_chart_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'meta_title'     => ['nullable', 'string', 'max:150'],
             'meta_description'     => ['nullable', 'string', 'max:350'],
             'meta_keywords'     => ['nullable', 'string', 'max:250'],
-            'meta_image ' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
 
         ]);
+        if ($validator->fails()) {
+            dd($validator->errors()); // see exactly which fields failed
+        }
+
+        $data = $validator->validated();
+
 
         $previousImage = $product->image;
         $previousThumbnailImage = $product->thumbnail_image;
         $previousSizeImage = $product->size_chart_image;
         $previousMetaImage = $product->meta_image;
 
-
-
+        //  dd($data);
+        $imagePath = null;
         if ($req->hasFile('image')) {
             $imagePath = uploadImage($req->file('image'), 'product/images');
             $product->image = $imagePath;
@@ -405,7 +428,7 @@ class ProductController extends Controller
                 unlink($previousImage);
             }
         }
-
+        $metaImagePath = null;
         if ($req->hasFile('meta_image')) {
             $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
             $product->meta_image = $metaImagePath;
@@ -414,7 +437,7 @@ class ProductController extends Controller
                 unlink($previousMetaImage);
             }
         }
-
+        $thumbnail_imagePath = null;
         if ($req->hasFile('thumbnail_image')) {
             $thumbnail_imagePath = uploadImage($req->file('thumbnail_image'), 'product/thumbnail_images');
             $product->image = $thumbnail_imagePath;
@@ -423,7 +446,7 @@ class ProductController extends Controller
                 unlink($previousThumbnailImage);
             }
         }
-
+        $sizeImagePath = null;
         if ($req->hasFile('size_chart_image')) {
             $sizeImagePath = uploadImage($req->file('size_chart_image'), 'product/size_chart_images');
             $product->size_chart_image = $sizeImagePath;
@@ -446,8 +469,8 @@ class ProductController extends Controller
         $product->category_type_id = $data['category_type_id'];
         $product->category_id = $data['category_id'];
         $product->subcategory_id = $data['subcategory_id'];
-        $product->size_id = $data['size_id'];
-        $product->color_id = $data['color_id'];
+        // $product->size_id = $data['size_id'];
+        // $product->color_id = $data['color_id'];
         $product->brand_id = $data['brand_id'];
         $product->unit_id = $data['unit_id'];
         $product->product_type_id = $data['product_type_id'];
@@ -466,7 +489,69 @@ class ProductController extends Controller
 
         $product->save();
 
-        return response()->json(['ok' => true, 'msg' => 'product updated']);
+
+        if ($product->has_variants === 1) {
+            //   dd($req->child_id);
+            $validator = Validator::make($req->all(), [
+                'child_id.*' => ['required'],
+                'child_name.*' => ['required', 'string'],
+                'child_sku.*' => ['required', 'string'],
+                'child_color_id.*' => ['nullable', 'numeric'],
+                'child_size_id.*' => ['nullable', 'numeric'],
+                'child_paper_id.*' => ['nullable', 'numeric'],
+                'child_price.*' => ['required', 'numeric']
+            ]);
+            if ($validator->fails()) {
+                dd($validator->errors());
+            }
+            $child_data = $validator->validated();
+
+
+            for ($i = 0; $i < count($child_data['child_id']); $i++) {
+                $id = isset($child_data['child_id'][$i]) ? (int)$child_data['child_id'][$i] : null;
+                $child_product = Product::where('id', $id)->first();
+                if ($child_product) {
+                    $child_product->name =  $child_data['child_name'][$i];
+                    $child_product->sku =  $child_data['child_sku'][$i];
+                    $child_product->color_id =  $child_data['child_color_id'][$i] ?? null;
+                    $child_product->size_id =  $child_data['child_size_id'][$i] ?? null;
+                    $child_product->paper_id =  $child_data['child_paper_id'][$i] ?? null;
+                    $child_product->price =  $child_data['child_price'][$i];
+
+                    $child_product->save();
+                } else {
+                    $child_product = product::create([
+                        'parent_id' => $product->id,
+                        'name'      => ucwords($child_data['child_name'][$i]),
+                        'slug' => $data['slug'],
+                        'sku' =>  $child_data['child_sku'][$i],
+                        'category_type_id' => $data['category_type_id'],
+                        'category_id'      => $data['category_id'],
+                        'subcategory_id'      => $data['subcategory_id'],
+                        'product_type_id'      => $data['product_type_id'],
+                        'brand_id'      => $data['brand_id'],
+                        'size_id'      =>  $child_data['child_size_id'][$i]??null,
+                        'color_id'      =>  $child_data['child_color_id'][$i]??null,
+                        'paper_id'      =>  $child_data['child_paper_id'][$i]??null,
+                        'unit_id' => $data['unit_id'],
+                        'cost_price'      => $data['cost_price'],
+                        'mrp'      => $data['mrp'],
+                        'discount_type'      => $data['discount_type'],
+                        'discount_value'      => $data['discount_value'],
+                        'price'      =>   $child_data['child_price'][$i],
+                        'has_variants' => 0,
+                        'is_sellable' => 1,
+                        'is_active' => $data['is_active'],
+                        'image' => $imagePath,
+                        'thumbnail_image' => $thumbnail_imagePath,
+                        'size_chart_image' => $sizeImagePath,
+                    ]);
+                }
+            }
+        }
+
+         return redirect()->route('product.products.index')
+                     ->with('success', 'Brand updated successfully!');
     }
 
     public function destroy(Product $product)
@@ -505,11 +590,11 @@ class ProductController extends Controller
 
         return response()->json(['ok' => true, 'msg' => 'product deleted']);
     }
-      public function select2(Request $r)
+    public function select2(Request $r)
     {
 
         $q = trim($r->input('q', ''));
-        $base = Product::query()->where('has_variants',0)->where('is_active', 1);
+        $base = Product::query()->where('has_variants', 0)->where('is_active', 1);
 
 
         if ($q !== '') {
@@ -529,5 +614,4 @@ class ProductController extends Controller
             ])
         ]);
     }
-
 }

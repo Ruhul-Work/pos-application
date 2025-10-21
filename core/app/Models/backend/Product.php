@@ -48,6 +48,6 @@ class Product extends Model
     }
     public function paper_quality()
     {
-        return $this->belongsTo(PaperQuality::class);
+        return $this->belongsTo(PaperQuality::class,'paper_id');
     }
 }
