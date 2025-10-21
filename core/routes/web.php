@@ -209,6 +209,11 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('products/size', [ProductController::class, 'select2Size'])->name('products.size');
         Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
         Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
+        // Parent list 
+        Route::get('parents', [ProductController::class, 'parentsIndex'])->name('parents.index');
+        Route::get('parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
+        Route::get('{product}/variants', [ProductController::class, 'variants'])->name('variants');
+
     });
 
     // Product type Management
@@ -225,18 +230,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('product-types/select2/type', [ProductTypeController::class, 'select2'])->name('select2');
     });
 
-    // Route::prefix('warehouses')->name('warehouses.')->group(function () {
 
-    //     Route::get('/', [WarehouseController::class, 'index'])->name('index');
-    //     Route::post('/list', [WarehouseController::class, 'listAjax'])->name('list.ajax');
-    //     Route::get('/create-modal', [WarehouseController::class, 'createModal'])->name('createModal');
-    //     Route::get('/{warehouse}/edit-modal', [WarehouseController::class, 'editModal'])->name('editModal');
-    //     Route::post('/', [WarehouseController::class, 'store'])->name('store');
-    //     Route::put('/{warehouse}', [WarehouseController::class, 'update'])->name('update');
-    //     Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
-    //     Route::get('/select2', [WarehouseController::class, 'select2'])->name('select2');
-
-    // });
 
     // Inventory Opening Stock
     Route::prefix('inventory')->name('inventory.')->group(function () {
@@ -268,7 +262,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('adjustments', [StockAdjustmentController::class, 'index'])->name('adjustments.index');
         Route::post('adjustments/list', [StockAdjustmentController::class, 'listAjax'])->name('adjustments.list');
         Route::get('adjustments/create-modal', [StockAdjustmentController::class, 'createModal'])->name('adjustments.createModal');
-        Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store'); 
+        Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
+        Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
 
     });
 
