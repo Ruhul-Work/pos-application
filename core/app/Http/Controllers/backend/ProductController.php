@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
@@ -17,7 +18,7 @@ class ProductController extends Controller
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'price', 'is_active', 'name', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
+        $columns   = ['id', 'price', 'is_active','has_variants', 'name', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -25,7 +26,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name', 'is_active', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id', null);
+        $base = Product::query()->select(['id', 'name', 'is_active','has_variants', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id', null);
 
         $total = (clone $base)->count();
 
@@ -46,7 +47,10 @@ class ProductController extends Controller
 
         $data = [];
         foreach ($rows as $b) {
-            $nameCol = '<strong>' . e($b->name) . '</strong>';
+            $nameCol = '<p>' . e($b->name) .
+                ($b->has_variants === 1 ? ' <a href="'.route('product.products.show',$b->id).'" class="badge bg-success">Has Child</a>' : '') .
+                '</p>';
+
 
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
                 <a href="' . route('product.products.editModal', $b->id) . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
@@ -100,7 +104,7 @@ class ProductController extends Controller
 
     public function createModal()
     {
-                                                        // @perm গার্ড চাইলে দিন
+        // @perm গার্ড চাইলে দিন
         return view('backend.modules.products.create'); // partial only
     }
 
@@ -362,14 +366,9 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $childProducts = Product::where('parent_id',$product->id)->get();
 
-        return response()->json([
-            'id'      => $product->id,
-            'name'    => $product->name,
-            'bn_name' => $product->bn_mame,
-            'url'     => $product->url,
-
-        ]);
+        return view('backend.modules.products.view',['product'=>$product,'child_products'=>$childProducts]);
     }
 
     public function update(Request $req, Product $product)
@@ -526,9 +525,9 @@ class ProductController extends Controller
                         'subcategory_id'      => $data['subcategory_id'],
                         'product_type_id'      => $data['product_type_id'],
                         'brand_id'      => $data['brand_id'],
-                        'size_id'      =>  $child_data['child_size_id'][$i]??null,
-                        'color_id'      =>  $child_data['child_color_id'][$i]??null,
-                        'paper_id'      =>  $child_data['child_paper_id'][$i]??null,
+                        'size_id'      =>  $child_data['child_size_id'][$i] ?? null,
+                        'color_id'      =>  $child_data['child_color_id'][$i] ?? null,
+                        'paper_id'      =>  $child_data['child_paper_id'][$i] ?? null,
                         'unit_id' => $data['unit_id'],
                         'cost_price'      => $data['cost_price'],
                         'mrp'      => $data['mrp'],
@@ -546,8 +545,8 @@ class ProductController extends Controller
             }
         }
 
-         return redirect()->route('product.products.index')
-                     ->with('success', 'Brand updated successfully!');
+        return redirect()->route('product.products.index')
+            ->with('success', 'Brand updated successfully!');
     }
 
     public function destroy(Product $product)
@@ -719,5 +718,4 @@ class ProductController extends Controller
 
         return response()->json(['data' => $variants]);
     }
-
 }
