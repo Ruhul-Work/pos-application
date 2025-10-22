@@ -195,6 +195,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('product')->name('product.')->group(function () {
 
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        // Route::get('product/view/{product}', [ProductController::class, 'index'])->name('products.view');
         Route::get('products/create', [ProductController::class, 'createModal'])->name('products.create');
         Route::post('products/list', [ProductController::class, 'listAjax'])->name('products.list.ajax');
         Route::post('products', [ProductController::class, 'store'])->name('products.store');
