@@ -25,26 +25,13 @@ class StockAdjustmentController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        // $base = StockLedger::query()
-        //     ->from('stock_ledgers as sl')
-        //     ->where('sl.ref_type','adjustment')
-        //     ->leftJoin('warehouses as w', 'w.id','=','sl.warehouse_id')
-        //     ->leftJoin('products as p', 'p.id','=','sl.product_id')
-        //     ->leftJoin('users as u', 'u.id','=','sl.created_by')
-        //     ->selectRaw("
-        //         sl.id, sl.txn_date, sl.direction, sl.quantity, sl.note,
-        //         w.name as warehouse,
-        //         p.name as product_name, p.sku as product_sku,
-        //         u.name as created_by_name
-        //     ");
-
         $base = StockLedger::query()
             ->from('stock_ledgers as sl')
             ->where('sl.ref_type', 'adjustment')
             ->leftJoin('warehouses as w', 'w.id', '=', 'sl.warehouse_id')
             ->leftJoin('products as p', 'p.id', '=', 'sl.product_id')
             ->leftJoin('users as u', 'u.id', '=', 'sl.created_by')
-            ->selectRaw("sl.id, sl.txn_date, sl.quantity, sl.unit_cost, sl.note,
+            ->selectRaw("sl.id, sl.txn_date, sl.quantity, sl.direction, sl.unit_cost, sl.note,
                  p.name as product_name, p.sku as product_sku,
                  w.name as warehouse, u.name as created_by_name");
 
@@ -69,15 +56,17 @@ class StockAdjustmentController extends Controller
             'txn_date'  => 'sl.txn_date',
             'warehouse' => 'w.name',
             'product'   => 'p.name',
+            'direction' => 'sl.direction',
             'qty'       => 'sl.quantity',
             'by'        => 'u.name',
-            'reason'    => 'sl.note',
+            'note'      => 'sl.note',
         ];
 
         $orderCol = $columns[$orderIdx] ?? 'txn_date';
         $base->orderBy($orderMap[$orderCol] ?? 'sl.txn_date', $orderDir);
 
         $rows = $base->skip($start)->take($length)->get();
+        // dd($rows);
 
         $data = [];
         foreach ($rows as $r) {

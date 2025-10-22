@@ -210,9 +210,9 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
         Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
         // Parent list 
-        Route::get('parents', [ProductController::class, 'parentsIndex'])->name('parents.index');
-        Route::get('parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
-        Route::get('{product}/variants', [ProductController::class, 'variants'])->name('variants');
+        Route::get('/products/parents/get', [ProductController::class, 'parentsIndex'])->name('parents.index');
+        Route::get('/products/parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
+        Route::get('/products/{product}/variants', [ProductController::class, 'variants'])->name('variants');
 
     });
 

@@ -7,7 +7,7 @@
 @section('content')
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
-            <h6 class="fw-semibold mb-0">Stock Adjustment (Advanced)</h6>
+            <h6 class="fw-semibold mb-0">Stock Adjustment </h6>
             <p class="text-muted m-0">Pick parents on left → edit variants on right</p>
         </div>
         <ul class="d-flex align-items-center gap-2">
@@ -316,7 +316,7 @@
             }
 
             function fetchVariants(parentId) {
-                $.getJSON("{{ url('/product') }}/" + parentId + "/variants", function(res) {
+                $.getJSON("{{ url('/product/products') }}/" + parentId + "/variants", function(res) {
                     const list = res.data || res.variants || res || [];
                     list.forEach(v => addVariantRow(parentId, v));
                 });
