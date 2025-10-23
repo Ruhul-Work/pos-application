@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\backend\Category;
 use App\Models\backend\SubCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SubCategoryController extends Controller
 {
@@ -211,13 +212,13 @@ class SubCategoryController extends Controller
 
     public function destroy(Subcategory $subcategory)
     {
-        // $inUse = DB::table('users')->where('branch_id', $district->district_id)->count();
-        // if ($inUse > 0) {
-        //     return response()->json([
-        //         'ok'  => false,
-        //         'msg' => "This district has {$inUse} user(s). Reassign them first.",
-        //     ], 422);
-        // }
+        $inUse = DB::table('products')->where('subcategory_id', $subcategory->id)->count();
+        if ($inUse > 0) {
+            return response()->json([
+                'ok'  => false,
+                'msg' => "This Subcategory has {$inUse} product(s). Reassign them first.",
+            ], 422);
+        }
 
         // DB::table('branch_business')->where('branch_id', $district->district_id)->delete();
         

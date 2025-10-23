@@ -363,21 +363,20 @@
                                 </div>
                                 <div class="row">
                                     <div class="my-3">Image Section</div>
-                                    
-                                    <div class="col-12 row  m-auto rounded mb-3 dark-mode p-3 mt-5"
-                                        id="child_products">
+
+                                    <div class="col-12 row  m-auto rounded mb-3 dark-mode p-3 mt-5" id="child_products">
 
                                         <div class="col-lg-3 col-sm-6 col-12 ">
-                                        <div class="mb-3">
-                                            <label class="form-label">Image<span class="star-sign">*</span></label>
+                                            <div class="mb-3">
+                                                <label class="form-label">Image<span class="star-sign">*</span></label>
 
-                                            <div class="form-group">
-                                                <div class="row" id="image">
+                                                <div class="form-group">
+                                                    <div class="row" id="image">
 
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
                                         <div class="col-lg-3 col-sm-6 col-12">
                                             <div class="mb-3 ">
@@ -498,15 +497,15 @@
                         </div>
                     </div>
                 </div>
-             </div>
+            </div>
 
 
-             <div class="col-lg-12 mt-3">
+            <div class="col-lg-12 mt-3">
                 <div class="btn-addproduct mb-4">
                     <button type="submit" class="btn btn-primary ">Update All</button>
                 </div>
             </div>
-            </div>
+        </div>
     </form>
 @endsection
 @section('script')

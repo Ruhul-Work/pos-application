@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
@@ -20,6 +21,8 @@ use App\Http\Controllers\backend\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
+
+
     Route::prefix('country')->name('country.')->group(function () {
 
         Route::get('countries', [CountryController::class, 'index'])->name('countries.index');
@@ -263,10 +266,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('adjustments/create-modal', [StockAdjustmentController::class, 'createModal'])->name('adjustments.createModal');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
-        // NEW:
-        Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
-        Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
-        Route::delete('adjustments/{ledger}', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
 
     });
 

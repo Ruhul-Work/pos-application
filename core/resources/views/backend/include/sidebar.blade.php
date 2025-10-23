@@ -212,10 +212,11 @@
                 {{-- location managemnt module end --}}
 
                 {{-- category managemnt module start --}}
-                @permgroup(['org.branches'])
+              
+              @permgroup(['product.products'])
                     <li class="sidebar-menu-group-title">Item Management</li>
-                    @permgroup(['org.branches'])
-                        @perm('org.branches.index')
+                  @permgroup(['product.products']) 
+                         @perm('product.products.index') 
                             <li class=" dropdown ">
                                 <a href="javascript:void(0)">
                                     <i class="ri-box-3-line"></i>
@@ -224,7 +225,7 @@
 
                                 <ul class="sidebar-submenu">
 
-                                    @perm('org.branches.index')
+                                  
                                      <li class="mb-8">
                                             <a class="{{ Route::is('category-type.category-types.index') ? 'active' : '' }}"
                                                 href="{{ route('category-type.category-types.index') }}">
@@ -247,7 +248,7 @@
                                                 <span>Subcategory List</span>
                                             </a>
                                         </li>
-                                    @endperm
+                                   
                                 </ul>
                             <li class="mb-8">
                                 <a class="{{ Route::is('brand.brands.index') ? 'active' : '' }}"
@@ -293,13 +294,16 @@
                                     <span>Paper Quality</span>
                                 </a>
                             </li>
-
+                                 
+                                  
                              <li class="{{ Route::is('product.products.index') ? 'active' : '' }}">
                                 <a href="{{ route('product.products.index') }}">
                                     <i class="ri-shopping-bag-3-line text-xl me-14 d-flex w-auto"></i>
                                     <span>Product</span>
                                 </a>
                             </li>
+                      
+                            
                         @endperm
                     @endpermgroup
                 @endpermgroup

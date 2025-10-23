@@ -33,8 +33,8 @@ class ProductController extends Controller
         if ($searchVal !== '') {
             $base->where(function ($q) use ($searchVal) {
                 $q->where('name', 'like', "%{$searchVal}%")
-                    ->orWhere('bn_name', 'like', "%{$searchVal}%")
-                    ->orWhere('url', 'like', "%{$searchVal}%");
+                    ->orWhere('slug', 'like', "%{$searchVal}%")
+                    ->orWhere('sku', 'like', "%{$searchVal}%");
             });
         }
 
