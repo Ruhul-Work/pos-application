@@ -157,7 +157,7 @@ public function update(Request $req, Brand $brand)
     $data = $req->validate([
         'name'      => [ 'string', 'max:150'],
         'slug'      => [ 'string', 'max:50'],
-        'meta_title' => ['string','max:150'],
+        'meta_title' => ['nullable','string','max:150'],
         'meta_description' => ['nullable','string','max:150'],
         'meta_keywords' => ['nullable','string','max:150'],
         'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

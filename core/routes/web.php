@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
@@ -20,6 +21,8 @@ use App\Http\Controllers\backend\StockAdjustmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
+
+
     Route::prefix('country')->name('country.')->group(function () {
 
         Route::get('countries', [CountryController::class, 'index'])->name('countries.index');
@@ -192,30 +195,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     });
 
     // Product Management
-    Route::prefix('product')->name('product.')->group(function () {
-
-        Route::get('products', [ProductController::class, 'index'])->name('products.index');
-        // Route::get('product/view/{product}', [ProductController::class, 'index'])->name('products.view');
-        Route::get('products/create', [ProductController::class, 'createModal'])->name('products.create');
-        Route::post('products/list', [ProductController::class, 'listAjax'])->name('products.list.ajax');
-        Route::post('products', [ProductController::class, 'store'])->name('products.store');
-        Route::get('products/edit-modal/{product}', [ProductController::class, 'editModal'])->whereNumber('product')->name('products.editModal');
-        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
-        Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
-        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-        Route::get('products/category', [ProductController::class, 'select2Category'])->name('products.category');
-        Route::get('products/subcategory', [ProductController::class, 'select2Subcategory'])->name('products.subcategory');
-        Route::get('products/brand', [ProductController::class, 'select2Brand'])->name('products.brand');
-        Route::get('products/color', [ProductController::class, 'select2Color'])->name('products.color');
-        Route::get('products/size', [ProductController::class, 'select2Size'])->name('products.size');
-        Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
-        Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
-        // Parent list 
-        Route::get('parents', [ProductController::class, 'parentsIndex'])->name('parents.index');
-        Route::get('parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
-        Route::get('{product}/variants', [ProductController::class, 'variants'])->name('variants');
-
-    });
+   
 
     // Product type Management
     Route::prefix('product-type')->name('product-type.')->group(function () {
@@ -265,7 +245,28 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('adjustments/create-modal', [StockAdjustmentController::class, 'createModal'])->name('adjustments.createModal');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
-
     });
-
 });
+ Route::prefix('product')->name('product.')->group(function () {
+
+        Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        // Route::get('product/view/{product}', [ProductController::class, 'index'])->name('products.view');
+        Route::get('products/create', [ProductController::class, 'createModal'])->name('products.create');
+        Route::post('products/list', [ProductController::class, 'listAjax'])->name('products.list.ajax');
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('products/edit-modal/{product}', [ProductController::class, 'editModal'])->whereNumber('product')->name('products.editModal');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::get('products/category', [ProductController::class, 'select2Category'])->name('products.category');
+        Route::get('products/subcategory', [ProductController::class, 'select2Subcategory'])->name('products.subcategory');
+        Route::get('products/brand', [ProductController::class, 'select2Brand'])->name('products.brand');
+        Route::get('products/color', [ProductController::class, 'select2Color'])->name('products.color');
+        Route::get('products/size', [ProductController::class, 'select2Size'])->name('products.size');
+        Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
+        Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
+        // Parent list 
+        Route::get('parents', [ProductController::class, 'parentsIndex'])->name('parents.index');
+        Route::get('parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
+        Route::get('{product}/variants', [ProductController::class, 'variants'])->name('variants');
+    });
