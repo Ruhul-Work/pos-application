@@ -25,26 +25,13 @@ class StockAdjustmentController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        // $base = StockLedger::query()
-        //     ->from('stock_ledgers as sl')
-        //     ->where('sl.ref_type','adjustment')
-        //     ->leftJoin('warehouses as w', 'w.id','=','sl.warehouse_id')
-        //     ->leftJoin('products as p', 'p.id','=','sl.product_id')
-        //     ->leftJoin('users as u', 'u.id','=','sl.created_by')
-        //     ->selectRaw("
-        //         sl.id, sl.txn_date, sl.direction, sl.quantity, sl.note,
-        //         w.name as warehouse,
-        //         p.name as product_name, p.sku as product_sku,
-        //         u.name as created_by_name
-        //     ");
-
         $base = StockLedger::query()
             ->from('stock_ledgers as sl')
             ->where('sl.ref_type', 'adjustment')
             ->leftJoin('warehouses as w', 'w.id', '=', 'sl.warehouse_id')
             ->leftJoin('products as p', 'p.id', '=', 'sl.product_id')
             ->leftJoin('users as u', 'u.id', '=', 'sl.created_by')
-            ->selectRaw("sl.id, sl.txn_date, sl.quantity, sl.unit_cost, sl.note,
+            ->selectRaw("sl.id, sl.txn_date, sl.quantity, sl.direction, sl.unit_cost, sl.note,
                  p.name as product_name, p.sku as product_sku,
                  w.name as warehouse, u.name as created_by_name");
 
@@ -69,20 +56,42 @@ class StockAdjustmentController extends Controller
             'txn_date'  => 'sl.txn_date',
             'warehouse' => 'w.name',
             'product'   => 'p.name',
+            'direction' => 'sl.direction',
             'qty'       => 'sl.quantity',
             'by'        => 'u.name',
-            'reason'    => 'sl.note',
+            'note'      => 'sl.note',
         ];
 
         $orderCol = $columns[$orderIdx] ?? 'txn_date';
         $base->orderBy($orderMap[$orderCol] ?? 'sl.txn_date', $orderDir);
 
         $rows = $base->skip($start)->take($length)->get();
+        // dd($rows);
 
         $data = [];
         foreach ($rows as $r) {
-            $prod   = '<div><strong>' . e($r->product_name ?? '—') . '</strong><br><code>' . e($r->product_sku ?? '') . '</code></div>';
-            $qty    = ($r->direction === 'IN' ? '+' : '-') . number_format((float) $r->quantity, 3);
+            $prod = '<div><strong>' . e($r->product_name ?? '—') . '</strong><br><code>' . e($r->product_sku ?? '') . '</code></div>';
+            $qty  = ($r->direction === 'IN' ? '+' : '-') . number_format((float) $r->quantity, 3);
+
+            $editUrl = route('inventory.adjustments.editModal', $r->id);
+            $delUrl  = route('inventory.adjustments.destroy', $r->id);
+
+            $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
+                            <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                                bg-success-focus text-success-main AjaxModal"
+                                data-ajax-modal="' . $editUrl . '"
+                                data-size="md"
+                                data-onsuccess="AdjustmentsIndex.onSaved"
+                                title="Edit">
+                                <iconify-icon icon="lucide:edit"></iconify-icon>
+                            </a>
+                            <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                                bg-danger-focus text-danger-main btn-adjust-delete"
+                                data-url="' . $delUrl . '"
+                                title="Delete">
+                                <iconify-icon icon="mdi:delete"></iconify-icon>
+                            </a>
+                        </div>';
             $data[] = [
                 '',
                 optional($r->txn_date)->format('Y-m-d H:i'),
@@ -91,7 +100,7 @@ class StockAdjustmentController extends Controller
                 $qty,
                 e($r->created_by_name ?? '—'),
                 e($r->note ?? '—'),
-                '<div class="text-end"></div>',
+                $actions,
             ];
         }
 
@@ -187,6 +196,40 @@ class StockAdjustmentController extends Controller
         }
 
         return response()->json(['success' => true, 'msg' => 'Adjustment saved']);
+    }
+
+    public function editModal(StockLedger $ledger)
+    {
+        // guard: শুধুই adjustment লাইনে এডিট
+        abort_unless($ledger->ref_type === 'adjustment', 404);
+
+        // product/warehouse দরকার হলে eager
+        $ledger->load(['product:id,name,sku,image', 'warehouse:id,name']);
+        return view('backend.modules.inventory.stockAdjustment.modal_edit', compact('ledger'));
+    }
+
+    public function update(Request $r, StockLedger $ledger, StockService $stock)
+    {
+        abort_unless($ledger->ref_type === 'adjustment', 404);
+
+        $data = $r->validate([
+            'qty'       => ['required', 'numeric'], // signed (+/-) allowed
+            'unit_cost' => ['nullable', 'numeric'],
+            'note'      => ['nullable', 'string', 'max:500'],
+        ]);
+
+        // পুরনো impact reverse + নতুনটা apply (atomic)
+        $stock->reapplyAdjustment($ledger, $data['qty'], $data['unit_cost'] ?? null, $data['note'] ?? null, auth()->id());
+
+        return response()->json(['success' => true, 'msg' => 'Adjustment updated']);
+    }
+
+    public function destroy(StockLedger $ledger, StockService $stock)
+    {
+        abort_unless($ledger->ref_type === 'adjustment', 404);
+
+        $stock->deleteAdjustment($ledger, auth()->id()); // reverse effect then delete
+        return response()->json(['success' => true, 'msg' => 'Adjustment deleted']);
     }
 
 }
