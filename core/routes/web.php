@@ -10,13 +10,13 @@ use App\Http\Controllers\backend\PaperQualityController;
 use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\ProductTypeController;
 use App\Http\Controllers\backend\SizeController;
+use App\Http\Controllers\backend\StockAdjustmentController;
+use App\Http\Controllers\backend\StockOpeningController;
+use App\Http\Controllers\backend\StockTransferController;
 use App\Http\Controllers\backend\SubCategoryController;
 use App\Http\Controllers\backend\UnitController;
 use App\Http\Controllers\backend\UpazilaController;
 use App\Http\Controllers\backend\WarehouseController;
-use App\Http\Controllers\backend\StockOpeningController;
-use App\Http\Controllers\backend\StockTransferController;
-use App\Http\Controllers\backend\StockAdjustmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'perm'])->group(function () {
@@ -210,7 +210,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('products/size', [ProductController::class, 'select2Size'])->name('products.size');
         Route::get('products/product-type', [ProductController::class, 'select2ProductType'])->name('products.product-type');
         Route::get('products/select2/all', [ProductController::class, 'select2'])->name('select2');
-        // Parent list 
+        // Parent list
         Route::get('/products/parents/get', [ProductController::class, 'parentsIndex'])->name('parents.index');
         Route::get('/products/parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
         Route::get('/products/{product}/variants', [ProductController::class, 'variants'])->name('variants');
@@ -230,8 +230,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::delete('product-types/{productType}', [ProductTypeController::class, 'destroy'])->name('product-types.destroy');
         Route::get('product-types/select2/type', [ProductTypeController::class, 'select2'])->name('select2');
     });
-
-
 
     // Inventory Opening Stock
     Route::prefix('inventory')->name('inventory.')->group(function () {
@@ -265,6 +263,10 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('adjustments/create-modal', [StockAdjustmentController::class, 'createModal'])->name('adjustments.createModal');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
+        // NEW:
+        Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
+        Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
+        Route::delete('adjustments/{ledger}', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
 
     });
 

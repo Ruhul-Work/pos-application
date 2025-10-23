@@ -556,7 +556,7 @@
 
 
     // ====== Global Ajax Form Handler (for non-modal ajax forms) ======
-    $(document).on('submit', 'form[data-ajax="true"]', function(e) {
+    $(document).on('submit', 'form[data-ajax-form="true"]', function(e) {
         e.preventDefault();
         const $form = $(this);
         $.ajax({

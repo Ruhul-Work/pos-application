@@ -28,10 +28,10 @@
                 <ul class="table-top-head list-unstyled d-flex align-items-center gap-2 mb-0">
                     @include('backend.include.buttons')
                 </ul>
-                   <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
-                        <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a
-                            href="{{ route('inventory.adjustments.create') }}">New Adjustment</a>
-                    </button>
+                <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
+                    <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a
+                        href="{{ route('inventory.adjustments.create') }}">New Adjustment</a>
+                </button>
             </div>
         </div>
 
@@ -58,12 +58,8 @@
 @section('script')
     <script>
         var DATATABLE_URL = "{{ route('inventory.adjustments.list') }}";
-        // $(function(){
-        //   const t = $('#adjustTable').DataTable({
 
-        //   });
-        //   $('#tableSearch input, #tableSearch').on('keyup change', function(){ t.search($(this).val()||'').draw(); });
-        // });
+        
         window.AdjustmentsIndex = {
             onSaved(res) {
                 $('.AjaxDataTable').DataTable().ajax.reload(null, false);
@@ -75,5 +71,55 @@
                 });
             }
         };
+
+        // hard delete (with current reverse): 
+        $(document).on('click', '.btn-adjust-delete', function(e) {
+            e.preventDefault();
+            const url = $(this).data('url');
+
+            const doDelete = () => {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        _method: 'DELETE',
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        $('.AjaxDataTable').DataTable().ajax.reload(null, false);
+                        window.Swal && Swal.fire({
+                            icon: 'success',
+                            title: res?.msg || 'Deleted',
+                            timer: 900,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function(xhr) {
+                        const msg = xhr.responseJSON?.message || 'Delete failed';
+                        window.Swal && Swal.fire({
+                            icon: 'error',
+                            title: 'Failed',
+                            text: msg
+                        });
+                    }
+                });
+            };
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Delete this adjustment line?',
+                    text: 'This will reverse current stock effect.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete',
+                    confirmButtonColor: '#d33'
+                }).then(r => {
+                    if (r.isConfirmed) doDelete();
+                });
+            } else {
+                if (confirm('Delete?')) doDelete();
+            }
+        });
     </script>
 @endsection

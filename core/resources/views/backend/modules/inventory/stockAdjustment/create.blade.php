@@ -21,7 +21,7 @@
         </ul>
     </div>
 
-    <form id="adjForm" action="{{ route('inventory.adjustments.store') }}" method="post" data-ajax="true">
+    <form id="adjForm" action="{{ route('inventory.adjustments.store') }}" method="post" data-ajax-form="true">
         @csrf
 
         {{-- top controls --}}

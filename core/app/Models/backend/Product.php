@@ -50,4 +50,5 @@ class Product extends Model
     {
         return $this->belongsTo(PaperQuality::class,'paper_id');
     }
+    
 }
