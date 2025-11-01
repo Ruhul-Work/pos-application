@@ -13,6 +13,8 @@ class Product extends Model
         'updated_at',
         'deleted_at'
     ];
+    
+    protected $casts = ['cost_price' => 'float'];
 
     public function product_type()
     {
@@ -50,5 +52,13 @@ class Product extends Model
     {
         return $this->belongsTo(PaperQuality::class,'paper_id');
     }
+
+    public function children()
+    {
+        return $this->hasMany(Product::class, 'parent_id', 'id');
+    }
+
+
+
     
 }

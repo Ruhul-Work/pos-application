@@ -160,67 +160,6 @@
         </tr>
     </template>
 
-    {{-- minimal styles for grid/scroll --}}
-    <style>
-        .grid {
-            display: grid;
-        }
-
-        .grid-cols-2 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .gap-12 {
-            gap: 12px;
-        }
-
-        .table-scroll-wrap {
-            max-height: 280px;
-            overflow: auto;
-        }
-
-        .table-fixed-rows {
-            width: 100%;
-            table-layout: fixed;
-            /* border-collapse: separate;   */
-            border-spacing: 0;
-        }
-
-        .table-fixed-rows thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: var(--bs-body-bg, #fff);
-        }
-
-
-        .table-fixed-rows th.col-action,
-        .table-fixed-rows td.col-action {
-            width: 90px;
-            white-space: nowrap;
-        }
-
-
-        .wh-card.active {
-            outline: 2px solid var(--bs-primary, #0d6efd);
-        }
-
-        .cursor-pointer {
-            cursor: pointer;
-        }
-
-        .w-110 {
-            width: 126px;
-        }
-
-        .minw-120 {
-            min-width: 120px;
-        }
-
-        .minw-100 {
-            min-width: 100px;
-        }
-    </style>
 @endsection
 
 @section('script')

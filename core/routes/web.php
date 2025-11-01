@@ -271,9 +271,17 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
         // NEW:
-        Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
-        Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
-        Route::delete('adjustments/{ledger}', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
+        // Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
+        // Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
+        
+        Route::get('adjustments/parent/{parent}/edit', [StockAdjustmentController::class, 'editParent'])
+            ->name('adjustments.parent.edit');
+        Route::put('adjustments/parent/{parent}', [StockAdjustmentController::class, 'updateParent'])
+            ->name('adjustments.parent.update');
+        Route::get('adjustments/parent-variants', [StockAdjustmentController::class, 'ajaxParentVariants'])
+            ->name('adjustments.parent.variants');
+        Route::delete('adjustments/{ledger}/delete', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
+
 
     });
 
