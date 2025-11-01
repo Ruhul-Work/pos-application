@@ -164,9 +164,9 @@ class SubCategoryController extends Controller
             'category_id' => ['required', 'integer'],
             'icon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title' =>['string', 'max:150'],
-            'meta_description' =>['string', 'max:150'],
-            'meta_keywords' =>['string', 'max:150'],
+            'meta_title' =>['nullable','string', 'max:150'],
+            'meta_description' =>['nullable','string', 'max:150'],
+            'meta_keywords' =>['nullable','string', 'max:150'],
             'is_active' =>['required','integer'],
 
       

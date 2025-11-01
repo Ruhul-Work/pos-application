@@ -1,5 +1,17 @@
 <script>
     $(document).ready(function() {
+        $('.dropdown > a').on('click', function(e) {
+            e.preventDefault(); // stop page jump
+            e.stopPropagation(); // stop parent toggling
+
+            let $submenu = $(this).next('.sidebar-submenu');
+
+            // Toggle only this submenu
+            $submenu.slideToggle(200);
+
+            // Optionally close sibling dropdowns (accordion style)
+            $(this).parent().siblings('.dropdown').find('.sidebar-submenu').slideUp(200);
+        });
         // Ajax DataTable init
         $(function() {
             $.ajaxSetup({

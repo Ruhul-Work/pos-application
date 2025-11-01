@@ -157,7 +157,7 @@ class UnitController extends Controller
 
     public function destroy(Unit $unit)
     {
-        $unit->delete(); // soft delete
+        $unit->delete(); 
         return response()->json(['success' => true, 'msg' => 'Unit deleted']);
     }
 

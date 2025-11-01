@@ -22,7 +22,7 @@
       <div class="col-md-6 mb-20">
         <label class="form-label text-sm mb-8">Bangla Name <span class="text-danger">*</span></label>
         <input type="text" name="upazila_bn_name" value="{{ $upazila->upazila_bn_name }}" class="form-control radius-8"
-               placeholder="e.g. DHA-MAIN" required>
+               placeholder="e.g. DHA-MAIN" >
         <div class="invalid-feedback d-block code-error" style="display:none"></div>
       </div>
 

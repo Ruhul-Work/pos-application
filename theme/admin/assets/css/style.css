@@ -16265,6 +16265,66 @@ div.dt-container .dt-paging .dt-paging-button.current {
 
 /* stock table custom css */
 
+/* (SweetAlert2 এর পরে লোড হবে) */
+.swal2-popup{ font-size: 1rem !important; }      /* বেস সাইজ: সবকিছু ছোট হবে */
+.swal2-title{ font-size: 1.5rem !important; }        /* টাইটেল */
+.swal2-html-container{ font-size: .9rem !important; } /* মেসেজ টেক্সট */
+.swal2-actions .swal2-styled{                      /* বাটন */
+  font-size: .85rem !important;
+  padding: .6rem 1rem !important;
+}
+.swal2-input, .swal2-select, .swal2-textarea{
+  font-size: .9rem !important;
+}
+
+.icon:hover{
+  color: var(--red);
+}
+.order-item:hover{
+  color: var(--yellow);
+}
+.product-card{
+  /* border: 1px solid lightgray; */
+}
+.product-card:hover{
+  border: 1px solid var(--indigo);
+   overflow: hidden;
+ 
+ 
+}
+.product-img:hover{
+  transform: scale(1.2); 
+  transition: transform 0.4s ease; 
+ 
+  
+}
+.qty-button:hover{
+  color: orangered;
+}
+.nav-btn:hover{
+  background-color: #212529;
+  color: white;
+}
+.payment-btn{
+  width: 30%;
+  border: 1px solid lightgray;
+}
+
+.payment-btn:hover{
+  border: 1px solid orangered;
+  background-color: #FF7739;
+  color: white;
+}
+
+/* Target the entire scrollbar */
+::-webkit-scrollbar {
+  width: 3px;              /* width of vertical scrollbar */
+  height: 10px;             /* height of horizontal scrollbar */
+}
+::-webkit-scrollbar-thumb {
+  background: gray;        /* your color */
+  border-radius: 10px;
+}
 .grid {
   display: grid;
 }
