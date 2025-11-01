@@ -39,13 +39,18 @@
             <table class="table bordered-table table-scroll mb-0 AjaxDataTable" id="adjustTable" style="width:100%">
                 <thead>
                     <tr>
-                        <th style="width:50px">SL</th>
+                        {{-- <th style="width:50px">SL</th>
                         <th style="width:150px">Date</th>
                         <th>Warehouse</th>
                         <th>Product</th>
                         <th class="text-end">Qty (+/-)</th>
                         <th>By</th>
                         <th>Reason</th>
+                        <th style="width:90px">Action</th> --}}
+                        <th style="width:50px">SL</th>
+                        <th style="width:150px">product</th>
+                        <th>sku</th>
+                        <th>variant</th>
                         <th style="width:90px">Action</th>
                     </tr>
                 </thead>
