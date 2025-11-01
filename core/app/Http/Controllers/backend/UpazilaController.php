@@ -138,7 +138,7 @@ class UpazilaController extends Controller
     {
           $data = $req->validate([
             'upazila_name'      => ['required', 'string', 'max:150'],
-            'upazila_bn_name'      => ['required', 'string', 'max:50'],
+            'upazila_bn_name'      => ['nullable', 'string', 'max:50'],
             'upazila_district_id' =>['required','integer'],
             'upazila_url'   => ['nullable', 'string', 'max:500'],
            

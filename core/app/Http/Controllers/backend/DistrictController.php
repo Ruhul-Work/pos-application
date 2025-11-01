@@ -31,8 +31,7 @@ class DistrictController extends Controller
         if ($searchVal !== '') {
             $base->where(function ($q) use ($searchVal) {
                 $q->where('district_name', 'like', "%{$searchVal}%")
-                    ->orWhere('district_bn_name', 'like', "%{$searchVal}%")
-                    ->orWhere('district_division', 'like', "%{$searchVal}%");
+                    ->orWhere('district_bn_name', 'like', "%{$searchVal}%");
             });
         }
 

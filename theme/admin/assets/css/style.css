@@ -15826,3 +15826,52 @@ div.dt-container .dt-paging .dt-paging-button:hover, div.dt-container .dt-paging
 .swal2-input, .swal2-select, .swal2-textarea{
   font-size: .9rem !important;
 }
+
+.icon:hover{
+  color: var(--red);
+}
+.order-item:hover{
+  color: var(--yellow);
+}
+.product-card{
+  /* border: 1px solid lightgray; */
+}
+.product-card:hover{
+  border: 1px solid var(--indigo);
+   overflow: hidden;
+ 
+ 
+}
+.product-img:hover{
+  transform: scale(1.2); 
+  transition: transform 0.4s ease; 
+ 
+  
+}
+.qty-button:hover{
+  color: orangered;
+}
+.nav-btn:hover{
+  background-color: #212529;
+  color: white;
+}
+.payment-btn{
+  width: 30%;
+  border: 1px solid lightgray;
+}
+
+.payment-btn:hover{
+  border: 1px solid orangered;
+  background-color: #FF7739;
+  color: white;
+}
+
+/* Target the entire scrollbar */
+::-webkit-scrollbar {
+  width: 3px;              /* width of vertical scrollbar */
+  height: 10px;             /* height of horizontal scrollbar */
+}
+::-webkit-scrollbar-thumb {
+  background: gray;        /* your color */
+  border-radius: 10px;
+}

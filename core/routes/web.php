@@ -4,16 +4,23 @@ use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
 use App\Http\Controllers\backend\ColorController;
 use App\Http\Controllers\backend\CountryController;
+use App\Http\Controllers\backend\CustomerController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
+use App\Http\Controllers\backend\ExpenseCategoryController;
+use App\Http\Controllers\backend\ExpenseController;
 use App\Http\Controllers\backend\PaperQualityController;
+use App\Http\Controllers\backend\PaymentTypeController;
+use App\Http\Controllers\backend\PosController;
 use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\ProductTypeController;
+use App\Http\Controllers\backend\PurchaseController;
 use App\Http\Controllers\backend\SizeController;
 use App\Http\Controllers\backend\StockAdjustmentController;
 use App\Http\Controllers\backend\StockOpeningController;
 use App\Http\Controllers\backend\StockTransferController;
 use App\Http\Controllers\backend\SubCategoryController;
+use App\Http\Controllers\backend\SupplierController;
 use App\Http\Controllers\backend\UnitController;
 use App\Http\Controllers\backend\UpazilaController;
 use App\Http\Controllers\backend\WarehouseController;
@@ -269,5 +276,110 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::delete('adjustments/{ledger}', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
 
     });
+
+      Route::prefix('supplier')->name('supplier.')->group(function () {
+
+       
+        Route::get('suppliers', [SupplierController::class, 'index'])->name('index');
+        Route::get('suppliers/create', [SupplierController::class, 'createModal'])->name('create');
+        Route::post('suppliers/list', [SupplierController::class, 'listAjax'])->name('list.ajax');
+        Route::post('suppliers', [SupplierController::class, 'store'])->name('store');
+        Route::get('suppliers/edit/{supplier}', [SupplierController::class, 'editModal'])->whereNumber('supplier')->name('edit');
+        Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('update');
+        Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('show');
+        Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+        Route::get('suppliers/select2/type', [SupplierController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('customer')->name('customer.')->group(function () {
+
+       
+        Route::get('customers', [CustomerController::class, 'index'])->name('index');
+        Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
+        Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
+        Route::post('customers', [CustomerController::class, 'store'])->name('store');
+        Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
+        Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
+        Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
+        Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
+        Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('pos')->name('pos.')->group(function () {
+
+       
+        Route::get('pos', [PosController::class, 'index'])->name('index');
+        // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
+        // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
+        // Route::post('customers', [CustomerController::class, 'store'])->name('store');
+        // Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
+        // Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
+        // Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
+        // Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
+        // Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('purchase')->name('purchase.')->group(function () {
+
+       
+        Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
+        // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
+        // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
+        // Route::post('customers', [CustomerController::class, 'store'])->name('store');
+        // Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
+        // Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
+        // Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
+        // Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
+        // Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('paymentTypes')->name('paymentTypes.')->group(function () {
+
+       
+        Route::get('paymentType', [PaymentTypeController::class, 'index'])->name('index');
+        Route::get('paymentType/create', [PaymentTypeController::class, 'createModal'])->name('create');
+        Route::post('paymentType/list', [PaymentTypeController::class, 'listAjax'])->name('list.ajax');
+        Route::post('paymentType', [PaymentTypeController::class, 'store'])->name('store');
+        Route::get('paymentType/edit/{paymentType}', [PaymentTypeController::class, 'editModal'])->whereNumber('paymentType')->name('edit');
+        Route::put('paymentType/{paymentType}', [PaymentTypeController::class, 'update'])->name('update');
+        Route::get('paymentType/{paymentType}', [PaymentTypeController::class, 'show'])->name('show');
+        Route::delete('paymentType/{paymentType}', [PaymentTypeController::class, 'destroy'])->name('destroy');
+        Route::get('paymentType/select2/type', [PaymentTypeController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {
+
+       
+        Route::get('expenseCategories', [ExpenseCategoryController::class, 'index'])->name('index');
+        Route::get('expenseCategories/create', [ExpenseCategoryController::class, 'createModal'])->name('create');
+        Route::post('expenseCategories/list', [ExpenseCategoryController::class, 'listAjax'])->name('list.ajax');
+        Route::post('expenseCategories', [ExpenseCategoryController::class, 'store'])->name('store');
+        Route::get('expenseCategories/edit/{expenseCategory}', [ExpenseCategoryController::class, 'editModal'])->whereNumber('expenseCategory')->name('edit');
+        Route::put('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'update'])->name('update');
+        Route::get('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'show'])->name('show');
+        Route::delete('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'destroy'])->name('destroy');
+        Route::get('expenseCategories/select2/type', [ExpenseCategoryController::class, 'select2'])->name('select2');
+
+      });
+
+      Route::prefix('expenses')->name('expenses.')->group(function () {
+
+       
+        Route::get('expense', [ExpenseController::class, 'index'])->name('index');
+        Route::get('expense/create', [ExpenseController::class, 'createModal'])->name('createModal');
+        Route::post('expense/list', [ExpenseController::class, 'listAjax'])->name('list.ajax');
+        Route::post('expense', [ExpenseController::class, 'store'])->name('store');
+        Route::get('expense/edit/{expense}', [ExpenseController::class, 'editModal'])->whereNumber('expense')->name('editModal');
+        Route::put('expense/{expense}', [ExpenseController::class, 'update'])->name('update');
+        Route::get('expense/{expense}', [ExpenseController::class, 'show'])->name('show');
+        Route::delete('expense/{expense}', [ExpenseController::class, 'destroy'])->name('destroy');
+        Route::get('expense/select2/type', [ExpenseController::class, 'select2'])->name('select2');
+
+      });
 
 });
