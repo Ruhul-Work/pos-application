@@ -39,19 +39,17 @@
             <table class="table bordered-table table-scroll mb-0 AjaxDataTable" id="adjustTable" style="width:100%">
                 <thead>
                     <tr>
-                        {{-- <th style="width:50px">SL</th>
-                        <th style="width:150px">Date</th>
+                        <th style="width:40px">SL</th>
+                        <th>Reference</th>
+                        <th style="width:160px">Date</th>
                         <th>Warehouse</th>
-                        <th>Product</th>
-                        <th class="text-end">Qty (+/-)</th>
+                        <th>Branch</th>
+                        <th style="width:90px" class="text-center">Items</th>
+                        <th style="width:130px" class="text-end">Qty (+ / -)</th>
+                        <th style="width:110px">Status</th>
                         <th>By</th>
-                        <th>Reason</th>
-                        <th style="width:90px">Action</th> --}}
-                        <th style="width:50px">SL</th>
-                        <th style="width:150px">product</th>
-                        <th>sku</th>
-                        <th>variant</th>
-                        <th style="width:90px">Action</th>
+                        <th>Note</th>
+                        <th style="width:220px">Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -64,7 +62,7 @@
     <script>
         var DATATABLE_URL = "{{ route('inventory.adjustments.list') }}";
 
-        
+
         window.AdjustmentsIndex = {
             onSaved(res) {
                 $('.AjaxDataTable').DataTable().ajax.reload(null, false);

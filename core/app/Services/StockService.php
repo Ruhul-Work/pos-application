@@ -1,167 +1,308 @@
 <?php
+
 namespace App\Services;
 
-use App\Models\backend\Product;
+use App\Models\backend\StockAdjustment;
+use App\Models\backend\StockAdjustmentItem;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
-use App\Models\backend\Warehouse;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class StockService
 {
+    protected bool $allowNegativeInventory = false;
 
     /**
-     * direction: 'IN' | 'OUT'
-     * ref: ['type' => 'opening|receive|transfer|adjustment|sale|return', 'id' => int|null]
+     * Create draft header + items (uses models)
      */
-    public function apply(
-        int $productId,
-        int $warehouseId,  // <- আপনার স্কিমা অনুযায়ী required
-        string $direction, // 'IN' | 'OUT'
-        float $qty,
-        ?float $unitCost = null,
-        array $ref = [],
-        ?int $userId = null,
-        ?string $note = null,
-        ? \DateTimeInterface $when = null
-    ) : void {
-        if ($qty <= 0) {
-            throw ValidationException::withMessages(['quantity' => 'Qty must be > 0']);
-        }
+    public function createDraft(array $header, array $items, int $createdBy = null): int
+    {
+        return DB::transaction(function () use ($header, $items, $createdBy) {
+            $now = Carbon::now();
 
-        // 0) Product must be sellable (single বা child—আপনার parent/child মডেলে child/ single-ই sellable হবে)
-        $product = Product::query()->whereKey($productId)->firstOrFail();
-        if (! $product->is_sellable) {
-            throw ValidationException::withMessages(['product_id' => 'Use a sellable product (variant/single).']);
-        }
-
-        // 1) Warehouse → Branch resolve + guard
-        $warehouse = Warehouse::query()->select('id', 'branch_id')->findOrFail($warehouseId);
-        $branchId  = (int) $warehouse->branch_id;
-
-        if (function_exists('current_branch_id')) {
-            $current = current_branch_id();
-            if ($current !== null && (int) $current !== $branchId) {
-                throw ValidationException::withMessages([
-                    'warehouse_id' => 'Selected warehouse does not belong to current branch.',
-                ]);
-            }
-        }
-
-        $userId  = $userId ?? (Auth::id() ?: null);
-        $txnDate = $when ? Carbon::instance($when) : now();
-
-        DB::transaction(function () use (
-            $productId, $warehouseId, $branchId, $direction, $qty, $unitCost, $ref, $userId, $note, $txnDate,
-        ) {
-            // 2) Ledger insert (schema aligned)
-            StockLedger::query()->create([
-                'txn_date'     => $txnDate, // datetime
-                'product_id'   => $productId,
-                'warehouse_id' => $warehouseId,
-                'branch_id'    => $branchId,
-                'ref_type'     => $ref['type'] ?? null,
-                'ref_id'       => $ref['id'] ?? null,
-                'direction'    => $direction, // 'IN' | 'OUT'
-                'quantity'     => $qty,
-                'unit_cost'    => $unitCost,
-                'note'         => $note,
-                'created_by'   => $userId,
+            $adjust = StockAdjustment::create([
+                'reference_no' => $header['reference_no'] ?? null,
+                'branch_id'    => $header['branch_id'],
+                'warehouse_id' => $header['warehouse_id'],
+                'adjust_date'  => $header['adjust_date'] ?? $now->toDateTimeString(),
+                'reason_code'  => $header['reason_code'] ?? null,
+                'note'         => $header['note'] ?? null,
+                'status'       => 'DRAFT',
+                'created_by'   => $createdBy,
+                'approved_by'  => $header['approved_by'] ?? null,
+                'posted_at'    => null,
             ]);
 
-            // 3) Current upsert (unique key: branch_id+product_id+warehouse_id)
-            $delta = $direction === 'IN' ? +$qty : -$qty;
+            foreach ($items as $it) {
+                $adjItemData = [
+                    'adjustment_id' => $adjust->id,
+                    'product_id'    => $it['product_id'],
+                    'warehouse_id'  => $it['warehouse_id'] ?? $header['warehouse_id'] ?? null,
+                    'branch_id'     => $it['branch_id'] ?? $header['branch_id'] ?? 0,
+                    'direction'     => $it['direction'] ?? 'OUT',
+                    'quantity'      => (float) ($it['quantity'] ?? 0),
+                    'unit_cost'     => $it['unit_cost'] ?? null,
+                    'note'          => $it['note'] ?? null,
+                    'created_by'    => $createdBy,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
+                ];
+                StockAdjustmentItem::create($adjItemData);
+            }
 
-            $cur = StockCurrent::query()
-                ->where('branch_id', $branchId)
-                ->where('product_id', $productId)
-                ->where('warehouse_id', $warehouseId)
-                ->lockForUpdate()
-                ->first();
+            return $adjust->id;
+        });
+    }
 
-            if ($cur) {
-                $newQty = (float) $cur->quantity + $delta;
+    /**
+     * Post (finalize) an adjustment - model based
+     */
+    public function postAdjustment(int $adjustmentId, int $userId): array
+    {
+        $now = Carbon::now();
 
-                // ❗ negative policy: ব্লক করতে চাইলে এই অংশ ব্যবহার করুন
-                // if ($newQty < 0) {
-                //     throw ValidationException::withMessages(['quantity' => 'Insufficient stock.']);
-                // }
+        return DB::transaction(function () use ($adjustmentId, $userId, $now) {
+            /** @var StockAdjustment $header */
+            $header = StockAdjustment::where('id', $adjustmentId)->lockForUpdate()->first();
+            if (!$header) {
+                throw new RuntimeException("Adjustment #{$adjustmentId} not found.");
+            }
+            if ($header->status === 'POSTED') {
+                return ['status' => 'already_posted', 'adjustment_id' => $adjustmentId];
+            }
+            if ($header->status === 'CANCELLED') {
+                throw new RuntimeException("Adjustment #{$adjustmentId} is cancelled and cannot be posted.");
+            }
 
-                $cur->update(['quantity' => $newQty]);
-            } else {
-                // OUT দিয়ে শুরু হলে negative avoid করতে চাইলে max(0, ...) রাখুন
-                $startQty = max(0, $delta);
+            $items = $header->items()->get();
+            if ($items->isEmpty()) {
+                throw new RuntimeException("Adjustment #{$adjustmentId} has no items.");
+            }
 
-                // ❗ কঠোর পলিসি চাইলে:
-                // if ($delta < 0) throw ValidationException::withMessages(['quantity'=>'No stock to deduct.']);
+            foreach ($items as $item) {
+                $productId = (int) $item->product_id;
+                $warehouseId = (int) ($item->warehouse_id ?? $header->warehouse_id);
+                $branchId = (int) ($item->branch_id ?? $header->branch_id ?? 0);
+                $direction = $item->direction;
+                $qty = (float) $item->quantity;
+                $unitCost = $item->unit_cost;
+                $note = $item->note;
 
-                StockCurrent::query()->create([
-                    'product_id'   => $productId,
+                // ensure summary row exists using upsert (Eloquent upsert)
+                $this->ensureSummaryRow($productId, $warehouseId, $branchId);
+
+                // lock the summary row
+                $summary = StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$summary) {
+                    throw new RuntimeException("Failed to lock summary for product {$productId}/wh {$warehouseId}/br {$branchId}");
+                }
+
+                // validate OUT
+                if ($direction === 'OUT' && !$this->allowNegativeInventory && ($summary->quantity < $qty)) {
+                    throw new RuntimeException("Insufficient stock for product {$productId} at warehouse {$warehouseId} branch {$branchId} (have {$summary->quantity}, need {$qty}).");
+                }
+
+                // insert ledger record (use model)
+                StockLedger::create([
+                    'txn_date' => $now,
+                    'product_id' => $productId,
                     'warehouse_id' => $warehouseId,
-                    'branch_id'    => $branchId,
-                    'quantity'     => $startQty,
+                    'branch_id' => $branchId,
+                    'ref_type' => 'ADJUSTMENT',
+                    'ref_id' => $adjustmentId,
+                    'direction' => $direction,
+                    'quantity' => $qty,
+                    'unit_cost' => $unitCost,
+                    'note' => $note,
+                    'created_by' => $userId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
+
+                // update summary (atomic via query)
+                $delta = ($direction === 'IN') ? $qty : -$qty;
+                StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId)
+                    ->update([
+                        'quantity' => DB::raw("quantity + ({$delta})"),
+                        'version' => DB::raw('version + 1'),
+                        'updated_at' => $now,
+                    ]);
+            }
+
+            // mark header posted
+            $header->status = 'POSTED';
+            $header->posted_at = $now;
+            $header->approved_by = $userId;
+            $header->save();
+
+            return ['status' => 'posted', 'adjustment_id' => $adjustmentId];
+        }, 5);
+    }
+
+    /**
+     * Cancel (reverse) a posted adjustment - model based
+     */
+    public function cancelAdjustment(int $adjustmentId, int $userId): array
+    {
+        $now = Carbon::now();
+
+        return DB::transaction(function () use ($adjustmentId, $userId, $now) {
+            $header = StockAdjustment::where('id', $adjustmentId)->lockForUpdate()->first();
+            if (!$header) {
+                throw new RuntimeException("Adjustment #{$adjustmentId} not found.");
+            }
+            if ($header->status !== 'POSTED') {
+                throw new RuntimeException("Only POSTED adjustments can be cancelled. Current status: {$header->status}");
+            }
+
+            $items = $header->items()->get();
+            if ($items->isEmpty()) {
+                throw new RuntimeException("Adjustment #{$adjustmentId} has no items to reverse.");
+            }
+
+            foreach ($items as $item) {
+                $productId = (int) $item->product_id;
+                $warehouseId = (int) ($item->warehouse_id ?? $header->warehouse_id);
+                $branchId = (int) ($item->branch_id ?? $header->branch_id ?? 0);
+                $direction = $item->direction;
+                $qty = (float) $item->quantity;
+                $unitCost = $item->unit_cost;
+
+                $this->ensureSummaryRow($productId, $warehouseId, $branchId);
+
+                $summary = StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$summary) {
+                    throw new RuntimeException("Failed to lock summary for reversal for product {$productId}");
+                }
+
+                $revDirection = ($direction === 'IN') ? 'OUT' : 'IN';
+
+                StockLedger::create([
+                    'txn_date' => $now,
+                    'product_id' => $productId,
+                    'warehouse_id' => $warehouseId,
+                    'branch_id' => $branchId,
+                    'ref_type' => 'ADJUSTMENT_REVERSAL',
+                    'ref_id' => $adjustmentId,
+                    'direction' => $revDirection,
+                    'quantity' => $qty,
+                    'unit_cost' => $unitCost,
+                    'note' => "Reversal of adjustment {$adjustmentId}",
+                    'created_by' => $userId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+
+                $delta = ($revDirection === 'IN') ? $qty : -$qty;
+                StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId)
+                    ->update([
+                        'quantity' => DB::raw("quantity + ({$delta})"),
+                        'version' => DB::raw('version + 1'),
+                        'updated_at' => $now,
+                    ]);
+            }
+
+            $header->status = 'CANCELLED';
+            $header->save();
+
+            return ['status' => 'cancelled', 'adjustment_id' => $adjustmentId];
+        });
+    }
+
+    /**
+     * Ensure summary (uses upsert when available)
+     */
+    public function ensureSummaryRow(int $productId, int $warehouseId, int $branchId = 0): void
+    {
+        $now = Carbon::now();
+
+        // Try Eloquent upsert (Laravel >= 8.45)
+        try {
+            StockCurrent::upsert(
+                [[
+                    'product_id' => $productId,
+                    'warehouse_id' => $warehouseId,
+                    'branch_id' => $branchId,
+                    'quantity' => 0.000,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]],
+                ['product_id','warehouse_id','branch_id'], // unique by
+                ['updated_at'] // columns to update on duplicate
+            );
+            return;
+        } catch (\Throwable $e) {
+            // fallback to raw query if upsert not supported or fails
+            DB::statement("
+                INSERT INTO stock_currents (product_id, warehouse_id, branch_id, quantity, created_at, updated_at)
+                VALUES (?, ?, ?, 0.000, ?, ?)
+                ON DUPLICATE KEY UPDATE updated_at = VALUES(updated_at)
+            ", [$productId, $warehouseId, $branchId, $now, $now]);
+        }
+    }
+
+    /**
+     * Rebuild from ledger - heavy op (kept raw)
+     */
+    public function rebuildSummaryFromLedger(bool $useSwap = true): array
+    {
+        $now = Carbon::now();
+        return DB::transaction(function () use ($now, $useSwap) {
+            $tmp = 'tmp_stock_currents_' . time();
+
+            DB::statement("
+                CREATE TABLE {$tmp} AS
+                SELECT product_id, warehouse_id, COALESCE(branch_id,0) AS branch_id,
+                       SUM(CASE WHEN direction='IN' THEN quantity ELSE -quantity END) AS quantity,
+                       MAX(created_at) AS updated_at
+                FROM stock_ledger
+                GROUP BY product_id, warehouse_id, COALESCE(branch_id,0)
+            ");
+
+            if ($useSwap) {
+                $backup = 'stock_currents_bkp_' . time();
+                DB::statement("RENAME TABLE stock_currents TO {$backup}");
+                DB::statement("CREATE TABLE stock_currents AS SELECT * FROM {$tmp}");
+                DB::statement("ALTER TABLE stock_currents ADD UNIQUE KEY ux_prod_wh_branch (product_id, warehouse_id, branch_id)");
+                DB::statement("ALTER TABLE stock_currents ADD COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST");
+                DB::statement("ALTER TABLE stock_currents ADD COLUMN version BIGINT UNSIGNED NOT NULL DEFAULT 0");
+                DB::statement("DROP TABLE IF EXISTS {$tmp}");
+                return ['status' => 'rebuild_swapped', 'backup_table' => $backup];
+            } else {
+                DB::table('stock_currents')->truncate();
+                DB::statement("INSERT INTO stock_currents (product_id, warehouse_id, branch_id, quantity, updated_at) SELECT product_id, warehouse_id, branch_id, quantity, updated_at FROM {$tmp}");
+                DB::statement("DROP TABLE IF EXISTS {$tmp}");
+                return ['status' => 'rebuild_truncated'];
             }
         });
     }
 
-    public function deleteAdjustment(StockLedger $ledger, ?int $userId = null): void
+    /**
+     * Get system qty
+     */
+    public function getSystemQuantity(int $productId, int $warehouseId, int $branchId = 0): float
     {
-        DB::transaction(function () use ($ledger, $userId) {
-            // reverse effect
-            $effect = ($ledger->direction === 'IN') ? -$ledger->quantity : +$ledger->quantity;
-            $this->touchCurrent($ledger->product_id, $ledger->warehouse_id, $ledger->branch_id, $effect);
-
-            // delete line
-            $ledger->delete();
-        });
-    }
-
-    public function reapplyAdjustment(StockLedger $ledger, float $newQty, ?float $newCost, ?string $newNote, ?int $userId = null): void
-    {
-        DB::transaction(function () use ($ledger, $newQty, $newCost, $newNote, $userId) {
-            // 1) reverse old
-            $oldEff = ($ledger->direction === 'IN') ? -$ledger->quantity : +$ledger->quantity;
-            $this->touchCurrent($ledger->product_id, $ledger->warehouse_id, $ledger->branch_id, $oldEff);
-
-            // 2) rewrite ledger fields
-            $dir = $newQty >= 0 ? 'IN' : 'OUT';
-            $ledger->update([
-                'direction'  => $dir,
-                'quantity'   => abs($newQty),
-                'unit_cost'  => $newCost,
-                'note'       => $newNote,
-                'created_by' => $userId ?? $ledger->created_by,
-            ]);
-
-            // 3) apply new
-            $newEff = $dir === 'IN' ? +abs($newQty) : -abs($newQty);
-            $this->touchCurrent($ledger->product_id, $ledger->warehouse_id, $ledger->branch_id, $newEff);
-        });
-    }
-
-    private function touchCurrent(int $productId, ?int $warehouseId, ?int $branchId, float $delta): void
-    {
-        $cur = StockCurrent::query()
-            ->where('product_id', $productId)
+        $row = StockCurrent::where('product_id', $productId)
             ->where('warehouse_id', $warehouseId)
             ->where('branch_id', $branchId)
-            ->lockForUpdate()
             ->first();
 
-        if ($cur) {
-            $cur->update(['quantity' => (float) $cur->quantity + $delta]);
-        } else {
-            StockCurrent::create([
-                'product_id'   => $productId,
-                'warehouse_id' => $warehouseId,
-                'branch_id'    => $branchId,
-                'quantity'     => max(0, $delta), // policy অনুযায়ী চাইলে negativeও allow করতে পারো
-            ]);
-        }
+        return $row ? (float) $row->quantity : 0.0;
     }
-
 }
