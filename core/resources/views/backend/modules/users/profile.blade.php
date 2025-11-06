@@ -24,20 +24,39 @@
   </div>
 
 
-    <div class="card">
+    <div class="card col-lg-8">
       <div class="card-body table-responsive">
         <h5 class="mb-4">Profile Information</h5>
         <div class="row">
-          <div class="col-md-6">
-            <p><strong>Name:</strong> {{ $user->name }}</p>
-            <p><strong>Email:</strong> {{ $user->email }}</p>
-            <p><strong>Phone:</strong> {{ $user->phone }}</p>
-            <p><strong>Role:</strong> {{ $user->role->name ?? 'N/A' }}</p>
-          </div>
-          <div class="col-md-6">
-            <p><strong>Status:</strong> {{ $user->status == 1 ? 'Active' : 'Inactive' }}</p>
-            <p><strong>Profile Picture:</strong> <img src="{{ $user->profile_image ?? '/default-avatar.png' }}" alt="Profile Image" class="w-100" /></p>
-          </div>
+         <div class="col-lg-4">
+
+           <label class="form-label " for="">Name</label>
+           <input class="form-control " type="name" disabled value="{{ucwords($user->name)}}">
+         </div>
+         <div class="col-lg-4">
+
+           <label class="form-label " for="">Email</label>
+           <input class="form-control " type="name" disabled value="{{$user->email??'N/A'}}">
+         </div>
+         <div class="col-lg-4">
+
+           <label class="form-label " for="">Phone</label>
+           <input class="form-control " type="name" disabled value="{{$user->phone??'N/A'}}">
+         </div>
+         <div class="col-lg-4">
+
+           <label class="form-label p-1 mt-1" for="">Role</label>
+           <input class="form-control " type="name" disabled value="{{$user->role->name}}">
+         </div>
+           
+            <div class="col-lg-8 row mt-3 mx-1 mb-3">
+              <label class="form-lable p-1" for="">Profile Image</label>
+              <img src="{{ image($user->image) }}" alt="Profile Image" class="img-fluid w-25 rounded" />
+            </div>
+            <div class=""><p class=""><strong>Status:</strong> {{ $user->status == 1 ? 'Active' : 'Inactive' }}</p></div>
+           
+          
+         
         </div>
       </div>
       

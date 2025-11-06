@@ -2,7 +2,7 @@
 @section('content')
     <div class="row ">
 
-        <div class="product-div col-lg-8 bg-gray " style="height: 100vh; overflow-y: auto;">
+        <div class="product-div col-lg-8 bg-gray " style="height: 80vh; overflow-y: auto;">
             <div class="row justify-content-between">
                 {{-- welcome div --}}
                 <div class="col-lg-4">
@@ -11,8 +11,8 @@
                 </div>
                 {{-- input and buttons --}}
                 <div class="col-lg-6 d-flex justify-content-end align-items-center gap-2">
-                    <input class="border  px-3 rounded bg-light form-control" type="text" placeholder="search product"
-                        style="width: 150px;">
+                    <input class="border  px-3 fst-italic rounded bg-light form-control" type="text" placeholder="search product"
+                        style="width: 240px;">
 
                     <button class="btn btn-dark btn-sm px-3 text-xs d-flex align-items-center justify-content-center gap-1">
                         {{-- <iconify-icon icon="flowbite:tag-outline" class="menu-icon fs-6"></iconify-icon> --}}
@@ -75,7 +75,7 @@
         </div>
 
 
-        <div class="order-div col-lg-4 bg-white rounded-3 " style="height: 100vh; overflow-y: auto;">
+        <div class="order-div col-lg-4 bg-white rounded-3 " style="height: 80vh; overflow-y: auto;">
 
             <div class="d-flex p-1 justify-content-between mt-3">
                 <h1 class="text-xl lh-1 fw-semibold p-1">Purchase List</h1>
@@ -91,7 +91,7 @@
 
                     <div class="col-lg-9">
                         <select class="form-control form-control-sm col-lg-3 " name="" id="">
-                            <option value="">Admin</option>
+                            <option value="">Admin </option>
                             <option value="">Jahid Hasan</option>
                             <option value="">Tanvir Hasan</option>
                         </select>
@@ -104,6 +104,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="d-flex justify-content-between mt-3 mb-0 rounded-3 p-3 "
                 style="background:#FFEEE9;border:1px solid #E04F16">
                 <div class="">
@@ -119,12 +120,12 @@
             <div class="d-flex justify-content-between p-3">
 
                 <div class="d-flex gap-2">
-                    <h1 class="text-md lh-1 fw-semibold mt-1 p-2">Purchase Details</h1>
+                    <h1 class="text-md lh-1 fw-semibold mt-1 p-2">Order Details</h1>
                     <button class="btn btn-outline-secondary border btn-sm px-1 py-0 disabled">Items :
                         <span>3</span></button>
                 </div>
                 <div>
-                    <button class="btn btn-danger btn-xs py-1 text-xs">Clear all</button>
+                    <button class="btn btn-outline-danger btn-xs py-1 text-xs">Clear all</button>
                 </div>
 
             </div>
@@ -258,13 +259,13 @@
 
                 </div>
             </div>
-            <div class="d-flex  mt-3 px-3 gap-2 mb-3">
-                <button
-                    class="btn btn-light border btn-sm col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
+            <div class="d-flex  mt-3 gap-2 mb-3">
+                <button style="padding: 10px"
+                    class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
                         icon="flowbite:printer-outline" class="menu-icon fs-5 "></iconify-icon><span>Print
                         Order</span></button>
                 <button
-                    class="btn btn-dark border btn-sm col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
+                    class="btn btn-danger border  col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
                         icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Place
                         Order</span></button>
 
@@ -272,6 +273,34 @@
             </div>
 
 
+        </div>
+
+    </div>
+    <div class="footer-pos d-flex justify-content-center align-items-center gap-3 mt-3 position-absoulte bg-white p-3 "
+        style="position:absoulte;width:100vw">
+        <div class="p-0">
+            <button class="btn btn-primary btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="flowbite:pause-outline" class="menu-icon fs-5 "></iconify-icon>Hold</button>
+        </div>
+        <div class="p-0">
+            <button class="btn btn-danger btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="mdi:trash-outline" class="menu-icon fs-5 "></iconify-icon>Void</button>
+        </div>
+        <div class="p-0">
+            <button class="btn btn-success btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="flowbite:cash-outline" class="menu-icon fs-5 "></iconify-icon>Payment</button>
+        </div>
+        <div class="p-0">
+            <button class="btn btn-dark btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon>View Orders</button>
+        </div>
+        <div class="p-0">
+            <button class="btn btn-warning btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="mdi:reload" class="menu-icon fs-5 "></iconify-icon>Reset</button>
+        </div>
+        <div class="p-0">
+            <button class="btn btn-info btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+                    icon="mdi:swap-horizontal" class="menu-icon fs-5 "></iconify-icon>Transactions</button>
         </div>
 
     </div>

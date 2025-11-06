@@ -96,7 +96,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('btypes', [BusinessTypeController::class, 'store'])->name('btypes.store');
         Route::post('btypes/{type}', [BusinessTypeController::class, 'update'])->whereNumber('type')->name('btypes.update');
         Route::delete('btypes/{type}', [BusinessTypeController::class, 'destroy'])->whereNumber('type')->name('btypes.destroy');
-
+        Route::get('btypes/select2', [BusinessTypeController::class, 'select2'])->name('btypes.select2');
         // Branch ↔ Types assign
         Route::get('branches/{branch}/types-modal', [BranchController::class, 'typesModal'])->whereNumber('branch')->name('branches.types.modal');
         Route::post('branches/{branch}/types-sync', [BranchController::class, 'typesSync'])->whereNumber('branch')->name('branches.types.sync');

@@ -13,4 +13,8 @@ class BusinessType extends Model
     {
         return $this->belongsToMany(Branch::class, 'branch_business');
     }
+    public function companySetting()
+    {
+        return $this->hasMany(CompanySetting::class, 'business_type_id');
+    }
 }

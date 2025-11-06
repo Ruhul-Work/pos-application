@@ -6,7 +6,7 @@
 
     <div class="modal-body p-24">
         <form id="userEditForm" data-ajax="true" method="post"
-            action="{{ route('usermanage.users.update', $user->id) }}">
+            action="{{ route('usermanage.users.update', $user->id)}}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <input type="hidden" name="id" value="{{ $user->id }}">
@@ -72,6 +72,13 @@
                         @endif
                     </select>
                     <div class="invalid-feedback d-block branch_id-error" style="display:none"></div>
+                </div>
+
+                 <div class="col-md-6 mb-16">
+                    <label class="form-label text-sm mb-6">Image</label>
+                    <input type="file" name="image" value="{{image($user->image)}}" class="form-control radius-8"
+                        placeholder="Leave blank to keep">
+                    <div class="invalid-feedback d-block password-error" style="display:none"></div>
                 </div>
 
                 <div class="col-md-3 mb-16">
