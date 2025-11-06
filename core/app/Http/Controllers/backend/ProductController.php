@@ -18,7 +18,7 @@ class ProductController extends Controller
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'price', 'is_active','has_variants', 'name', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
+        $columns   = ['id', 'price', 'is_active', 'has_variants', 'name', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -26,7 +26,7 @@ class ProductController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = Product::query()->select(['id', 'name', 'is_active','has_variants', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id', null);
+        $base = Product::query()->select(['id', 'name', 'is_active', 'has_variants', 'price', 'category_type_id', 'category_id', 'subcategory_id', 'product_type_id', 'brand_id', 'color_id', 'size_id', 'image'])->where('parent_id', null);
 
         $total = (clone $base)->count();
 
@@ -48,7 +48,7 @@ class ProductController extends Controller
         $data = [];
         foreach ($rows as $b) {
             $nameCol = '<p>' . e($b->name) .
-                ($b->has_variants === 1 ? ' <a href="'.route('product.products.show',$b->id).'" class="badge bg-success">Has Child</a>' : '') .
+                ($b->has_variants === 1 ? ' <a href="' . route('product.products.show', $b->id) . '" class="badge bg-success">Has Child</a>' : '') .
                 '</p>';
 
 
@@ -366,9 +366,9 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $childProducts = Product::where('parent_id',$product->id)->get();
+        $childProducts = Product::where('parent_id', $product->id)->get();
 
-        return view('backend.modules.products.view',['product'=>$product,'child_products'=>$childProducts]);
+        return view('backend.modules.products.view', ['product' => $product, 'child_products' => $childProducts]);
     }
 
     public function update(Request $req, Product $product)
@@ -548,6 +548,191 @@ class ProductController extends Controller
         return redirect()->route('product.products.index')
             ->with('success', 'Brand updated successfully!');
     }
+    // public function importCsvModal()
+    // {
+    //     return view('backend.modules.products.import_csv');
+    // }
+
+    // public function importCsv(Request $req)
+    // {
+
+    //     $sheets[] = $req->all();
+    //     if (empty($sheets) || empty($sheets[0])) {
+    //         return back()->with('error', 'Uploaded file is empty or unreadable.');
+    //     }
+
+    //     $rows = $sheets[0];
+
+    //     // dd($rows);  
+
+    //     // If first row is header, normalize it and map rows to assoc arrays
+    //     $header = array_map(fn($h) => strtolower(trim($h)), $rows[0]);
+    //     $dataRows = array_slice($rows, 1);
+
+    //     $allowed = [
+    //         'parent_id',
+    //         'has_variants',
+    //         'is_sellable',
+    //         'name',
+    //         'slug',
+    //         'sku',
+    //         'barcode',
+    //         'unit_id',
+    //         'brand_id',
+    //         'product_type_id',
+    //         'category_type_id',
+    //         'category_id',
+    //         'subcategory_id',
+    //         'tax_id',
+    //         'tax_included',
+    //         'color_id',
+    //         'size_id',
+    //         'paper_id',
+    //         'price',
+    //         'cost_price',
+    //         'mrp',
+    //         'discount_type',
+    //         'discount_value',
+    //         'discount_starts_at',
+    //         'discount_ends_at',
+    //         'track_stock',
+    //         'reorder_level',
+    //         'image',
+    //         'thumbnail_image',
+    //         'size_chart_image',
+    //         'material',
+    //         'meta_title',
+    //         'meta_description',
+    //         'meta_keywords',
+    //         'meta_image',
+    //         'short_description',
+    //         'description',
+    //         'is_active',
+    //         'weight',
+    //         'width',
+    //         'height',
+    //         'length',
+    //         'deleted_at',
+    //         'created_at',
+    //         'updated_at',
+    //     ]; // allowed DB columns
+
+    //     $insertRows = [];
+
+    //     foreach ($dataRows as $r) {
+    //         // protect against ragged rows
+    //         $assoc = [];
+    //         foreach ($header as $i => $col) {
+    //             $assoc[$col] = $r[$i] ?? null;
+    //         }
+    //         // whitelist and normalize
+    //         $row = array_intersect_key($assoc, array_flip($allowed));
+    //         $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
+         
+    //         // if (empty($row['phone'])) {
+    //         //     continue; // skip if no unique identifier
+    //         // }
+    //         // prepare for upsert; ensure email key exists even if null
+    //         $insertRows[] = [
+    //             'parent_id' => ($row['parent_id']==='null'? null:$row['parent_id']),
+    //             'has_variants' => (int)($row['has_variants'] ?? 0),
+    //             'is_sellable' => (int)($row['is_sellable'] ?? 0),
+    //             'name' =>  ucwords($row['name']),
+    //             'slug' => $row['slug'] ?? null,
+    //             'sku' => $row['sku'] ?? null,
+    //             'barcode' => $row['barcode'] ?? null,
+    //             'unit_id' => (int)($row['unit_id'] ?? null),
+    //             'brand_id' => (int)($row['brand_id'] ?? null),
+    //             'product_type_id' => (int)($row['product_type_id'] ?? null),
+    //             'category_type_id' => (int)($row['category_type_id'] ?? null),
+    //             'category_id' => (int)($row['category_id'] ?? null),
+    //             'subcategory_id' => (int)($row['subcategory_id'] ?? null),
+    //             'tax_id' => null,
+    //             'tax_included' => (int)($row['tax_included'] ?? 0),
+    //             'color_id' => (int)($row['color_id'] ?? null),
+    //             'size_id' => (int)($row['size_id'] ?? null),
+    //             'paper_id' => ($row['paper_id']==='null'? null:$row['paper_id']),
+    //             'price' => $row['price'] ?? 0.00,
+    //             'cost_price' => $row['cost_price'] ?? null,
+    //             'mrp' => $row['mrp'] ?? null,
+    //             'discount_type' => $row['discount_type'] ?? null,
+    //             'discount_value' => $row['discount_value'] ?? null,
+    //             'discount_starts_at' => $row['discount_starts_at'] ?? null,
+    //             'discount_ends_at' => $row['discount_ends_at'] ?? null,
+    //             'track_stock' => (int)($row['track_stock'] ?? 1),
+    //             'reorder_level' => $row['reorder_level'] ?? null,
+    //             'image' => $row['image'] ?? null,
+    //             'thumbnail_image' => $row['thumbnail_image'] ?? null,
+    //             'size_chart_image' => $row['size_chart_image'] ?? null,
+    //             'material' => $row['material'] ?? null,
+    //             'meta_title' => $row['meta_title'] ?? null,
+    //             'meta_description' => $row['meta_description'] ?? null,
+    //             'meta_keywords' => $row['meta_keywords'] ?? null,
+    //             'meta_image' => $row['meta_image'] ?? null,
+    //             'short_description' => $row['short_description'] ?? null,
+    //             'description' => $row['description'] ?? null,
+    //             'is_active' => (int)($row['is_active'] ?? 1),
+    //             'weight' => ($row['weight']==='null'? null:$row['weight']),
+    //             'width' => ($row['width']==='null'? null:$row['width']),
+    //             'height' => ($row['height']==='null'? null:$row['height']),
+    //             'length' =>($row['length']==='null'? null:$row['length']),
+    //             'deleted_at' => $row['deleted_at'] ?? now(),
+    //             'created_at' => $row['created_at'] ?? now(),
+    //             'updated_at' => $row['updated_at'] ?? now(),
+    //         ];
+    //     }
+    //     // dd($insertRows);
+    //     if (!empty($insertRows)) {
+    //         // Upsert in bulk (Laravel 8+). Unique by email (or phone)
+    //         Product::upsert($insertRows, ['parent_id',
+    //         'has_variants',
+    //         'is_sellable',
+    //         'name',
+    //         'slug',
+    //         'sku',
+    //         'barcode',
+    //         'unit_id',
+    //         'brand_id',
+    //         'product_type_id',
+    //         'category_type_id',
+    //         'category_id',
+    //         'subcategory_id',
+    //         'tax_id',
+    //         'tax_included',
+    //         'color_id',
+    //         'size_id',
+    //         'paper_id',
+    //         'price',
+    //         'cost_price',
+    //         'mrp',
+    //         'discount_type',
+    //         'discount_value',
+    //         'discount_starts_at',
+    //         'discount_ends_at',
+    //         'track_stock',
+    //         'reorder_level',
+    //         'image',
+    //         'thumbnail_image',
+    //         'size_chart_image',
+    //         'material',
+    //         'meta_title',
+    //         'meta_description',
+    //         'meta_keywords',
+    //         'meta_image',
+    //         'short_description',
+    //         'description',
+    //         'is_active',
+    //         'weight',
+    //         'width',
+    //         'height',
+    //         'length',
+    //         'deleted_at',
+    //         'created_at',
+    //         'updated_at']);
+    //     }
+
+    //     return response()->json(['ok' => true, 'msg' => 'Products imported successfully']);
+    // }
 
     public function destroy(Product $product)
     {

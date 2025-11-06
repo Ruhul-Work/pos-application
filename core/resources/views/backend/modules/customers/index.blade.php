@@ -34,7 +34,15 @@
           @include('backend.include.buttons')
         </ul>
 
-        @perm('org.customers.store')
+        {{-- @perm('org.customers.store') --}}
+            <button 
+                class="d-flex btn btn-dark btn-sm px-12  radius-8 AjaxModal"
+              
+                data-size="lg"
+                data-onsuccess="BranchesIndex.onSaved"
+                data-ajax-modal="{{ route('customer.import_csv')  }}">
+                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Import 
+        </button>
             <button 
                 class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 "
               
@@ -42,7 +50,7 @@
                 data-onsuccess="BranchesIndex.onSaved">
                 <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a href="{{ route('customer.create') }}">Add customer</a>
         </button>
-        @endperm
+        {{-- @endperm --}}
       </div>
     </div>
 

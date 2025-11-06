@@ -16,7 +16,7 @@ class CustomerController extends Controller
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'name', 'slug', 'email','birth_date', 'phone','postal_code', 'address', 'is_active'];
+        $columns   = ['id', 'name', 'slug', 'email', 'birth_date', 'phone', 'postal_code', 'address', 'is_active'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -25,7 +25,7 @@ class CustomerController extends Controller
         $searchVal = trim($request->input('search.value', ''));
 
         $base = customer::query()
-            ->select(['id', 'name', 'slug', 'email', 'phone','postal_code', 'address', 'is_active']);
+            ->select(['id', 'name', 'slug', 'email', 'birth_date', 'phone', 'postal_code', 'address', 'is_active']);
 
         $total = (clone $base)->count();
 
@@ -71,16 +71,16 @@ class CustomerController extends Controller
 
             $icon = '<div  style="width:70px"><img src="' . image($b->image) . '" alt="img"></div>';
 
-          
+
 
             $data[] = [
                 $b->id,
                 $nameCol,
                 e($b->slug),
                 $b->email,
-                $b->birth_date??'N/A',
+                $b->birth_date ?? 'N/A',
                 $b->phone,
-                $b->address,
+                ucwords($b->address),
                 $b->postal_code,
                 $active,
                 $actions,
@@ -104,12 +104,12 @@ class CustomerController extends Controller
     {
         // dd($req->all());
         $data = $req->validate([
-            'name'             => ['required', 'string', 'max:150', 'unique:customers,name'],
-            'slug'             => ['required', 'string', 'max:150', 'unique:customers,slug'],
+            'name'             => ['required', 'string', 'max:150'],
+            'slug'             => ['required', 'string', 'max:150'],
             'email'             => ['required', 'string', 'max:150', 'unique:customers,email'],
             'phone'             => ['required', 'string', 'max:50', 'unique:customers,phone'],
-            'alternate_phone'             => ['nullable', 'string', 'max:50', 'unique:customers,alternate_phone'],
-            'birth_date'             => ['nullable', 'string', 'max:50', 'unique:customers,alternate_phone'],
+            'alternate_phone'             => ['nullable', 'string', 'max:50'],
+            'birth_date'             => ['nullable', 'string', 'max:50'],
             'postal_code'             => ['required', 'integer'],
             'address'             => ['required', 'string', 'max:255'],
             'image'             => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -117,7 +117,7 @@ class CustomerController extends Controller
 
         ]);
 
-     
+
         $imagePath = null;
         if ($req->hasFile('image')) {
             $imagePath = uploadImage($req->file('image'), 'customer/images');
@@ -156,10 +156,10 @@ class CustomerController extends Controller
         ]);
     }
 
-   
+
     public function update(Request $req, customer $customer)
     {
-       
+
         $data = $req->validate([
             'name'             => ['required', 'string', 'max:150'],
             'slug'             => ['required', 'string', 'max:150'],
@@ -173,15 +173,15 @@ class CustomerController extends Controller
             'is_active'        => ['required', 'integer'],
 
         ]);
-        
+
 
         $previousImage = $customer->image;
-        
+
 
         if ($req->hasFile('image')) {
             $imagePath       = uploadImage($req->file('image'), 'customer/images');
             $customer->image = $imagePath;
-           
+
 
             if ($previousImage && file_exists($previousImage)) {
                 unlink($previousImage);
@@ -193,16 +193,77 @@ class CustomerController extends Controller
         $customer->slug             = $data['slug'];
         $customer->email             = $data['email'];
         $customer->phone             = $data['phone'];
-        $customer->alternate_phone             = $data['alternate_phone']??null;
-        $customer->birth_date             = $data['birth_date']??null;
+        $customer->alternate_phone             = $data['alternate_phone'] ?? null;
+        $customer->birth_date             = $data['birth_date'] ?? null;
         $customer->address             = $data['address'];
         $customer->postal_code             = $data['postal_code'];
         $customer->is_active        = $data['is_active'];
 
         $customer->save();
 
-          return redirect()->route('customer.index')
-                     ->with('success', 'customer updated successfully!');
+        return redirect()->route('customer.index')
+            ->with('success', 'customer updated successfully!');
+    }
+
+    public function importCsvModal()
+    {
+        return view('backend.modules.customers.import_csv');
+    }
+
+    public function importCsv(Request $req)
+    {
+        $req->validate([
+            'file' => 'required|file|mimes:xlsx,csv,ods'
+        ]);
+        $sheets[] = $req->all();
+        if (empty($sheets) || empty($sheets[0])) {
+            return back()->with('error', 'Uploaded file is empty or unreadable.');
+        }
+
+        $rows = $sheets[0];
+
+        // If first row is header, normalize it and map rows to assoc arrays
+        $header = array_map(fn($h) => strtolower(trim($h)), $rows[0]);
+        $dataRows = array_slice($rows, 1);
+
+        $allowed = ['name', 'slug', 'email', 'birth_date', 'phone', 'alternate_phone', 'address', 'postal_code', 'image', 'is_active']; // allowed DB columns
+
+        $insertRows = [];
+
+        foreach ($dataRows as $r) {
+            // protect against ragged rows
+            $assoc = [];
+            foreach ($header as $i => $col) {
+                $assoc[$col] = $r[$i] ?? null;
+            }
+            // whitelist and normalize
+            $row = array_intersect_key($assoc, array_flip($allowed));
+            $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
+
+            if (empty($row['phone'])) {
+                continue; // skip if no unique identifier
+            }
+            // prepare for upsert; ensure email key exists even if null
+            $insertRows[] = [
+                'name' => ucwords($row['name']) ?? null,
+                'slug' => $row['slug'] ?? null,
+                'email' => $row['email'] ?? null,
+                'phone' => $row['phone'] ?? null,
+                'alternate_phone' => $row['alternate_phone'] ?? null,
+                'address' => ucwords($row['address']) ?? null,
+                'postal_code' => $row['postal_code'] ?? null,
+                'birth_date' => $row['birth_date'] ?? null,
+                'image' => $row['image'] ?? null,
+                'is_active' => (int)($row['is_active']) ?? 1
+            ];
+        }
+
+        if (!empty($insertRows)) {
+            // Upsert in bulk (Laravel 8+). Unique by email (or phone)
+            Customer::upsert($insertRows, ['name', 'slug', 'phone', 'address', 'postal_code', 'alternate_phone', 'birth_date', 'image', 'is_active']);
+        }
+
+        return response()->json(['ok' => true, 'msg' => 'Customers imported successfully']);
     }
 
     public function destroy(customer $customer)
@@ -216,14 +277,13 @@ class CustomerController extends Controller
         // }
 
         $image      = $customer->image;
-        $metaImagePath = $customer->meta_image;
 
         $customer->delete();
 
         if (isset($image) && file_exists($image)) {
             unlink($image);
         }
-       
+
 
         return response()->json(['ok' => true, 'msg' => 'customer deleted']);
     }

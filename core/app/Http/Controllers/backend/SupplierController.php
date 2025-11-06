@@ -195,6 +195,65 @@ class SupplierController extends Controller
           return redirect()->route('supplier.index')
                      ->with('success', 'Supplier updated successfully!');
     }
+     public function importCsvModal()
+    {
+        return view('backend.modules.suppliers.import_csv');
+    }
+
+    public function importCsv(Request $req)
+    {
+          $req->validate([
+            'file' => 'required|file|mimes:xlsx,csv,ods'
+        ]);
+        
+        $sheets[] = $req->all();
+        if (empty($sheets) || empty($sheets[0])) {
+            return back()->with('error', 'Uploaded file is empty or unreadable.');
+        }
+
+        $rows = $sheets[0];
+
+        // If first row is header, normalize it and map rows to assoc arrays
+        $header = array_map(fn($h) => strtolower(trim($h)), $rows[0]);
+        $dataRows = array_slice($rows, 1);
+
+        $allowed = ['name','slug', 'email', 'phone','address','postal_code','image','is_active']; // allowed DB columns
+
+        $insertRows = [];
+       
+        foreach ($dataRows as $r) {
+            // protect against ragged rows
+            $assoc = [];
+            foreach ($header as $i => $col) {
+                $assoc[$col] = $r[$i] ?? null;
+            }
+            // whitelist and normalize
+            $row = array_intersect_key($assoc, array_flip($allowed));
+            $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
+
+            if ( empty($row['phone'])) {
+                continue; // skip if no unique identifier
+            }
+            // prepare for upsert; ensure email key exists even if null
+            $insertRows[] = [
+                'name' => ucwords($row['name']) ?? null,
+                'slug' => $row['slug'] ?? null,
+                'email' => $row['email'] ?? null,
+                'phone' => $row['phone'] ?? null,
+                'address' => ucwords($row['address']) ?? null,
+                'postal_code' => $row['postal_code'] ?? null,
+                'image' => $row['image'] ?? null,
+                'is_active' => (int)($row['is_active'])??1
+            ];
+        }
+       
+        if (!empty($insertRows)) {
+            // Upsert in bulk (Laravel 8+). Unique by email (or phone)
+            Supplier::upsert($insertRows, ['name','slug', 'phone', 'address', 'postal_code', 'image', 'is_active']);
+        }
+
+        return response()->json(['ok' => true, 'msg' => 'Suppliers imported successfully']);
+    }
 
     public function destroy(Supplier $supplier)
     {
@@ -206,8 +265,7 @@ class SupplierController extends Controller
         //     ], 422);
         // }
 
-        $image      = $supplier->image;
-        $metaImagePath = $supplier->meta_image;
+        $image = $supplier->image;
 
         $supplier->delete();
 

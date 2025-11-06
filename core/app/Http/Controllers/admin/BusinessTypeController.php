@@ -97,4 +97,30 @@ class BusinessTypeController extends Controller
         $type->delete();
         return response()->json(['ok' => true, 'msg' => 'Type deleted']);
     }
+     public function select2(Request $r)
+    {
+        
+        $q = trim($r->input('q', ''));
+        $type = $r->type;
+        $base = BusinessType::query();
+      
+
+        if ($q !== '') {
+            $base->where(function($x) use ($q){
+                $x->where('name','like',"%{$q}%")
+                ;
+            });
+        }
+
+        $items = $base->orderBy('id')->orderBy('name')
+                      ->limit(20)->get(['id','name']);
+
+
+        return response()->json([
+            'results' => $items->map(fn($t)=>[
+                'id'   => $t->id,
+                'text' => $t->name 
+            ])
+        ]);
+    }
 }

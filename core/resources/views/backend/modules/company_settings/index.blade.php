@@ -2,14 +2,14 @@
 @extends('backend.layouts.master')
 
 @section('meta')
-  <title>Suppliers</title>
+  <title>Company Settings</title>
 @endsection
 
 @section('content')
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
     <div>
-      <h6 class="fw-semibold mb-0">Suppliers List</h6>
-      <p class=" m-0">Manage suppliers</p>
+      <h6 class="fw-semibold mb-0">Company Settings</h6>
+      <p class=" m-0">Manage Settings</p>
     </div>
     <ul class="d-flex align-items-center gap-2">
       <li class="fw-medium">
@@ -18,7 +18,7 @@
         </a>
       </li>
       <li>-</li>
-      <li class="fw-medium">Suppliers</li>
+      <li class="fw-medium">Settings</li>
     </ul>
   </div>
 
@@ -34,27 +34,20 @@
           @include('backend.include.buttons')
         </ul>
 
-        @perm('org.suppliers.store')
-         <button 
-                class="d-flex btn btn-dark btn-sm px-12  radius-8 AjaxModal"
-                data-size="lg"
-                data-onsuccess="BranchesIndex.onSaved"
-                data-ajax-modal="{{ route('supplier.import_csv')  }}">
-                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Import 
-        </button>
+        @perm('company_setting.create')
             <button 
                 class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 "
               
                 data-size="lg"
                 data-onsuccess="BranchesIndex.onSaved">
-                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a href="{{ route('supplier.create') }}">Add supplier</a>
+                <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a href="{{ route('company_setting.create') }}">Add Setting</a>
         </button>
         @endperm
       </div>
     </div>
 
     <div class="card-body">
-      <table class="table bordered-table table-scroll mb-0 AjaxDataTable" id="suppliersTable" style="width:100%">
+      <table class="table bordered-table table-scroll mb-0 AjaxDataTable" id="branchesTable" style="width:100%">
         <thead>
           <tr>
             <th style="width:60px">
@@ -63,12 +56,16 @@
                 <label class="form-check-label">S.L</label>
               </div>
             </th>
-            <th>Supplier</th>
-            <th>Slug</th>  
+            <th>Company</th>
+            <th>Code</th>  
+            <th>Logo</th>  
+            <th>Business Type</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Website</th>
             <th>Address</th>
-            <th>Postal Code</th>
+            <th>City</th>
+            <th>Country</th>
             <th>Status</th>
             <th style="width:120px">Action</th>
           </tr>
@@ -83,7 +80,7 @@
 
 @section('script')
   <script>
-    var DATATABLE_URL = "{{ route('supplier.list.ajax') }}";
+    var DATATABLE_URL = "{{ route('company_setting.list.ajax') }}";
 
     window.BranchesIndex = {
     onSaved: function (res) {
@@ -114,7 +111,7 @@
         },
         error: function(xhr){
           if (xhr.status === 422){
-            const msg = xhr.responseJSON?.msg || 'Cannot delete this supplier.';
+            const msg = xhr.responseJSON?.msg || 'Cannot delete this Brand.';
             Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
           } else if (xhr.status === 403){
             Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
@@ -128,17 +125,17 @@
     if (window.Swal){
       Swal.fire({
         icon: 'warning',
-        title: 'Delete supplier?',
+        title: 'Delete Brand?',
         text: 'This action cannot be undone.',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete',
         confirmButtonColor: '#d33'
       }).then(r => { if (r.isConfirmed) doDelete(); });
     } else {
-      if (confirm('Delete this supplier?')) doDelete();
+      if (confirm('Delete this setting?')) doDelete();
     }
   });
-
+ 
 
   </script>
 @endsection

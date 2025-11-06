@@ -1,8 +1,10 @@
 <?php
+
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
 use App\Http\Controllers\backend\ColorController;
+use App\Http\Controllers\backend\CompanySettingController;
 use App\Http\Controllers\backend\CountryController;
 use App\Http\Controllers\backend\CustomerController;
 use App\Http\Controllers\backend\DistrictController;
@@ -221,7 +223,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('/products/parents/get', [ProductController::class, 'parentsIndex'])->name('parents.index');
         Route::get('/products/parents/select2', [ProductController::class, 'parentsSelect2'])->name('parents.select2');
         Route::get('/products/{product}/variants', [ProductController::class, 'variants'])->name('variants');
-
+        Route::get('products/import_csv/file', [ProductController::class, 'importCsvModal'])->name('import_csv');
+        Route::post('products/handle/upload_csv', [ProductController::class, 'importCsv'])->name('handle_csv');
     });
 
     // Product type Management
@@ -270,6 +273,10 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('adjustments/list', [StockAdjustmentController::class, 'listAjax'])->name('adjustments.list');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
+        // NEW:
+        // Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
+        // Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
+
         // store already exists per your previous code
         Route::post('adjustments/{id}/post', [StockAdjustmentController::class, 'post'])->name('adjustments.post');
         Route::get('adjustments/{adjustment}', [StockAdjustmentController::class, 'show'])->name('adjustments.show');
@@ -302,6 +309,9 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('show');
         Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
         Route::get('suppliers/select2/type', [SupplierController::class, 'select2'])->name('select2');
+        Route::get('suppliers/import_csv/file', [SupplierController::class, 'importCsvModal'])->name('import_csv');
+        Route::post('suppliers/handle/upload_csv', [SupplierController::class, 'importCsv'])->name('handle_csv');
+    });
 
     });
 
@@ -314,8 +324,11 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
         Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
         Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
+        Route::get('customers/import_csv/file', [CustomerController::class, 'importCsvModal'])->name('import_csv');
+        Route::post('customers/handle/upload_csv', [CustomerController::class, 'importCsv'])->name('handle_csv');
         Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
         Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+    });
 
     });
 
@@ -358,6 +371,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('paymentType/{paymentType}', [PaymentTypeController::class, 'show'])->name('show');
         Route::delete('paymentType/{paymentType}', [PaymentTypeController::class, 'destroy'])->name('destroy');
         Route::get('paymentType/select2/type', [PaymentTypeController::class, 'select2'])->name('select2');
+    });
 
     });
 
@@ -372,6 +386,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'show'])->name('show');
         Route::delete('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'destroy'])->name('destroy');
         Route::get('expenseCategories/select2/type', [ExpenseCategoryController::class, 'select2'])->name('select2');
+    });
 
     });
 
@@ -386,7 +401,16 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('expense/{expense}', [ExpenseController::class, 'show'])->name('show');
         Route::delete('expense/{expense}', [ExpenseController::class, 'destroy'])->name('destroy');
         Route::get('expense/select2/type', [ExpenseController::class, 'select2'])->name('select2');
+    });
 
     });
 
+        Route::get('company_settings', [CompanySettingController::class, 'index'])->name('index');
+        Route::get('company_settings/create', [CompanySettingController::class, 'create'])->name('create');
+        Route::post('company_settings/list', [CompanySettingController::class, 'listAjax'])->name('list.ajax');
+        Route::post('company_settings', [CompanySettingController::class, 'store'])->name('store');
+        Route::get('company_settings/edit/{company_setting}', [CompanySettingController::class, 'edit'])->whereNumber('company_setting')->name('edit');
+        Route::put('company_settings/{company_setting}', [CompanySettingController::class, 'update'])->name('update');
+        Route::delete('company_settings/{company_setting}', [CompanySettingController::class, 'destroy'])->name('destroy');
+    });
 });

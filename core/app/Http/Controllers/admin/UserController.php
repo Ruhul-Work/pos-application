@@ -156,11 +156,16 @@ class UserController extends Controller
             'role_id'   => ['required', 'integer', 'exists:roles,id'],
             'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
             'status'    => ['required', 'in:0,1'],
+            'image'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // ⛑ non-super হলে যে-ই আসুক, নিজের branch enforce
         if (! $req->user()?->isSuper()) {
             $data['branch_id'] = $req->user()->branch_id; // force own branch
+        }
+          $imagePath = null;
+        if ($req->hasFile('image')) {
+            $imagePath =uploadImage($req->file('image'), 'users/images');
         }
 
         $user            = new User();
@@ -172,6 +177,7 @@ class UserController extends Controller
         $user->role_id   = (int) $data['role_id'];
         $user->branch_id = $data['branch_id'] ?? null;
         $user->status    = (int) $data['status'];
+        $user->image = $imagePath??null;
         $user->meta      = null;
         $user->save();
 
@@ -282,6 +288,7 @@ class UserController extends Controller
             'role_id'   => ['required', 'integer', 'exists:roles,id'],
             'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
             'status'    => ['required', 'in:0,1'],
+             'image'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // কমপক্ষে email/username একটা থাকা চাই
@@ -305,6 +312,17 @@ class UserController extends Controller
             // (ঐচ্ছিক) non-super যেন অন্য branch সেট করতে না পারে:
             // $data['branch_id'] = $acting->branch_id;
         }
+
+        $previousImage = $user->image;
+    if ($req->hasFile('image')) {
+        $imagePath = uploadImage($req->file('image'), 'users/images');
+        $user->image = $imagePath;
+
+        if ($previousImage && file_exists($previousImage)) {
+            unlink($previousImage);
+        }
+    }
+
 
         // update
         $user->name     = $data['name'];
@@ -346,7 +364,10 @@ class UserController extends Controller
             // cache bust
             PermCache::forgetUser((int) $user->id);
         });
-
+        $imagePath = $user->image;
+         if (isset($imagePath) && file_exists($imagePath)) {
+            unlink($imagePath);
+        }
         return back()->with('success', 'User deleted successfully.');
     }
 

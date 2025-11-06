@@ -35,6 +35,10 @@
 
                 {{-- data-ajax-modal="{{ route('product.products.createModal') }}"   --}}
                 @perm('org.branches.store')
+                    {{-- <button class="d-flex btn btn-dark btn-sm px-12  radius-8 AjaxModal" data-size="lg"
+                        data-onsuccess="BranchesIndex.onSaved" data-ajax-modal="{{ route('product.import_csv') }}">
+                        <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>Import
+                    </button> --}}
                     <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg"
                         data-onsuccess="BranchesIndex.onSaved">
                         <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a
