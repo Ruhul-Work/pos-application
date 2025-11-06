@@ -202,9 +202,7 @@ class SupplierController extends Controller
 
     public function importCsv(Request $req)
     {
-          $req->validate([
-            'file' => 'required|file|mimes:xlsx,csv,ods'
-        ]);
+   
         
         $sheets[] = $req->all();
         if (empty($sheets) || empty($sheets[0])) {

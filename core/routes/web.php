@@ -243,7 +243,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     // Inventory Opening Stock
     Route::prefix('inventory')->name('inventory.')->group(function () {
-        
+
         // Warehouse Management
         Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::post('warehouses/list', [WarehouseController::class, 'listAjax'])->name('warehouses.list.ajax');
@@ -294,7 +294,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
             ->name('adjustments.parent.update');
         Route::get('adjustments/parent-variants', [StockAdjustmentController::class, 'ajaxParentVariants'])
             ->name('adjustments.parent.variants');
-        
 
     });
 
@@ -313,8 +312,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('suppliers/handle/upload_csv', [SupplierController::class, 'importCsv'])->name('handle_csv');
     });
 
-    });
-
     Route::prefix('customer')->name('customer.')->group(function () {
 
         Route::get('customers', [CustomerController::class, 'index'])->name('index');
@@ -328,8 +325,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('customers/handle/upload_csv', [CustomerController::class, 'importCsv'])->name('handle_csv');
         Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
         Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
-    });
-
     });
 
     Route::prefix('pos')->name('pos.')->group(function () {
@@ -373,8 +368,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('paymentType/select2/type', [PaymentTypeController::class, 'select2'])->name('select2');
     });
 
-    });
-
     Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {
 
         Route::get('expenseCategories', [ExpenseCategoryController::class, 'index'])->name('index');
@@ -386,8 +379,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'show'])->name('show');
         Route::delete('expenseCategories/{expenseCategory}', [ExpenseCategoryController::class, 'destroy'])->name('destroy');
         Route::get('expenseCategories/select2/type', [ExpenseCategoryController::class, 'select2'])->name('select2');
-    });
-
     });
 
     Route::prefix('expenses')->name('expenses.')->group(function () {
@@ -403,8 +394,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('expense/select2/type', [ExpenseController::class, 'select2'])->name('select2');
     });
 
-    });
-
+    Route::prefix('company_setting')->name('company_setting.')->group(function () {
         Route::get('company_settings', [CompanySettingController::class, 'index'])->name('index');
         Route::get('company_settings/create', [CompanySettingController::class, 'create'])->name('create');
         Route::post('company_settings/list', [CompanySettingController::class, 'listAjax'])->name('list.ajax');
@@ -413,4 +403,5 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('company_settings/{company_setting}', [CompanySettingController::class, 'update'])->name('update');
         Route::delete('company_settings/{company_setting}', [CompanySettingController::class, 'destroy'])->name('destroy');
     });
+
 });
