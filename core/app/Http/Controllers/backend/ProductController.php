@@ -685,37 +685,105 @@ class ProductController extends Controller
     /**
      * AJAX: Variants under a parent
      */
-    public function variants(Product $product)
-    {
-        // 1) Try real children
-        $variants = Product::query()
-            ->where('parent_id', $product->id)
-            ->where('is_sellable', 1)
-            ->where('is_active', 1)
-            ->select('id', 'name', 'sku', 'image', 'cost_price as default_unit_cost')
-            ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id'                => $p->id,
-                    'name'              => $p->name,
-                    'sku'               => $p->sku,
-                    'image'             => image($p->image),
-                    'default_unit_cost' => $p->default_unit_cost,
-                ];
-            });
+    // public function variants(Product $product)
+    // {
+    //     // 1) Try real children
+    //     $variants = Product::query()
+    //         ->where('parent_id', $product->id)
+    //         ->where('is_sellable', 1)
+    //         ->where('is_active', 1)
+    //         ->select('id', 'name', 'sku', 'image', 'cost_price as default_unit_cost')
+    //         ->orderBy('id', 'asc')
+    //         ->get()
+    //         ->map(function ($p) {
+    //             return [
+    //                 'id'                => $p->id,
+    //                 'name'              => $p->name,
+    //                 'sku'               => $p->sku,
+    //                 'image'             => image($p->image),
+    //                 'default_unit_cost' => $p->default_unit_cost,
+    //             ];
+    //         });
 
-        // 2) If no children AND the product itself is a sellable single → return itself as “variant”
-        if ($variants->isEmpty() && $product->is_active && $product->is_sellable) {
-            $variants = collect([[
-                'id'                => $product->id,
-                'name'              => $product->name,
-                'sku'               => $product->sku,
-                'image'             => image($product->image),
-                'default_unit_cost' => $product->cost_price,
-            ]]);
+    //     // 2) If no children AND the product itself is a sellable single → return itself as “variant”
+    //     if ($variants->isEmpty() && $product->is_active && $product->is_sellable) {
+    //         $variants = collect([[
+    //             'id'                => $product->id,
+    //             'name'              => $product->name,
+    //             'sku'               => $product->sku,
+    //             'image'             => image($product->image),
+    //             'default_unit_cost' => $product->cost_price,
+    //         ]]);
+    //     }
+
+    //     return response()->json(['data' => $variants]);
+    // }
+
+    /**
+ * AJAX: Variants under a parent (now returns system_qty per variant)
+ * Route: GET /products/{product}/variants?warehouse_id=...&branch_id=...
+ */
+public function variants(Request $request, Product $product)
+{
+    $warehouseId = $request->query('warehouse_id') ?? null;
+    $branchId = $request->query('branch_id') ?? 0; // default 0 if not provided
+
+    // 1) Try real children
+    $variants = Product::query()
+        ->where('parent_id', $product->id)
+        ->where('is_sellable', 1)
+        ->where('is_active', 1)
+        ->select('id', 'name', 'sku', 'image', 'cost_price as default_unit_cost')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    // 2) If no children AND the product itself is a sellable single → treat itself as variant
+    if ($variants->isEmpty() && $product->is_active && $product->is_sellable) {
+        $variants = collect([$product->only(['id','name','sku','image','cost_price'])]);
+        // normalize key names
+        $variants = $variants->map(function($p) {
+            return (object)[
+                'id' => $p['id'],
+                'name' => $p['name'],
+                'sku' => $p['sku'],
+                'image' => $p['image'],
+                'default_unit_cost' => $p['cost_price'],
+            ];
+        });
+    }
+
+    // 3) Map and attach system_qty for each variant (if warehouseId provided)
+    $results = $variants->map(function ($p) use ($warehouseId, $branchId) {
+        $systemQty = 0.0;
+        if ($warehouseId) {
+            // Option A: use Eloquent Model StockCurrent (recommended)
+            try {
+                $row = \App\Models\StockCurrent::where('product_id', $p->id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId ?? 0)
+                    ->first();
+                $systemQty = $row ? (float) $row->quantity : 0.0;
+            } catch (\Throwable $e) {
+                // fallback to DB query if model missing
+                $systemQty = (float) \DB::table('stock_currents')
+                    ->where('product_id', $p->id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('branch_id', $branchId ?? 0)
+                    ->value('quantity') ?? 0.0;
+            }
         }
 
-        return response()->json(['data' => $variants]);
-    }
+        return [
+            'id'                => $p->id,
+            'name'              => $p->name,
+            'sku'               => $p->sku,
+            'image'             => image($p->image),
+            'default_unit_cost' => $p->default_unit_cost ?? 0,
+            'system_qty'        => round($systemQty, 3),
+        ];
+    });
+
+    return response()->json(['data' => $results]);
+}
+
 }

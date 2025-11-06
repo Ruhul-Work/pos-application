@@ -232,4 +232,15 @@ class WarehouseController extends Controller
 
     }
 
+    public function showForAjax($id)
+    {
+        $w = Warehouse::with('branch')->findOrFail($id);
+        return response()->json([
+            'id'          => $w->id,
+            'name'        => $w->name,
+            'branch_id'   => $w->branch_id,
+            'branch_name' => optional($w->branch)->name,
+        ]);
+    }
+
 }

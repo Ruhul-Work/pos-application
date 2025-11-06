@@ -1,27 +1,37 @@
 <?php
-
 namespace App\Models\backend;
 
 use Illuminate\Database\Eloquent\Model;
 
 class StockLedger extends Model
 {
-    protected $table = 'stock_ledgers';
+    protected $table   = 'stock_ledgers';
+    public $timestamps = false; // we use created_at/updated_at manual fields
 
     protected $fillable = [
-    'txn_date','product_id','warehouse_id','branch_id',
-    'ref_type','ref_id','direction','quantity','unit_cost',
-    'note','created_by',
+        'txn_date',
+        'product_id',
+        'warehouse_id',
+        'branch_id',
+        'ref_type',
+        'ref_id',
+        'direction',
+        'quantity',
+        'unit_cost',
+        'note',
+        'created_by',
+        'created_at',
+        'updated_at',
     ];
-    
+
     protected $casts = [
-    'txn_date' => 'datetime',
+        'txn_date'   => 'datetime',
+        'quantity'   => 'float',
+        'unit_cost'  => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    
-    public $timestamps = true;
-
-    
     // ---- Relationships (ADD THESE) ----
     public function product()
     {
@@ -40,10 +50,10 @@ class StockLedger extends Model
 
     public function creator()
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by'); 
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
     }
     public function user()
-    { 
-        return $this->belongsTo(User::class, 'created_by'); 
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
