@@ -212,9 +212,7 @@ class CustomerController extends Controller
 
     public function importCsv(Request $req)
     {
-        $req->validate([
-            'file' => 'required|file|mimes:xlsx,csv,ods'
-        ]);
+   
         $sheets[] = $req->all();
         if (empty($sheets) || empty($sheets[0])) {
             return back()->with('error', 'Uploaded file is empty or unreadable.');

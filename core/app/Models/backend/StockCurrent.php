@@ -6,11 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockCurrent extends Model
 {
-    protected $table = 'stock_currents';
+      protected $table = 'stock_currents';
+    public $timestamps = false; // we update timestamps manually in service
 
     protected $fillable = [
-    'product_id','warehouse_id','branch_id','quantity',
+        'product_id',
+        'warehouse_id',
+        'branch_id',
+        'quantity',
+        'version',
+        'created_at',
+        'updated_at',
     ];
 
-    public $timestamps = true;
+    protected $casts = [
+        'quantity' => 'float',
+        'version' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }

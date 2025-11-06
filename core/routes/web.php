@@ -253,6 +253,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('warehouses.update');
         Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('warehouses.destroy');
         Route::get('warehouses/select2', [WarehouseController::class, 'select2'])->name('warehouses.select2');
+        Route::get('warehouses/{warehouse}/ajax', [WarehouseController::class, 'showForAjax'])->name('warehouses.showForAjax');
 
         // Opening Stock Management
 
@@ -270,24 +271,33 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         // Adjust Stock Management
         Route::get('adjustments', [StockAdjustmentController::class, 'index'])->name('adjustments.index');
         Route::post('adjustments/list', [StockAdjustmentController::class, 'listAjax'])->name('adjustments.list');
-        Route::get('adjustments/create-modal', [StockAdjustmentController::class, 'createModal'])->name('adjustments.createModal');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
         // NEW:
         // Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
         // Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
 
+        // store already exists per your previous code
+        Route::post('adjustments/{id}/post', [StockAdjustmentController::class, 'post'])->name('adjustments.post');
+        Route::get('adjustments/{adjustment}', [StockAdjustmentController::class, 'show'])->name('adjustments.show');
         Route::get('adjustments/parent/{parent}/edit', [StockAdjustmentController::class, 'editParent'])
             ->name('adjustments.parent.edit');
+        Route::delete('adjustments/{ledger}/delete', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
+        Route::post('adjustments/{id}/cancel', [StockAdjustmentController::class, 'cancel'])->name('adjustments.cancel');
+
+        // bulk system qty endpoint
+        Route::post('adjustments/stock-currents/bulk', [StockAdjustmentController::class, 'systemQtyBulk'])->name('adjustments.stock.currents.bulk');
+        // product variants endpoint (if not already present)
+        Route::get('product/{parent}/variants', [StockAdjustmentController::class, 'ajaxParentVariants'])->name('product.variants');
+
         Route::put('adjustments/parent/{parent}', [StockAdjustmentController::class, 'updateParent'])
             ->name('adjustments.parent.update');
         Route::get('adjustments/parent-variants', [StockAdjustmentController::class, 'ajaxParentVariants'])
             ->name('adjustments.parent.variants');
-        Route::delete('adjustments/{ledger}/delete', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
+
     });
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
-
 
         Route::get('suppliers', [SupplierController::class, 'index'])->name('index');
         Route::get('suppliers/create', [SupplierController::class, 'createModal'])->name('create');
@@ -304,7 +314,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     Route::prefix('customer')->name('customer.')->group(function () {
 
-
         Route::get('customers', [CustomerController::class, 'index'])->name('index');
         Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
         Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
@@ -320,7 +329,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     Route::prefix('pos')->name('pos.')->group(function () {
 
-
         Route::get('pos', [PosController::class, 'index'])->name('index');
         // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
         // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
@@ -334,7 +342,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     });
 
     Route::prefix('purchase')->name('purchase.')->group(function () {
-
 
         Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
         // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
@@ -350,7 +357,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     Route::prefix('paymentTypes')->name('paymentTypes.')->group(function () {
 
-
         Route::get('paymentType', [PaymentTypeController::class, 'index'])->name('index');
         Route::get('paymentType/create', [PaymentTypeController::class, 'createModal'])->name('create');
         Route::post('paymentType/list', [PaymentTypeController::class, 'listAjax'])->name('list.ajax');
@@ -363,7 +369,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     });
 
     Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {
-
 
         Route::get('expenseCategories', [ExpenseCategoryController::class, 'index'])->name('index');
         Route::get('expenseCategories/create', [ExpenseCategoryController::class, 'createModal'])->name('create');
@@ -378,7 +383,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     Route::prefix('expenses')->name('expenses.')->group(function () {
 
-
         Route::get('expense', [ExpenseController::class, 'index'])->name('index');
         Route::get('expense/create', [ExpenseController::class, 'createModal'])->name('createModal');
         Route::post('expense/list', [ExpenseController::class, 'listAjax'])->name('list.ajax');
@@ -391,7 +395,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     });
 
     Route::prefix('company_setting')->name('company_setting.')->group(function () {
-
         Route::get('company_settings', [CompanySettingController::class, 'index'])->name('index');
         Route::get('company_settings/create', [CompanySettingController::class, 'create'])->name('create');
         Route::post('company_settings/list', [CompanySettingController::class, 'listAjax'])->name('list.ajax');
@@ -400,4 +403,5 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('company_settings/{company_setting}', [CompanySettingController::class, 'update'])->name('update');
         Route::delete('company_settings/{company_setting}', [CompanySettingController::class, 'destroy'])->name('destroy');
     });
+
 });
