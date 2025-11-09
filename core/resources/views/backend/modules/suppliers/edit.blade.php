@@ -29,115 +29,113 @@
                 Suppliers</a>
         </div>
     </div>
-    <form action="{{route('supplier.update',$supplier->id)}}" id="createSupplier" method="post" enctype="multipart/form-data">
+    <form action="{{ route('supplier.update', $supplier->id) }}" id="createSupplier" method="post"
+        enctype="multipart/form-data">
         @csrf
         @method('PUT')
-
-        <div class="card ">
-            <div class="card-body  ">
-                <div class="accordion-card-one accordion mb-6" id="accordionExample">
-                    <div class="accordion-item">
-                        <div class="accordion-header" id="headingOne">
-                            <div class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-                                aria-controls="collapseOne">
-                                <div class="addproduct-icon">
-                                    <h6><i data-feather="info" class="add-info"></i><span>Basic Information</span></h6>
-                                    <a href="javascript:void(0);"><i data-feather="chevron-down"
-                                            class="chevron-down-add"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
-                            data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-
-                                <div class="row">
-
-
-                                    <div class="col-lg-6 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Name <span class="star-sign">*</span></label>
-                                            <input type="text" class="form-control" id="name" name="name"
-                                                value="{{ $supplier->name }}">
-
-                                        </div>
-
-                                    </div>
-                                    <div class="col-lg-6 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Slug<span class="star-sign">*</span></label>
-                                            <input type="text" class="form-control" id="slug" name="slug" value="{{$supplier->slug}}">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-5 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Email<span class="star-sign">*</span></label>
-                                            <input type="email" class="form-control" id="email" name="email" value="{{$supplier->email}}">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Phone<span class="star-sign">*</span></label>
-                                            <input type="text" class="form-control" id="phone" name="phone" value="{{$supplier->phone}}">
-                                        </div>
-                                    </div>
-                                  
-                                    <div class="col-lg-3 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Postal Code<span class="star-sign">*</span></label>
-                                            <input type="number" class="form-control" min="0" id="address" name="postal_code" value="{{$supplier->postal_code}}">
-                                        </div>
-                                    </div>
-
-                                      <div class="col-lg-5 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Address<span class="star-sign">*</span></label>
-                                            <textarea type="text" class="form-control" rows="5" id="address" name="address">{{$supplier->address}}</textarea>
-                                        </div>
-                                    </div>
-
-
-
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-3 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Image</label>
-
-                                            <div class="form-group">
-                                                <div class="row" id="supplier_image">
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-12 mb-8">
-                                            <label class="form-label text-sm mb-8">Active?</label>
-                                            <div class="form-switch switch-purple d-flex align-items-center gap-3">
-                                                <input type="hidden" name="is_active" value="0" {{$supplier->is_active===0?'checked':''}}>
-                                                <input class="form-check-input" type="checkbox" name="is_active"
-                                                    value="1" id="categoryIsActive" {{$supplier->is_active===1?'checked':''}}>
-                                                <label class="form-check-label" for="categoryIsActive">Enable this
-                                                    supplier</label>
-                                            </div>
-                                            <div class="invalid-feedback d-block is_active-error" style="display:none">
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                </div>
-
-                            </div>
+        <div class="accordion-card-one accordion mb-6" id="accordionExample">
+            <div class="accordion-item">
+                <div class="accordion-header" id="headingOne">
+                    <div class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                        aria-controls="collapseOne">
+                        <div class="addproduct-icon">
+                            <h6><i data-feather="info" class="add-info"></i><span>Basic Information</span></h6>
+                            <a href="javascript:void(0);"><i data-feather="chevron-down" class="chevron-down-add"></i></a>
                         </div>
                     </div>
                 </div>
-              
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                    data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+
+                        <div class="row">
+
+
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Name <span class="star-sign">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                        value="{{ $supplier->name }}">
+
+                                </div>
+
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Slug<span class="star-sign">*</span></label>
+                                    <input type="text" class="form-control" id="slug" name="slug"
+                                        value="{{ $supplier->slug }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Email<span class="star-sign">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        value="{{ $supplier->email }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Phone<span class="star-sign">*</span></label>
+                                    <input type="text" class="form-control" id="phone" name="phone"
+                                        value="{{ $supplier->phone }}">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Postal Code<span class="star-sign">*</span></label>
+                                    <input type="number" class="form-control" min="0" id="address"
+                                        name="postal_code" value="{{ $supplier->postal_code }}">
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Image</label>
+
+                                    <div class="form-group">
+                                        <div class="row" id="supplier_image">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="mb-3 add-product">
+                                    <label class="form-label">Address<span class="star-sign">*</span></label>
+                                    <textarea type="text" class="form-control" rows="5" id="address" name="address">{{ $supplier->address }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-8">
+                                    <label class="form-label text-sm mb-8">Active?</label>
+                                    <div class="form-switch switch-purple d-flex align-items-center gap-3">
+                                        <input type="hidden" name="is_active" value="0"
+                                            {{ $supplier->is_active === 0 ? 'checked' : '' }}>
+                                        <input class="form-check-input" type="checkbox" name="is_active" value="1"
+                                            id="categoryIsActive" {{ $supplier->is_active === 1 ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="categoryIsActive">Enable this
+                                            supplier</label>
+                                    </div>
+                                    <div class="invalid-feedback d-block is_active-error" style="display:none">
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
-
 
         <div class="col-lg-12 mt-3">
             <div class="btn-addproduct mb-4">
@@ -225,7 +223,7 @@
             // });
 
 
- @if (!empty($supplier->image))
+            @if (!empty($supplier->image))
 
 
 
@@ -264,9 +262,9 @@
                 }
             });
 
-           
 
-           
+
+
 
         });
     </script>

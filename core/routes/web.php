@@ -225,6 +225,10 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('/products/{product}/variants', [ProductController::class, 'variants'])->name('variants');
         Route::get('products/import_csv/file', [ProductController::class, 'importCsvModal'])->name('import_csv');
         Route::post('products/handle/upload_csv', [ProductController::class, 'importCsv'])->name('handle_csv');
+
+        Route::get('products/product-list/allProducts', [ProductController::class, 'productList'])->name('productsList');
+        Route::get('products/product-search/{name}', [ProductController::class, 'productSearch'])->name('productsSearch');
+        Route::get('products/product-byCategory/{category}', [ProductController::class, 'productByCategory'])->name('productsByCategory');
     });
 
     // Product type Management

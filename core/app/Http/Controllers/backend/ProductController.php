@@ -15,6 +15,39 @@ class ProductController extends Controller
     {
         return view('backend.modules.products.index');
     }
+    
+    public function productList()
+    {
+        $products = Product::with(['category'])
+                   ->where('parent_id',null)
+                    ->paginate(6);
+
+        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+
+        return response()->json(['html' => $html]);
+    }
+    public function productSearch($name)
+    {
+        $products = Product::with(['category'])
+                    ->where('parent_id',null)
+                    ->where('name','like',"%$name%")
+                    ->paginate(6);
+
+        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+
+        return response()->json(['html' => $html]);
+    }
+    public function productByCategory($category)
+    {
+        $products = Product::with(['category'])
+                    ->where('parent_id',null)
+                    ->where('category_id',$category)
+                    ->paginate(6);
+
+        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+
+        return response()->json(['html' => $html]);
+    }
 
     public function listAjax(Request $request)
     {
@@ -628,7 +661,7 @@ class ProductController extends Controller
     //         // whitelist and normalize
     //         $row = array_intersect_key($assoc, array_flip($allowed));
     //         $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
-         
+
     //         // if (empty($row['phone'])) {
     //         //     continue; // skip if no unique identifier
     //         // }
@@ -905,70 +938,69 @@ class ProductController extends Controller
     // }
 
     /**
- * AJAX: Variants under a parent (now returns system_qty per variant)
- * Route: GET /products/{product}/variants?warehouse_id=...&branch_id=...
- */
-public function variants(Request $request, Product $product)
-{
-    $warehouseId = $request->query('warehouse_id') ?? null;
-    $branchId = $request->query('branch_id') ?? 0; // default 0 if not provided
+     * AJAX: Variants under a parent (now returns system_qty per variant)
+     * Route: GET /products/{product}/variants?warehouse_id=...&branch_id=...
+     */
+    public function variants(Request $request, Product $product)
+    {
+        $warehouseId = $request->query('warehouse_id') ?? null;
+        $branchId = $request->query('branch_id') ?? 0; // default 0 if not provided
 
-    // 1) Try real children
-    $variants = Product::query()
-        ->where('parent_id', $product->id)
-        ->where('is_sellable', 1)
-        ->where('is_active', 1)
-        ->select('id', 'name', 'sku', 'image', 'cost_price as default_unit_cost')
-        ->orderBy('id', 'asc')
-        ->get();
+        // 1) Try real children
+        $variants = Product::query()
+            ->where('parent_id', $product->id)
+            ->where('is_sellable', 1)
+            ->where('is_active', 1)
+            ->select('id', 'name', 'sku', 'image', 'cost_price as default_unit_cost')
+            ->orderBy('id', 'asc')
+            ->get();
 
-    // 2) If no children AND the product itself is a sellable single → treat itself as variant
-    if ($variants->isEmpty() && $product->is_active && $product->is_sellable) {
-        $variants = collect([$product->only(['id','name','sku','image','cost_price'])]);
-        // normalize key names
-        $variants = $variants->map(function($p) {
-            return (object)[
-                'id' => $p['id'],
-                'name' => $p['name'],
-                'sku' => $p['sku'],
-                'image' => $p['image'],
-                'default_unit_cost' => $p['cost_price'],
-            ];
-        });
-    }
-
-    // 3) Map and attach system_qty for each variant (if warehouseId provided)
-    $results = $variants->map(function ($p) use ($warehouseId, $branchId) {
-        $systemQty = 0.0;
-        if ($warehouseId) {
-            // Option A: use Eloquent Model StockCurrent (recommended)
-            try {
-                $row = \App\Models\StockCurrent::where('product_id', $p->id)
-                    ->where('warehouse_id', $warehouseId)
-                    ->where('branch_id', $branchId ?? 0)
-                    ->first();
-                $systemQty = $row ? (float) $row->quantity : 0.0;
-            } catch (\Throwable $e) {
-                // fallback to DB query if model missing
-                $systemQty = (float) \DB::table('stock_currents')
-                    ->where('product_id', $p->id)
-                    ->where('warehouse_id', $warehouseId)
-                    ->where('branch_id', $branchId ?? 0)
-                    ->value('quantity') ?? 0.0;
-            }
+        // 2) If no children AND the product itself is a sellable single → treat itself as variant
+        if ($variants->isEmpty() && $product->is_active && $product->is_sellable) {
+            $variants = collect([$product->only(['id', 'name', 'sku', 'image', 'cost_price'])]);
+            // normalize key names
+            $variants = $variants->map(function ($p) {
+                return (object)[
+                    'id' => $p['id'],
+                    'name' => $p['name'],
+                    'sku' => $p['sku'],
+                    'image' => $p['image'],
+                    'default_unit_cost' => $p['cost_price'],
+                ];
+            });
         }
 
-        return [
-            'id'                => $p->id,
-            'name'              => $p->name,
-            'sku'               => $p->sku,
-            'image'             => image($p->image),
-            'default_unit_cost' => $p->default_unit_cost ?? 0,
-            'system_qty'        => round($systemQty, 3),
-        ];
-    });
+        // 3) Map and attach system_qty for each variant (if warehouseId provided)
+        $results = $variants->map(function ($p) use ($warehouseId, $branchId) {
+            $systemQty = 0.0;
+            if ($warehouseId) {
+                // Option A: use Eloquent Model StockCurrent (recommended)
+                try {
+                    $row = \App\Models\StockCurrent::where('product_id', $p->id)
+                        ->where('warehouse_id', $warehouseId)
+                        ->where('branch_id', $branchId ?? 0)
+                        ->first();
+                    $systemQty = $row ? (float) $row->quantity : 0.0;
+                } catch (\Throwable $e) {
+                    // fallback to DB query if model missing
+                    $systemQty = (float) \DB::table('stock_currents')
+                        ->where('product_id', $p->id)
+                        ->where('warehouse_id', $warehouseId)
+                        ->where('branch_id', $branchId ?? 0)
+                        ->value('quantity') ?? 0.0;
+                }
+            }
 
-    return response()->json(['data' => $results]);
-}
+            return [
+                'id'                => $p->id,
+                'name'              => $p->name,
+                'sku'               => $p->sku,
+                'image'             => image($p->image),
+                'default_unit_cost' => $p->default_unit_cost ?? 0,
+                'system_qty'        => round($systemQty, 3),
+            ];
+        });
 
+        return response()->json(['data' => $results]);
+    }
 }
