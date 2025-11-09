@@ -21,7 +21,7 @@
                     class="btn btn-sm btn-outline-danger minw-120">Delete</button>
             @elseif($adjustment->status === 'POSTED')
                 <button id="btnCancel" data-url="{{ route('inventory.adjustments.cancel', $adjustment->id) }}"
-                    class="btn btn-warning">Cancel</button>
+                    class="btn btn-sm btn-warning">Cancel</button>
             @endif
         </div>
     </div>
