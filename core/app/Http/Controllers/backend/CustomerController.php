@@ -291,7 +291,7 @@ class CustomerController extends Controller
 
         $q = trim($r->input('q', ''));
         $type = $r->type;
-        $base = customer::query()->where('customer_type_id', $type)->where('is_active', 1);
+        $base = customer::query()->where('is_active', 1);
 
 
         if ($q !== '') {

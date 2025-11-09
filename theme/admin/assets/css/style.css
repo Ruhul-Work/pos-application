@@ -15680,7 +15680,7 @@ td.fc-header-center {
   content: "\f1bf";
   font-family: remixicon;
   font-style: normal;
-  font-size: 1.25rem;
+  font-size: 1.25rem; 
   color: var(--text-primary-light);
 }
 
@@ -15909,12 +15909,12 @@ td.fc-header-center {
   -webkit-transform: translateY(-50%);
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
-  font-size: 1.125rem;
+  font-size: 1.2rem;
 }
 
 @media (min-width: 1650px) {
   .sidebar-menu li.dropdown > a::after {
-    font-size: 1.375rem;
+    font-size:1.375rem;  /*;  */
   }
 }
 .sidebar-menu li.dropdown.open > a,
@@ -15950,7 +15950,7 @@ td.fc-header-center {
 
 .sidebar-menu li a {
   padding: 0.625rem 0.75rem;
-  font-weight: 500;
+  font-weight: 700;
   display: flex;
   align-items: center;
   color: var(--text-secondary-light);
@@ -15959,7 +15959,7 @@ td.fc-header-center {
   -moz-border-radius: 8px;
   -ms-border-radius: 8px;
   -o-border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 @media (min-width: 1650px) {
@@ -15972,7 +15972,7 @@ td.fc-header-center {
 }
 
 .sidebar-menu li a .menu-icon {
-  font-size: 1.125rem;
+  font-size: rem;
   margin-inline-end: 0.5rem;
 }
 
@@ -16320,6 +16320,10 @@ div.dt-container .dt-paging .dt-paging-button.current {
   background-color: #212529;
   color: white;
 }
+.nav-btn.active{
+  background-color: #212529;
+  color: white;
+}
 .payment-btn{
   width: 30%;
   border: 1px solid lightgray;
@@ -16334,11 +16338,57 @@ div.dt-container .dt-paging .dt-paging-button.current {
 /* Target the entire scrollbar */
 ::-webkit-scrollbar {
   width: 3px;              /* width of vertical scrollbar */
-  height: 10px;             /* height of horizontal scrollbar */
+  height: 2px;  
+  border-radius: 1px;           /* height of horizontal scrollbar */
 }
 ::-webkit-scrollbar-thumb {
   background: gray;        /* your color */
   border-radius: 10px;
+}
+.pagination {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 10px 10px;
+}
+.pagination .page-link {
+    color: #333;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    padding: 3px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+.pagination .page-link:hover {
+    color: #fff;
+    background-color: #0d6efd; /* soft blue */
+    border-color: #0d6efd;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.pagination .page-item.active .page-link {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+}
+
+/* Disabled links (Previous / Next) */
+.pagination .page-item.disabled .page-link {
+    color: #bbb;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Remove focus outline */
+.pagination .page-link:focus {
+    box-shadow: none;
+    outline: none;
 }
 .grid {
   display: grid;

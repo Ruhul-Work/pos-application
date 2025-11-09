@@ -42,7 +42,6 @@
                             <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
                             <span>User</span>
                         </div>
-
                     </a>
 
                     {{-- Submenu items --}}

@@ -280,7 +280,7 @@ class SupplierController extends Controller
 
         $q = trim($r->input('q', ''));
         $type = $r->type;
-        $base = Supplier::query()->where('supplier_type_id', $type)->where('is_active', 1);
+        $base = Supplier::query()->where('is_active', 1);
 
 
         if ($q !== '') {
