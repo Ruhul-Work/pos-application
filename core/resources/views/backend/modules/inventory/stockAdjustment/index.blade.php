@@ -75,54 +75,165 @@
             }
         };
 
-        // hard delete (with current reverse): 
-        $(document).on('click', '.btn-adjust-delete', function(e) {
-            e.preventDefault();
-            const url = $(this).data('url');
 
-            const doDelete = () => {
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(res) {
-                        $('.AjaxDataTable').DataTable().ajax.reload(null, false);
-                        window.Swal && Swal.fire({
+        // ensure CSRF var exists
+        const CSRF = "{{ csrf_token() }}";
+
+        // POST (publish) adjustment with SweetAlert confirm + feedback
+        $(document).on('click', '.btn-adjust-post', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            if (!url) return;
+
+            // SweetAlert confirm
+            Swal.fire({
+                title: 'Post this adjustment?',
+                text: 'This will update stock and create ledger entries.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Post',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $btn.prop('disabled', true);
+                $.post(url, {
+                        _token: CSRF
+                    })
+                    .done(function(res) {
+                        Swal.fire({
                             icon: 'success',
-                            title: res?.msg || 'Deleted',
+                            title: res.msg || 'Posted',
                             timer: 900,
                             showConfirmButton: false
                         });
-                    },
-                    error: function(xhr) {
-                        const msg = xhr.responseJSON?.message || 'Delete failed';
-                        window.Swal && Swal.fire({
+                        if (window.adjustmentsTable) {
+                            window.adjustmentsTable.ajax.reload(null, false);
+                        } else {
+                            setTimeout(() => location.reload(), 800);
+                        }
+                    })
+                    .fail(function(xhr) {
+                        const msg = xhr?.responseJSON?.msg || 'Post failed';
+                        Swal.fire({
                             icon: 'error',
-                            title: 'Failed',
+                            title: 'Error',
                             text: msg
                         });
-                    }
-                });
-            };
-
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Delete this adjustment line?',
-                    text: 'This will reverse current stock effect.',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete',
-                    confirmButtonColor: '#d33'
-                }).then(r => {
-                    if (r.isConfirmed) doDelete();
-                });
-            } else {
-                if (confirm('Delete?')) doDelete();
-            }
+                    })
+                    .always(function() {
+                        $btn.prop('disabled', false);
+                    });
+            });
         });
+
+        // CANCEL adjustment with SweetAlert confirm + feedback
+        $(document).on('click', '.btn-adjust-cancel', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            if (!url) return;
+
+            Swal.fire({
+                title: 'Cancel this posted adjustment?',
+                text: 'This will reverse or mark the adjustment as cancelled depending on policy.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Cancel',
+                cancelButtonText: 'Keep',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $btn.prop('disabled', true);
+                $.post(url, {
+                        _token: CSRF
+                    })
+                    .done(function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: res.msg || 'Cancelled',
+                            timer: 900,
+                            showConfirmButton: false
+                        });
+                        if (window.adjustmentsTable) {
+                            window.adjustmentsTable.ajax.reload(null, false);
+                        } else {
+                            setTimeout(() => location.reload(), 800);
+                        }
+                    })
+                    .fail(function(xhr) {
+                        const msg = xhr?.responseJSON?.msg || 'Cancel failed';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: msg
+                        });
+                    })
+                    .always(function() {
+                        $btn.prop('disabled', false);
+                    });
+            });
+        });
+
+        // DELETE draft adjustment with SweetAlert confirm + feedback
+        $(document).on('click', '.btn-adjust-delete', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            if (!url) return;
+
+            Swal.fire({
+                title: 'Delete this draft?',
+                text: 'This will permanently delete the adjustment and its lines. This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $btn.prop('disabled', true);
+                $.ajax({
+                        url: url,
+                        method: 'DELETE',
+                        data: {
+                            _token: CSRF
+                        }
+                    })
+                    .done(function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: res.msg || 'Deleted',
+                            timer: 900,
+                            showConfirmButton: false
+                        });
+                        if (window.adjustmentsTable) {
+                            window.adjustmentsTable.ajax.reload(null, false);
+                        } else {
+                            setTimeout(() => location.href =
+                                "{{ route('inventory.adjustments.index') }}", 700);
+                        }
+                    })
+                    .fail(function(xhr) {
+                        const msg = xhr?.responseJSON?.msg || 'Delete failed';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: msg
+                        });
+                    })
+                    .always(function() {
+                        $btn.prop('disabled', false);
+                    });
+            });
+        });
+       
     </script>
 @endsection

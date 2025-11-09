@@ -273,20 +273,24 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('adjustments/list', [StockAdjustmentController::class, 'listAjax'])->name('adjustments.list');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
-        // NEW:
-        // Route::get('adjustments/{ledger}/edit-modal', [StockAdjustmentController::class, 'editModal'])->name('adjustments.editModal');
-        // Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
-
-        // store already exists per your previous code
-        Route::post('adjustments/{id}/post', [StockAdjustmentController::class, 'post'])->name('adjustments.post');
+        
+        Route::POST('adjustments/{id}/post', [StockAdjustmentController::class, 'post'])->name('adjustments.post');
         Route::get('adjustments/{adjustment}', [StockAdjustmentController::class, 'show'])->name('adjustments.show');
-        Route::get('adjustments/parent/{parent}/edit', [StockAdjustmentController::class, 'editParent'])
-            ->name('adjustments.parent.edit');
+        Route::get('adjustments/{ledger}/edit', [StockAdjustmentController::class, 'edit'])->name('adjustments.edit');
+        Route::POST('adjustments/{ledger}/cancel', [StockAdjustmentController::class, 'cancel'])->name('adjustments.cancel');
+        Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
         Route::delete('adjustments/{ledger}/delete', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
-        Route::post('adjustments/{id}/cancel', [StockAdjustmentController::class, 'cancel'])->name('adjustments.cancel');
 
+        
         // bulk system qty endpoint
         Route::post('adjustments/stock-currents/bulk', [StockAdjustmentController::class, 'systemQtyBulk'])->name('adjustments.stock.currents.bulk');
+
+        // store already exists per your previous code
+   
+        Route::get('adjustments/parent/{parent}/edit', [StockAdjustmentController::class, 'editParent'])
+            ->name('adjustments.parent.edit');
+        
+
         // product variants endpoint (if not already present)
         Route::get('product/{parent}/variants', [StockAdjustmentController::class, 'ajaxParentVariants'])->name('product.variants');
 

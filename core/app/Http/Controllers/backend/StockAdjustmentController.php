@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StockAdjustmentRequest;
 use App\Models\backend\StockAdjustment;
+use App\Models\backend\StockAdjustmentItem;
 
 class StockAdjustmentController extends Controller
 {
@@ -197,8 +198,8 @@ public function listAjax(Request $request)
 
         // status badge
         $status = strtoupper($r->status ?? 'DRAFT');
-        $statusBadge = '<span class="badge ' .
-            ($status === 'POSTED' ? 'bg-success' : ($status === 'CANCELLED' ? 'bg-danger' : 'bg-secondary')) .
+        $statusBadge = '<span class=" border px-24 py-4 radius-4 fw-medium text-sm ' .
+            ($status === 'POSTED' ? 'border-success-main bg-success-focus text-success-600' : ($status === 'CANCELLED' ? 'border-danger-main bg-danger-focus text-danger-600' : 'border-warning-main bg-warning-focus text-warning-600')) .
             '">' . e($status) . '</span>';
 
         // created by
@@ -209,7 +210,7 @@ public function listAjax(Request $request)
 
         // actions — adjust routes/perm checks as you need
         $viewUrl = route('inventory.adjustments.show', $r->id);
-        $editUrl = route('inventory.adjustments.parent.edit', $r->id); // or dedicated edit route for header
+        $editUrl = route('inventory.adjustments.edit', $r->id); // or dedicated edit route for header
         $postUrl = route('inventory.adjustments.post', $r->id); // ensure route exists
         $deleteUrl = route('inventory.adjustments.destroy', $r->id);
 
@@ -224,11 +225,11 @@ public function listAjax(Request $request)
                                 bg-success-focus text-success-main" title="Edit">
                                 <iconify-icon icon="lucide:edit"></iconify-icon>
                             </a>';
-            $actions .= ' <a href="' . $postUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
-                                bg-success-focus text-success-main" title="post">
+            $actions .= ' <a href="#" data-url="' . $postUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                                bg-success-focus text-success-main btn-adjust-post" title="post">
                                 <iconify-icon icon="material-symbols:assignment-turned-in-outline-sharp"></iconify-icon>
                             </a>';
-            $actions .= ' <a href="' . $deleteUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+            $actions .= ' <a href="#" data-url="' . $deleteUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
                              bg-danger-focus text-danger-main btn-adjust-delete" title="delete">
                                 <iconify-icon icon="mdi:delete"></iconify-icon>
                             </a>';
@@ -237,8 +238,8 @@ public function listAjax(Request $request)
             // if posted show cancel
             if ($status === 'POSTED') {
                 $cancelUrl = route('inventory.adjustments.cancel', $r->id); // create route if needed
-                  $actions .= ' <a href="' . $cancelUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
-                                bg-warning-focus text-warning-main" title="cancel">
+                  $actions .= ' <a href="#" data-url="' . $cancelUrl . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                                bg-warning-focus text-warning-main btn-adjust-cancel" title="cancel">
                                 <iconify-icon icon="material-symbols:cancel"></iconify-icon>
                             </a>';
             }
@@ -337,31 +338,72 @@ public function listAjax(Request $request)
         }
     }
 
-      // POST /adjustments/{id}/post
-    public function post(Request $request, $id)
-    {
-        $userId = Auth::id();
-        try {
-            $res = $this->stockService->postAdjustment((int)$id, $userId);
-            return response()->json(['ok'=>true,'msg'=>'Posted','data'=>$res]);
-        } catch (\Exception $e) {
-            \Log::error('StockAdjustment::post error: '.$e->getMessage());
-            return response()->json(['ok'=>false,'msg'=>$e->getMessage()], 400);
-        }
-    }
 
-    // POST /adjustments/{id}/cancel
-    public function cancel(Request $request, $id)
-    {
-        $userId = Auth::id();
-        try {
-            $res = $this->stockService->cancelAdjustment((int)$id, $userId);
-            return response()->json(['ok'=>true,'msg'=>'Cancelled','data'=>$res]);
-        } catch (\Exception $e) {
-            \Log::error('StockAdjustment::cancel error: '.$e->getMessage());
-            return response()->json(['ok'=>false,'msg'=>$e->getMessage()], 400);
-        }
+public function show(StockAdjustment $adjustment)
+{
+    $adjustment->loadMissing(['items.product','warehouse','branch','creator','ledgerEntries.product']);
+    return view('backend.modules.inventory.stockAdjustment.show', compact('adjustment'));
+}
+
+// POST /adjustments/{id}/post
+public function post(Request $request, $id)
+{
+    $userId = auth()->id();
+    try {
+        // call service (should perform transaction & update ledgers & currents)
+        $res = $this->stockService->postAdjustment((int)$id, $userId);
+
+        return response()->json([
+            'ok' => true,
+            'msg' => 'Adjustment posted',
+            'data' => $res
+        ]);
+    } catch (\Exception $e) {
+        Log::error("postAdjustment failed: {$e->getMessage()}", ['id'=>$id,'trace'=>$e->getTraceAsString()]);
+        return response()->json(['ok'=>false,'msg'=>'Post failed: '.$e->getMessage()], 400);
     }
+}
+
+// POST /adjustments/{id}/cancel
+public function cancel(Request $request, $id)
+{
+    $userId = auth()->id();
+    try {
+        $res = $this->stockService->cancelAdjustment((int)$id, $userId); // implement in service
+        return response()->json(['ok'=>true,'msg'=>'Adjustment cancelled','data'=>$res]);
+    } catch (\Exception $e) {
+        Log::error("cancelAdjustment failed: {$e->getMessage()}", ['id'=>$id,'trace'=>$e->getTraceAsString()]);
+        return response()->json(['ok'=>false,'msg'=>'Cancel failed: '.$e->getMessage()], 400);
+    }
+}
+
+
+
+    //   // POST /adjustments/{id}/post
+    // public function post(Request $request, $id)
+    // {
+    //     $userId = Auth::id();
+    //     try {
+    //         $res = $this->stockService->postAdjustment((int)$id, $userId);
+    //         return response()->json(['ok'=>true,'msg'=>'Posted','data'=>$res]);
+    //     } catch (\Exception $e) {
+    //         \Log::error('StockAdjustment::post error: '.$e->getMessage());
+    //         return response()->json(['ok'=>false,'msg'=>$e->getMessage()], 400);
+    //     }
+    // }
+
+    // // POST /adjustments/{id}/cancel
+    // public function cancel(Request $request, $id)
+    // {
+    //     $userId = Auth::id();
+    //     try {
+    //         $res = $this->stockService->cancelAdjustment((int)$id, $userId);
+    //         return response()->json(['ok'=>true,'msg'=>'Cancelled','data'=>$res]);
+    //     } catch (\Exception $e) {
+    //         \Log::error('StockAdjustment::cancel error: '.$e->getMessage());
+    //         return response()->json(['ok'=>false,'msg'=>$e->getMessage()], 400);
+    //     }
+    // }
 
     // AJAX: variants for parent (used in existing JS fetchVariants)
     // public function ajaxParentVariants($parentId, Request $request)
@@ -407,13 +449,121 @@ public function listAjax(Request $request)
     }
 
 
+    public function edit($id)
+{
+    $adjustment = StockAdjustment::with(['items.product','warehouse','branch'])->findOrFail($id);
 
-    public function destroy(StockLedger $ledger, StockService $stock)
-    {
-        abort_unless($ledger->ref_type === 'adjustment', 404);
-
-        $stock->deleteAdjustment($ledger, auth()->id()); // reverse effect then delete
-        return response()->json(['success' => true, 'msg' => 'Adjustment deleted']);
+    // only drafts editable
+    if (strtoupper($adjustment->status) !== 'DRAFT') {
+        return redirect()->route('inventory.adjustments.index')
+            ->with('error','Only DRAFT adjustments can be edited.');
     }
+
+    // prepare data similar to create page: variants rows are in $adjustment->items
+    // load warehouses & user branch etc if needed
+    $warehouses = Warehouse::select('id','name')->get();
+    
+
+    return view('backend.modules.inventory.stockAdjustment.edit', compact('adjustment','warehouses'));
+}
+
+public function update(Request $request, $id)
+{
+    $adjustment = StockAdjustment::with('items')->findOrFail($id);
+
+    if (strtoupper($adjustment->status) !== 'DRAFT') {
+        return response()->json(['ok'=>false,'msg'=>'Only DRAFT adjustments can be updated.'], 400);
+    }
+
+    $data = $request->validate([
+        'warehouse_id' => ['required','integer'],
+        'branch_id'    => ['nullable','integer'],
+        'when'         => ['nullable','date'],
+        'global_reason'=> ['nullable','string'],
+        'rows'         => ['required','array','min:1'],
+        'rows.*.product_id' => ['required','integer'],
+        'rows.*.qty'        => ['required','numeric'],
+        'rows.*.unit_cost'  => ['nullable','numeric'],
+        'post_now'     => ['nullable','in:0,1']
+    ]);
+
+    $userId = Auth::id();
+
+    DB::beginTransaction();
+    try {
+        // update header
+        $adjustment->update([
+            'warehouse_id' => $data['warehouse_id'],
+            'branch_id'    => $data['branch_id'] ?? $adjustment->branch_id,
+            'adjust_date'  => $data['when'] ?? $adjustment->adjust_date,
+            'reason_code'  => $data['global_reason'] ?? $adjustment->reason_code,
+            'note'         => $data['global_reason'] ?? $adjustment->note,
+            'created_by'   => $adjustment->created_by ?? $userId,
+        ]);
+
+        // Simplest safe approach: delete previous items and re-insert new lines
+        StockAdjustmentItem::where('adjustment_id', $adjustment->id)->delete();
+
+        $items = [];
+        foreach ($data['rows'] as $row) {
+            $qty = (float)$row['qty'];
+            $direction = $qty >= 0 ? 'IN' : 'OUT';
+            $items[] = [
+                'adjustment_id' => $adjustment->id,
+                'product_id'    => (int)$row['product_id'],
+                'warehouse_id'  => $data['warehouse_id'],
+                'branch_id'     => $data['branch_id'] ?? $adjustment->branch_id,
+                'direction'     => $direction,
+                'quantity'      => abs($qty),
+                'unit_cost'     => isset($row['unit_cost']) && $row['unit_cost'] !== '' ? (float)$row['unit_cost'] : null,
+                'note'          => $row['reason'] ?? null,
+                'created_by'    => $userId,
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ];
+        }
+
+        // bulk insert
+        StockAdjustmentItem::insert($items);
+
+        DB::commit();
+
+        // if post requested now call service
+        if (!empty($data['post_now']) && $data['post_now'] == 1) {
+            $this->stockService->postAdjustment($adjustment->id, $userId);
+            return response()->json(['ok'=>true,'msg'=>'Updated and posted','status'=>'posted']);
+        }
+
+        return response()->json(['ok'=>true,'msg'=>'Adjustment updated','status'=>'draft']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('updateAdjustment error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
+        return response()->json(['ok'=>false,'msg'=>'Update failed: '.$e->getMessage()], 500);
+    }
+}
+
+public function destroy($id)
+{
+    $adjustment = StockAdjustment::findOrFail($id);
+
+    if (strtoupper($adjustment->status) !== 'DRAFT') {
+        return response()->json(['ok'=>false,'msg'=>'Only DRAFT adjustments can be deleted.'], 400);
+    }
+
+    DB::beginTransaction();
+    try {
+        // delete items then header
+        \DB::table('stock_adjustment_items')->where('adjustment_id', $adjustment->id)->delete();
+        $adjustment->delete();
+        DB::commit();
+        return response()->json(['ok'=>true,'msg'=>'Deleted']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('destroyAdjustment error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
+        return response()->json(['ok'=>false,'msg'=>'Delete failed: '.$e->getMessage()], 500);
+    }
+}
+
+
 
 }

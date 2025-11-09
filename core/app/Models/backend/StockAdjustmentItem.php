@@ -35,4 +35,11 @@ class StockAdjustmentItem extends Model
     {
         return $this->belongsTo(StockAdjustment::class, 'adjustment_id');
     }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    
 }

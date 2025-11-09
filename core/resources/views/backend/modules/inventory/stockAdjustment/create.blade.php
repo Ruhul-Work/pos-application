@@ -173,10 +173,10 @@
 
                     <div class="card-footer d-flex justify-content-center gap-2">
                         <a href="{{ route('inventory.adjustments.index') }}"
-                            class="btn border border-danger-600 text-danger-600">Cancel</a>
+                            class="btn btn-sm btn-outline-danger">Cancel</a>
 
-                        <button type="button" id="btnSaveDraft" class="btn btn-outline-secondary">Save Draft</button>
-                        <button type="button" id="btnSavePost" class="btn btn-primary">Save & Post</button>
+                        <button type="button" id="btnSaveDraft" class="btn btn-sm btn-outline-secondary">Save Draft</button>
+                        <button type="button" id="btnSavePost" class="btn btn-sm btn-success">Save & Post</button>
                     </div>
 
                     <!-- hidden flag to indicate immediate post -->

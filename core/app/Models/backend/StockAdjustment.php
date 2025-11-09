@@ -48,6 +48,13 @@ class StockAdjustment extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
-    
+    public function ledgerEntries()
+    {
+        // assuming stock_ledgers.ref_type = 'stock_adjustment' and ref_id = stock_adjustments.id
+        // if your ledger stores ref_type/ref_id, use the where condition below, else adapt.
+        return $this->hasMany(StockLedger::class, 'ref_id', 'id')
+            ->where('ref_type', 'ADJUSTMENT')
+            ->orderBy('txn_date', 'desc');
+    }
 
 }
