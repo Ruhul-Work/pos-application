@@ -227,6 +227,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('products/handle/upload_csv', [ProductController::class, 'importCsv'])->name('handle_csv');
 
         Route::get('products/product-list/allProducts', [ProductController::class, 'productList'])->name('productsList');
+        Route::get('products/childProductList/{product}', [ProductController::class, 'childProductList'])->name('childProductList');
         Route::get('products/product-search/{name}', [ProductController::class, 'productSearch'])->name('productsSearch');
         Route::get('products/product-byCategory/{category}', [ProductController::class, 'productByCategory'])->name('productsByCategory');
     });
