@@ -24,7 +24,7 @@
     <form id="adjForm" action="{{ route('inventory.adjustments.store') }}" method="post" data-ajax-form="true">
         @csrf
 
-      
+
         {{-- <div class="row g-16 mb-16">
             <div class="col-md-4">
                 <label class="form-label text-sm mb-6">Warehouse <span class="text-danger">*</span></label>
@@ -66,20 +66,22 @@
                 <div class="row g-8">
                     <div class="col-6">
                         <select name="warehouse_id" id="warehouseSelect" class="form-control js-s2-ajax"
-                            data-url="{{ route('inventory.warehouses.select2') }}" data-placeholder="Select warehouse" required>
+                            data-url="{{ route('inventory.warehouses.select2') }}" data-placeholder="Select warehouse"
+                            required>
                         </select>
                     </div>
 
                     <div class="col-6">
                         @if ($isSuper)
                             {{-- super user sees editable branch selector --}}
-                            
+
                             <select name="branch_id" id="branchSelect" class="form-control js-s2-ajax"
                                 data-url="{{ route('org.branches.select2') }}" data-placeholder="Select branch">
                             </select>
                         @else
                             {{-- normal users: fixed hidden branch (keep an invisible placeholder so layout stable) --}}
-                            <input type="hidden" name="branch_id" id="branchId" value="{{ auth()->user()->branch_id ?? 1 }}">
+                            <input type="hidden" name="branch_id" id="branchId"
+                                value="{{ auth()->user()->branch_id ?? 1 }}">
                         @endif
                     </div>
                 </div>
@@ -107,23 +109,31 @@
             {{-- LEFT: Parents gallery --}}
             <div class="col-lg-5">
                 <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <div class="w-100 d-flex gap-2">
-                            <select id="parentFilter" class="form-control js-s2-ajax"
-                                data-url="{{ route('product.parents.select2') }}"
-                                data-placeholder="Search parents (name, sku, category)"></select>
-                            <button type="button" id="btnClearParents" class="btn btn-light">Clear</button>
+                    <div class="card-header">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-8">
+                                <select id="parentFilter" class="form-control js-s2-ajax"
+                                    data-url="{{ route('product.parents.select2') }}"
+                                    data-placeholder="Search parents (name, sku, category)">
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" id="btnClearParents" class="btn btn-light w-100">Clear</button>
+                            </div>
                         </div>
                     </div>
+
                     <div class="card-body p-12">
                         <div id="parentsGrid" class="grid grid-cols-2 gap-12"></div>
                         <div class="d-flex justify-content-center mt-12">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLoadMore">Load
-                                more</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLoadMore">
+                                Load more
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             {{-- RIGHT: Variants editor --}}
             <div class="col-lg-7">
@@ -163,7 +173,7 @@
                                 <tbody></tbody>
                             </table>
                         </div>
-                        <small class="text-muted">Tip: Qty পজিটিভ হলে IN, নেগেটিভ হলে OUT হিসেবে যাবে।</small>
+                        <small class="text-muted">Tip: Qty positive → IN, negative → OUT.</small>
                     </div>
                     {{-- <div class="card-footer d-flex justify-content-center gap-2">
                         <a href="{{ route('inventory.adjustments.index') }}"
@@ -175,7 +185,8 @@
                         <a href="{{ route('inventory.adjustments.index') }}"
                             class="btn btn-sm btn-outline-danger">Cancel</a>
 
-                        <button type="button" id="btnSaveDraft" class="btn btn-sm btn-outline-secondary">Save Draft</button>
+                        <button type="button" id="btnSaveDraft" class="btn btn-sm btn-outline-secondary">Save
+                            Draft</button>
                         <button type="button" id="btnSavePost" class="btn btn-sm btn-success">Save & Post</button>
                     </div>
 
@@ -237,7 +248,8 @@
                     <div>
                         <div class="fw-semibold">__VNAME__</div>
                         <small class="text-muted">__VSKU__</small>
-                        <div class="small text-muted fw-semibold text-danger-300">Stock: <span class="sys-qty">__SYSQ__</span></div>
+                        <div class="small text-muted fw-semibold text-danger-300">Stock: <span
+                                class="sys-qty">__SYSQ__</span></div>
                     </div>
                 </div>
                 <input type="hidden" name="rows[__IDX__][product_id]" value="__VID__">
@@ -479,7 +491,8 @@
             // stock currents bulk endpoint (POST)
             const stockCurrentsBulkUrl = "{{ route('inventory.adjustments.stock.currents.bulk') }}";
             // product variants base url prefix (we will append /{parent}/variants)
-            const productVariantsBase = "{{ url('product/products') }}"; // will become /product/products/{parent}/variants
+            const productVariantsBase =
+            "{{ url('product/products') }}"; // will become /product/products/{parent}/variants
 
             // ---- State + DOM refs ----
             const $form = $('#adjForm');
@@ -631,7 +644,7 @@
                 addedVariants.clear();
                 $lines.empty();
             }
-             
+
 
             // parent click toggles
             $parentsGrid.on('click', '.wh-card', function() {
@@ -649,7 +662,7 @@
                 });
                 renumberRows();
             }
-         
+
 
             // ---- fetchVariants: call server with warehouse+branch -> add rows with system_qty if provided ----
             function fetchVariants(parentId) {
@@ -863,15 +876,24 @@
 
             function doSubmit() {
                 if (!getCurrentWarehouseId()) {
-                    alert('Please select warehouse');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Select a warehouse'
+                    });
                     return;
                 }
                 if ($lines.find('tr').length === 0) {
-                    alert('Add at least one variant');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Add at least one item'
+                    });
                     return;
                 }
                 if (!normalizeRowsBeforeSubmit()) {
-                    alert('Fix quantities');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Fix quantities'
+                    });
                     return;
                 }
                 const data = $form.serialize();

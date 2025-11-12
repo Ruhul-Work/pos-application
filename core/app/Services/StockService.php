@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\backend\StockAdjustment;
 use App\Models\backend\StockAdjustmentItem;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
+use App\Models\backend\StockTransfer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -66,7 +66,7 @@ class StockService
         return DB::transaction(function () use ($adjustmentId, $userId, $now) {
             /** @var StockAdjustment $header */
             $header = StockAdjustment::where('id', $adjustmentId)->lockForUpdate()->first();
-            if (!$header) {
+            if (! $header) {
                 throw new RuntimeException("Adjustment #{$adjustmentId} not found.");
             }
             if ($header->status === 'POSTED') {
@@ -82,13 +82,13 @@ class StockService
             }
 
             foreach ($items as $item) {
-                $productId = (int) $item->product_id;
+                $productId   = (int) $item->product_id;
                 $warehouseId = (int) ($item->warehouse_id ?? $header->warehouse_id);
-                $branchId = (int) ($item->branch_id ?? $header->branch_id ?? 0);
-                $direction = $item->direction;
-                $qty = (float) $item->quantity;
-                $unitCost = $item->unit_cost;
-                $note = $item->note;
+                $branchId    = (int) ($item->branch_id ?? $header->branch_id ?? 0);
+                $direction   = $item->direction;
+                $qty         = (float) $item->quantity;
+                $unitCost    = $item->unit_cost;
+                $note        = $item->note;
 
                 // ensure summary row exists using upsert (Eloquent upsert)
                 $this->ensureSummaryRow($productId, $warehouseId, $branchId);
@@ -100,30 +100,30 @@ class StockService
                     ->lockForUpdate()
                     ->first();
 
-                if (!$summary) {
+                if (! $summary) {
                     throw new RuntimeException("Failed to lock summary for product {$productId}/wh {$warehouseId}/br {$branchId}");
                 }
 
                 // validate OUT
-                if ($direction === 'OUT' && !$this->allowNegativeInventory && ($summary->quantity < $qty)) {
+                if ($direction === 'OUT' && ! $this->allowNegativeInventory && ($summary->quantity < $qty)) {
                     throw new RuntimeException("Insufficient stock for product {$productId} at warehouse {$warehouseId} branch {$branchId} (have {$summary->quantity}, need {$qty}).");
                 }
 
                 // insert ledger record (use model)
                 StockLedger::create([
-                    'txn_date' => $now,
-                    'product_id' => $productId,
+                    'txn_date'     => $now,
+                    'product_id'   => $productId,
                     'warehouse_id' => $warehouseId,
-                    'branch_id' => $branchId,
-                    'ref_type' => 'ADJUSTMENT',
-                    'ref_id' => $adjustmentId,
-                    'direction' => $direction,
-                    'quantity' => $qty,
-                    'unit_cost' => $unitCost,
-                    'note' => $note,
-                    'created_by' => $userId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'branch_id'    => $branchId,
+                    'ref_type'     => 'ADJUSTMENT',
+                    'ref_id'       => $adjustmentId,
+                    'direction'    => $direction,
+                    'quantity'     => $qty,
+                    'unit_cost'    => $unitCost,
+                    'note'         => $note,
+                    'created_by'   => $userId,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
                 ]);
 
                 // update summary (atomic via query)
@@ -133,14 +133,14 @@ class StockService
                     ->where('branch_id', $branchId)
                     ->update([
                         'quantity' => DB::raw("quantity + ({$delta})"),
-                        'version' => DB::raw('version + 1'),
+                        'version'    => DB::raw('version + 1'),
                         'updated_at' => $now,
                     ]);
             }
 
             // mark header posted
-            $header->status = 'POSTED';
-            $header->posted_at = $now;
+            $header->status      = 'POSTED';
+            $header->posted_at   = $now;
             $header->approved_by = $userId;
             $header->save();
 
@@ -157,7 +157,7 @@ class StockService
 
         return DB::transaction(function () use ($adjustmentId, $userId, $now) {
             $header = StockAdjustment::where('id', $adjustmentId)->lockForUpdate()->first();
-            if (!$header) {
+            if (! $header) {
                 throw new RuntimeException("Adjustment #{$adjustmentId} not found.");
             }
             if ($header->status !== 'POSTED') {
@@ -170,12 +170,12 @@ class StockService
             }
 
             foreach ($items as $item) {
-                $productId = (int) $item->product_id;
+                $productId   = (int) $item->product_id;
                 $warehouseId = (int) ($item->warehouse_id ?? $header->warehouse_id);
-                $branchId = (int) ($item->branch_id ?? $header->branch_id ?? 0);
-                $direction = $item->direction;
-                $qty = (float) $item->quantity;
-                $unitCost = $item->unit_cost;
+                $branchId    = (int) ($item->branch_id ?? $header->branch_id ?? 0);
+                $direction   = $item->direction;
+                $qty         = (float) $item->quantity;
+                $unitCost    = $item->unit_cost;
 
                 $this->ensureSummaryRow($productId, $warehouseId, $branchId);
 
@@ -185,23 +185,23 @@ class StockService
                     ->lockForUpdate()
                     ->first();
 
-                if (!$summary) {
+                if (! $summary) {
                     throw new RuntimeException("Failed to lock summary for reversal for product {$productId}");
                 }
 
                 $revDirection = ($direction === 'IN') ? 'OUT' : 'IN';
 
                 StockLedger::create([
-                    'txn_date' => $now,
-                    'product_id' => $productId,
+                    'txn_date'     => $now,
+                    'product_id'   => $productId,
                     'warehouse_id' => $warehouseId,
-                    'branch_id' => $branchId,
-                    'ref_type' => 'ADJUSTMENT_REVERSAL',
-                    'ref_id' => $adjustmentId,
-                    'direction' => $revDirection,
-                    'quantity' => $qty,
-                    'unit_cost' => $unitCost,
-                    'note' => "Reversal of adjustment {$adjustmentId}",
+                    'branch_id'    => $branchId,
+                    'ref_type'     => 'ADJUSTMENT_REVERSAL',
+                    'ref_id'       => $adjustmentId,
+                    'direction'    => $revDirection,
+                    'quantity'     => $qty,
+                    'unit_cost'    => $unitCost,
+                    'note'         => "Reversal of adjustment {$adjustmentId}",
                     'created_by' => $userId,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -213,7 +213,7 @@ class StockService
                     ->where('branch_id', $branchId)
                     ->update([
                         'quantity' => DB::raw("quantity + ({$delta})"),
-                        'version' => DB::raw('version + 1'),
+                        'version'    => DB::raw('version + 1'),
                         'updated_at' => $now,
                     ]);
             }
@@ -236,15 +236,15 @@ class StockService
         try {
             StockCurrent::upsert(
                 [[
-                    'product_id' => $productId,
+                    'product_id'   => $productId,
                     'warehouse_id' => $warehouseId,
-                    'branch_id' => $branchId,
-                    'quantity' => 0.000,
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'branch_id'    => $branchId,
+                    'quantity'     => 0.000,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
                 ]],
-                ['product_id','warehouse_id','branch_id'], // unique by
-                ['updated_at'] // columns to update on duplicate
+                ['product_id', 'warehouse_id', 'branch_id'], // unique by
+                ['updated_at']                               // columns to update on duplicate
             );
             return;
         } catch (\Throwable $e) {
@@ -304,5 +304,135 @@ class StockService
             ->first();
 
         return $row ? (float) $row->quantity : 0.0;
+    }
+
+    /**
+     * Post (finalize) a stock transfer - model based
+     */
+
+    public function postTransfer(int $transferId, int $userId)
+    {
+        $now = Carbon::now();
+
+        return DB::transaction(function () use ($transferId, $userId, $now) {
+            $transfer = StockTransfer::with(['items', 'fromWarehouse', 'toWarehouse'])->findOrFail($transferId);
+
+            if (strtoupper($transfer->status) === 'POSTED') {
+                throw new \Exception('Transfer already posted');
+            }
+
+            // cache warehouse branches
+            $fromWh = $transfer->fromWarehouse;
+            $toWh   = $transfer->toWarehouse;
+
+            foreach ($transfer->items as $item) {
+                $productId = $item->product_id;
+                $qty       = (float) $item->quantity;
+                $unitCost  = $item->unit_cost;
+
+                // authoritative branch per side: warehouse branch preferred, else header fallback, else null
+                $fromBranch = $fromWh->branch_id ?? $transfer->from_branch_id ?? null;
+                $toBranch   = $toWh->branch_id ?? $transfer->to_branch_id ?? null;
+
+                // 1) create OUT ledger (from warehouse)
+                StockLedger::create([
+                    'txn_date'     => $now,
+                    'product_id'   => $productId,
+                    'warehouse_id' => $transfer->from_warehouse_id,
+                    'branch_id'    => $fromBranch,
+                    'ref_type'     => 'TRANSFER',
+                    'ref_id'       => $transfer->id,
+                    'direction'    => 'OUT',
+                    'quantity'     => $qty,
+                    'unit_cost'    => $unitCost,
+                    'note'         => 'Transfer out (transfer #' . $transfer->id . ')',
+                    'created_by'   => $userId,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ]);
+
+                // 2) create IN ledger (to warehouse)
+                StockLedger::create([
+                    'txn_date'     => $now,
+                    'product_id'   => $productId,
+                    'warehouse_id' => $transfer->to_warehouse_id,
+                    'branch_id'    => $toBranch,
+                    'ref_type'     => 'TRANSFER',
+                    'ref_id'       => $transfer->id,
+                    'direction'    => 'IN',
+                    'quantity'     => $qty,
+                    'unit_cost'    => $unitCost,
+                    'note'         => 'Transfer in (transfer #' . $transfer->id . ')',
+                    'created_by'   => $userId,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ]);
+
+                // 3) update stock_currents safely (pessimistic lock)
+                // FROM (decrement)
+                $scFromQuery = StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $transfer->from_warehouse_id);
+
+                if ($fromBranch === null) {
+                    $scFromQuery->whereNull('branch_id');
+                } else {
+                    $scFromQuery->where('branch_id', $fromBranch);
+                }
+
+                $scFrom = $scFromQuery->lockForUpdate()->first();
+
+                if ($scFrom) {
+                    $scFrom->quantity = $scFrom->quantity - $qty;
+                    $scFrom->version  = ($scFrom->version ?? 0) + 1;
+                    $scFrom->save();
+                } else {
+                    StockCurrent::create([
+                        'product_id'   => $productId,
+                        'warehouse_id' => $transfer->from_warehouse_id,
+                        'branch_id'    => $fromBranch,
+                        'quantity'     => -1 * $qty,
+                        'version'      => 1,
+                        'created_at'   => $now,
+                        'updated_at'   => $now,
+                    ]);
+                }
+
+                // TO (increment)
+                $scToQuery = StockCurrent::where('product_id', $productId)
+                    ->where('warehouse_id', $transfer->to_warehouse_id);
+
+                if ($toBranch === null) {
+                    $scToQuery->whereNull('branch_id');
+                } else {
+                    $scToQuery->where('branch_id', $toBranch);
+                }
+
+                $scTo = $scToQuery->lockForUpdate()->first();
+
+                if ($scTo) {
+                    $scTo->quantity = $scTo->quantity + $qty;
+                    $scTo->version  = ($scTo->version ?? 0) + 1;
+                    $scTo->save();
+                } else {
+                    StockCurrent::create([
+                        'product_id'   => $productId,
+                        'warehouse_id' => $transfer->to_warehouse_id,
+                        'branch_id'    => $toBranch,
+                        'quantity'     => $qty,
+                        'version'      => 1,
+                        'created_at'   => $now,
+                        'updated_at'   => $now,
+                    ]);
+                }
+            } // end foreach items
+
+            // finally mark transfer as posted
+            $transfer->status     = 'POSTED';
+            $transfer->created_at = $now;
+            $transfer->created_by = $userId;
+            $transfer->save();
+
+            return ['status' => 'posted', 'transfer_id' => $transfer->id];
+        });
     }
 }

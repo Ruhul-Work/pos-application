@@ -266,12 +266,19 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('openingStock/list', [StockOpeningController::class, 'listAjax'])->name('openingStock.list');
         Route::get('openingStock/create-modal', [StockOpeningController::class, 'createModal'])->name('openingStock.createModal');
         Route::post('openingStock', [StockOpeningController::class, 'store'])->name('openingStock.store');
+        
 
         // Transfer Stock Management
         Route::get('transfers', [StockTransferController::class, 'index'])->name('transfers.index');
         Route::post('transfers/list', [StockTransferController::class, 'listAjax'])->name('transfers.list');
-        Route::get('transfers/create-modal', [StockTransferController::class, 'createModal'])->name('transfers.createModal');
-        Route::post('transfers', [StockTransferController::class, 'store'])->name('transfers.store');
+        Route::get('transfers/create', [StockTransferController::class, 'create'])->name('transfers.create');
+        Route::post('transfers/store', [StockTransferController::class, 'store'])->name('transfers.store');
+        Route::delete('transfers/{transfer}/delete', [StockTransferController::class, 'destroy'])->name('transfers.destroy');
+        Route::get('transfers/{transfer}', [StockTransferController::class, 'show'])->name('transfers.show');
+        Route::post('transfers/{transfer}/post', [StockTransferController::class, 'post'])->name('transfers.post');
+        
+        Route::get('transfers/{transfer}/edit', [StockTransferController::class, 'edit'])->name('transfers.edit');
+        Route::post('transfers/{transfer}', [StockTransferController::class, 'update'])->name('transfers.update');
 
         // Adjust Stock Management
         Route::get('adjustments', [StockAdjustmentController::class, 'index'])->name('adjustments.index');

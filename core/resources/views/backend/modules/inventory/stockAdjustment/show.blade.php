@@ -10,7 +10,7 @@
             <small class="text-muted">Date:
                 {{ optional($adjustment->adjust_date)->format('Y-m-d H:i') ?? optional($adjustment->created_at)->format('Y-m-d H:i') }}</small>
         </div>
-        <div>
+        {{-- <div>
             <a href="{{ route('inventory.adjustments.index') }}" class="btn btn-sm btn-outline-neutral-900 minw-120">Back</a>
             @if ($adjustment->status === 'DRAFT')
                 <a href="{{ route('inventory.adjustments.edit', $adjustment->id) }}"
@@ -23,6 +23,34 @@
                 <button id="btnCancel" data-url="{{ route('inventory.adjustments.cancel', $adjustment->id) }}"
                     class="btn btn-sm btn-warning">Cancel</button>
             @endif
+        </div> --}}
+
+        <div class="d-flex gap-2">
+            {{-- Back button --}}
+            <a href="{{ route('inventory.adjustments.index') }}" class="btn btn-sm btn-outline-neutral-900"
+                title="Back to List">
+                <iconify-icon icon="solar:arrow-left-outline" class="text-lg"></iconify-icon>
+            </a>
+
+            @if ($adjustment->status === 'DRAFT')
+                {{-- Edit button --}}
+                <a href="{{ route('inventory.adjustments.edit', $adjustment->id) }}" class="btn btn-sm btn-outline-primary"
+                    title="Edit Transfer">
+                    <iconify-icon icon="solar:pen-outline" class="text-lg"></iconify-icon>
+                </a>
+
+                {{-- Post button --}}
+                <button id="btnPost" data-url="{{ route('inventory.adjustments.post', $adjustment->id) }}"
+                    class="btn btn-sm btn-outline-success" title="Approve & Post">
+                    <iconify-icon icon="solar:check-circle-outline" class="text-lg"></iconify-icon>
+                </button>
+
+                {{-- Delete button --}}
+            @elseif($adjustment->status === 'POSTED')
+                <button id="btnCancel" data-url="{{ route('inventory.adjustments.cancel', $adjustment->id) }}"
+                    class="btn btn-sm btn-outline-danger" title="cancel"><iconify-icon icon="mdi:refresh" class="text-lg"></button>
+            @endif
+
         </div>
     </div>
 
@@ -39,8 +67,8 @@
             </div>
 
             <h6 class="mt-3">Items</h6>
-            <div class="table-responsive">
-                <table class="table table-bordered">
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-bordered table-scrollable mb-0">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -74,9 +102,9 @@
             </div>
 
             @if ($adjustment->status === 'POSTED')
-                <h6 class="mt-4">Ledger Entries</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
+                <h6 class="mt-3">Ledger Entries</h6>
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-bordered table-scrollable mb-0">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -87,16 +115,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- If you have stock_ledgers or stock_currents relation, show relevant entries --}}
-                            {{-- @foreach (\DB::table('stock_ledgers')->where('txn_date', '>=', $adjustment->adjust_date ?? $adjustment->created_at)->get() as $lg)
-                            <tr>
-                                <td>{{ optional($lg->txn_date)->format('Y-m-d H:i') ?? $lg->created_at }}</td>
-                                <td>{{ optional($lg->product)->name ?? '—' }}</td>
-                                <td>{{ $lg->direction }}</td>
-                                <td class="text-end">{{ number_format($lg->quantity, 3) }}</td>
-                                <td>{{ $lg->note }}</td>
-                            </tr>
-                        @endforeach --}}
+
 
                             @php
                                 $ledgers = $adjustment->ledgerEntries()->get(); // eager loaded if you prefer loadMissing earlier
@@ -187,7 +206,7 @@
                             showConfirmButton: false
                         })
                         .then(() => window.location =
-                        "{{ route('inventory.adjustments.index') }}");
+                            "{{ route('inventory.adjustments.index') }}");
                 }).fail(err => Swal.fire({
                     icon: 'error',
                     title: err.responseJSON?.msg || 'Delete failed'
