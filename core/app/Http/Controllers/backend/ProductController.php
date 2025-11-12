@@ -15,38 +15,53 @@ class ProductController extends Controller
     {
         return view('backend.modules.products.index');
     }
-    
+
     public function productList()
     {
         $products = Product::with(['category'])
-                   ->where('parent_id',null)
-                    ->paginate(6);
+            ->where('parent_id', null)
+            ->paginate(6);
 
-        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+        // $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
-        return response()->json(['html' => $html]);
+        return response()->json(['products' => $products]);
     }
     public function productSearch($name)
     {
         $products = Product::with(['category'])
-                    ->where('parent_id',null)
-                    ->where('name','like',"%$name%")
-                    ->paginate(6);
+            ->where('parent_id', null)
+            ->where('name', 'like', "%$name%")
+            ->paginate(6);
 
-        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+       // $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
-        return response()->json(['html' => $html]);
+         return response()->json(['products' => $products]);
     }
     public function productByCategory($category)
     {
         $products = Product::with(['category'])
-                    ->where('parent_id',null)
-                    ->where('category_id',$category)
-                    ->paginate(6);
+            ->where('parent_id', null)
+            ->where('category_id', $category)
+            ->paginate(6);
 
-        $html =  view('backend.modules.products.product_list',compact('products'))->render();
+      //  $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
-        return response()->json(['html' => $html]);
+        return response()->json(['products' => $products]);
+    }
+
+    public function childProductList(Product $product)
+    {
+        $products = [];
+
+        if ($product->has_variants == 1) {
+            $products = Product::select('id','parent_id', 'name', 'price')
+                ->where('parent_id', $product->id)->get();
+        }
+        else{
+            $products = Product::select('id', 'name', 'price')
+                ->where('id', $product->id)->get();
+        }
+        return response()->json(['products' => $products]);
     }
 
     public function listAjax(Request $request)

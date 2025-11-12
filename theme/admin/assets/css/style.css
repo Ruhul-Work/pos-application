@@ -16307,6 +16307,11 @@ div.dt-container .dt-paging .dt-paging-button.current {
  
  
 }
+.product-card.active{
+  border: 1px solid var(--indigo);
+   overflow: hidden;
+ 
+}
 .product-img:hover{
   transform: scale(1.2); 
   transition: transform 0.4s ease; 
@@ -16337,8 +16342,8 @@ div.dt-container .dt-paging .dt-paging-button.current {
 
 /* Target the entire scrollbar */
 ::-webkit-scrollbar {
-  width: 3px;              /* width of vertical scrollbar */
-  height: 2px;  
+  width: 8px;              /* width of vertical scrollbar */
+  height: 8px;  
   border-radius: 1px;           /* height of horizontal scrollbar */
 }
 ::-webkit-scrollbar-thumb {
