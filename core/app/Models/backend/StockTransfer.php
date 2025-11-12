@@ -34,7 +34,7 @@ class StockTransfer extends Model
     |--------------------------------------------------------------------------
     */
 
-    // সম্পর্ক: এক ট্রান্সফারে একাধিক আইটেম থাকে
+  
     public function items()
     {
         return $this->hasMany(StockTransferItem::class, 'transfer_id');

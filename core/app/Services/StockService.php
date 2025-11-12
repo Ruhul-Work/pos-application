@@ -309,117 +309,6 @@ class StockService
     /**
      * Post (finalize) a stock transfer - model based
      */
-    // public function postTransfer(int $transferId, int $userId)
-    // {
-    //     $now = Carbon::now();
-
-    //     return DB::transaction(function () use ($transferId, $userId, $now) {
-    //         $transfer = StockTransfer::with('items')->findOrFail($transferId);
-
-    //         if (strtoupper($transfer->status) === 'POSTED') {
-    //             throw new Exception('Already posted');
-    //         }
-
-    //         foreach ($transfer->items as $item) {
-    //             $productId = $item->product_id;
-    //             $qty       = (float) $item->quantity;
-    //             $unitCost  = $item->unit_cost;
-
-    //             // 1) create OUT ledger (from_warehouse)
-    //             $outLedgerId = StockLedger::create([
-    //                 'txn_date'     => $now,
-    //                 'product_id'   => $productId,
-    //                 'warehouse_id' => $transfer->from_warehouse_id,
-    //                 'branch_id'    => $transfer->branch_id ?? null,
-    //                 'ref_type'     => 'TRANSFER',
-    //                 'ref_id'       => $transfer->id,
-    //                 'direction'    => 'OUT',
-    //                 'quantity'     => $qty,
-    //                 'unit_cost'    => $unitCost,
-    //                 'note'         => 'Transfer out (transfer #' . $transfer->id . ')',
-    //                 'created_by'   => $userId,
-    //                 'created_at'   => $now,
-    //             ])->id;
-
-    //             // 2) create IN ledger (to_warehouse)
-    //             $inLedgerId = StockLedger::create([
-    //                 'txn_date'     => $now,
-    //                 'product_id'   => $productId,
-    //                 'warehouse_id' => $transfer->to_warehouse_id,
-    //                 'branch_id'    => $transfer->branch_id ?? null,
-    //                 'ref_type'     => 'TRANSFER',
-    //                 'ref_id'       => $transfer->id,
-    //                 'direction'    => 'IN',
-    //                 'quantity'     => $qty,
-    //                 'unit_cost'    => $unitCost,
-    //                 'note'         => 'Transfer in (transfer #' . $transfer->id . ')',
-    //                 'created_by'   => $userId,
-    //                 'created_at'   => $now,
-    //             ])->id;
-
-    //             // 3) update stock_currents safely (pessimistic lock)
-    //             // source (decrement)
-    //             $scFrom = StockCurrent::where('product_id', $productId)
-    //                 ->where('warehouse_id', $transfer->from_warehouse_id)
-    //                 ->where('branch_id', $transfer->branch_id ?? 0)
-    //                 ->lockForUpdate()
-    //                 ->first();
-
-    //             if ($scFrom) {
-    //                 // reduce quantity
-    //                 $scFrom->quantity = $scFrom->quantity - $qty;
-    //                 if ($scFrom->quantity < 0) {
-    //                     // optional: allow negative or throw
-    //                     // throw new Exception("Insufficient stock for product {$productId} in warehouse {$transfer->from_warehouse_id}");
-    //                 }
-    //                 $scFrom->version = ($scFrom->version ?? 0) + 1;
-    //                 $scFrom->save();
-    //             } else {
-    //                 // create with negative if out-of-stock allowed
-    //                 StockCurrent::create([
-    //                     'product_id'   => $productId,
-    //                     'warehouse_id' => $transfer->from_warehouse_id,
-    //                     'branch_id'    => $transfer->branch_id ?? 0,
-    //                     'quantity'     => -1 * $qty,
-    //                     'version'      => 1,
-    //                     'created_at'   => $now,
-    //                     'updated_at'   => $now,
-    //                 ]);
-    //             }
-
-    //             // dest (increment)
-    //             $scTo = StockCurrent::where('product_id', $productId)
-    //                 ->where('warehouse_id', $transfer->to_warehouse_id)
-    //                 ->where('branch_id', $transfer->branch_id ?? 0)
-    //                 ->lockForUpdate()
-    //                 ->first();
-
-    //             if ($scTo) {
-    //                 $scTo->quantity = $scTo->quantity + $qty;
-    //                 $scTo->version  = ($scTo->version ?? 0) + 1;
-    //                 $scTo->save();
-    //             } else {
-    //                 StockCurrent::create([
-    //                     'product_id'   => $productId,
-    //                     'warehouse_id' => $transfer->to_warehouse_id,
-    //                     'branch_id'    => $transfer->branch_id ?? 0,
-    //                     'quantity'     => $qty,
-    //                     'version'      => 1,
-    //                     'created_at'   => $now,
-    //                     'updated_at'   => $now,
-    //                 ]);
-    //             }
-    //         } // end foreach items
-
-    //         // finally mark transfer as posted
-    //         $transfer->status      = 'POSTED';
-    //         $transfer->posted_at   = $now;
-    //         $transfer->approved_by = $userId;
-    //         $transfer->save();
-
-    //         return ['status' => 'posted', 'transfer_id' => $transfer->id];
-    //     }); // end transaction
-    // }
 
     public function postTransfer(int $transferId, int $userId)
     {
@@ -538,8 +427,8 @@ class StockService
             } // end foreach items
 
             // finally mark transfer as posted
-            $transfer->status      = 'POSTED';
-            $transfer->created_at   = $now;
+            $transfer->status     = 'POSTED';
+            $transfer->created_at = $now;
             $transfer->created_by = $userId;
             $transfer->save();
 

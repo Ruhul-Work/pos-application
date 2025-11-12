@@ -25,7 +25,7 @@ class StockTransferItem extends Model
     |--------------------------------------------------------------------------
     */
 
-    // সম্পর্ক: এই আইটেম কোন ট্রান্সফারের অন্তর্ভুক্ত
+  
     public function transfer()
     {
         return $this->belongsTo(StockTransfer::class, 'transfer_id');

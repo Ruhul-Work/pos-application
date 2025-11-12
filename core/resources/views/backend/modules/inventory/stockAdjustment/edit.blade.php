@@ -96,7 +96,8 @@
                         placeholder="Qty (+/-)">
                     <button type="button" class="btn btn-sm btn-outline-primary minw-120" id="btnApplyAll">Apply to
                         all</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger " id="btnClearLines" title="Clear"> <iconify-icon icon="mdi:refresh" class="text-lg"></iconify-icon></button>
+                    <button type="button" class="btn btn-sm btn-outline-danger " id="btnClearLines" title="Clear">
+                        <iconify-icon icon="mdi:refresh" class="text-lg"></iconify-icon></button>
                 </div>
             </div>
 

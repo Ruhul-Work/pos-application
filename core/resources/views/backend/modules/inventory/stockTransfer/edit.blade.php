@@ -10,9 +10,9 @@
             <h6 class="fw-semibold mb-0">Edit Transfer #{{ $transfer->id }}</h6>
             <p class="text-muted m-0">Modify transfer details and items</p>
         </div>
-          <a href="{{ route('inventory.transfers.index') }}" class="btn btn-sm btn-outline-neutral-900" title="Back to List">
-                <iconify-icon icon="solar:arrow-left-outline" class="text-lg"></iconify-icon>
-            </a>
+        <a href="{{ route('inventory.transfers.index') }}" class="btn btn-sm btn-outline-neutral-900" title="Back to List">
+            <iconify-icon icon="solar:arrow-left-outline" class="text-lg"></iconify-icon>
+        </a>
     </div>
 
     <form id="transferForm" action="{{ route('inventory.transfers.update', $transfer->id) }}" method="post">
@@ -62,8 +62,10 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">Items</h6>
                 <div class="d-flex gap-2">
-                    <button type="button" id="btnAddRow" class="btn btn-sm btn-outline-primary"><iconify-icon icon="mdi:plus" class="text-lg"></iconify-icon></button>
-                    <button type="button" id="btnClearRows" class="btn btn-sm btn-outline-danger"><iconify-icon icon="mdi:refresh" class="text-lg"></iconify-icon> </button>
+                    <button type="button" id="btnAddRow" class="btn btn-sm btn-outline-primary"><iconify-icon
+                            icon="mdi:plus" class="text-lg"></iconify-icon></button>
+                    <button type="button" id="btnClearRows" class="btn btn-sm btn-outline-danger"><iconify-icon
+                            icon="mdi:refresh" class="text-lg"></iconify-icon> </button>
                 </div>
             </div>
 
