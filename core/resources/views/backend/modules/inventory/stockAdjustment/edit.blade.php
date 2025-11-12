@@ -96,7 +96,7 @@
                         placeholder="Qty (+/-)">
                     <button type="button" class="btn btn-sm btn-outline-primary minw-120" id="btnApplyAll">Apply to
                         all</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger minw-100" id="btnClearLines">Clear</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger " id="btnClearLines" title="Clear"> <iconify-icon icon="mdi:refresh" class="text-lg"></iconify-icon></button>
                 </div>
             </div>
 
@@ -151,7 +151,7 @@
                     placeholder="(optional)"></td>
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-outline-danger btnDel"><iconify-icon
-                        icon="mdi:delete"></iconify-icon></button>
+                        icon="solar:trash-bin-trash-outline"></iconify-icon></button>
             </td>
             {{-- hidden per-row warehouse/branch/direction fields --}}
             <input type="hidden" class="row-warehouse" name="rows[__IDX__][warehouse_id]" value="__WH__">
@@ -263,7 +263,10 @@
                 const hasCost = costRaw !== '' && !isNaN(parseFloat(costRaw));
                 const hasQty = qtyRaw !== '' && !isNaN(parseFloat(qtyRaw));
                 if (!hasCost && !hasQty) {
-                    alert('Nothing to apply');
+                    swal.fire({
+                        icon: 'warning',
+                        title: 'Enter cost and/or qty to apply'
+                    });
                     return;
                 }
                 if (hasCost) {
@@ -330,15 +333,24 @@
 
             function submitForm() {
                 if (!$warehouseSelect.val()) {
-                    alert('Select warehouse');
+                    swal.fire({
+                        icon: 'warning',
+                        title: 'Select a warehouse'
+                    });
                     return;
                 }
                 if ($lines.find('tr').length === 0) {
-                    alert('Add at least one line');
+                    swal.fire({
+                        icon: 'warning',
+                        title: 'Add at least one line item'
+                    });
                     return;
                 }
                 if (!normalizeRowsBeforeSubmit()) {
-                    alert('Please fix invalid rows');
+                    swal.fire({
+                        icon: 'warning',
+                        title: 'Please fix invalid rows'
+                    });
                     return;
                 }
 
