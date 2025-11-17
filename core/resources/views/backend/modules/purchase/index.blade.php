@@ -192,7 +192,7 @@
                                     <!-- Modal -->
                                   
                                 </td>
-                                <td class="text-secondary "><input type="number"  id="shipping" min="0" class="form-control "
+                                <td class="text-secondary "><input type="number"  id="shipping" min="0" class="border-1 rounded py-1 "
                                         value="0" style="width:120px; height:35px"></td>
 
                             </tr>
@@ -225,7 +225,7 @@
                                                         <option value="percentage" selected>Percentage</option>
                                                     </select>
                                                     <label for="" class="form-label mt-3">Amount</label>
-                                                    <input type="number" min="0" class="form-control"
+                                                    <input type="number" min="0" class="form-control "
                                                         id="discount-input">
                                                 </div>
                                                 <div class="modal-footer ">
@@ -239,7 +239,7 @@
                                     </div>
                                 </td>
                                 <td> <input type="number" min="0" value="0" disabled id="discount"
-                                        class="text-danger" style="width: 80px"></td>
+                                        class="text-danger " style="width: 80px"></td>
 
                             </tr>
                            
@@ -256,7 +256,7 @@
                             </tr>
                             <tr class="fw-semibold">
                                 <td>Total Amount</td>
-                                <td id="total_amount">$2360</td>
+                                <td id="total_amount" class="">$2360</td>
                             </tr>
                         </tbody>
                     </table>
@@ -298,7 +298,7 @@
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout Form</h1>
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
@@ -395,7 +395,7 @@
                                          <input type="number" name="item_price" class="item_price" value="${item.cost_price}" style="width:70px;">
                                     </td>
                                     <td class="product-price">
-                                        $ ${item.cost_price*item.quantity}
+                                         ${item.cost_price*item.quantity}
                                     </td>
 
                                 </tr>`;
@@ -582,7 +582,7 @@
                                      <div class="px-3">
                                          <p class="py- lh-sm text-sm">${product.name}</p>
                                                  <hr class="">
-                                                 <h1 class="text-sm lh-1 fw-semibold p-1">$${product.cost_price}</h1>
+                                                 <h1 class="text-sm lh-1 fw-semibold p-1">${product.cost_price}</h1>
 
                                     </div>
                             </div> `;
@@ -705,7 +705,7 @@
                                          <input type="number" name="item_price" class="item_price" value="${product.cost_price}" style="width:70px;">
                                     </td>
                                     <td class='product-price'>
-                                        $${product.cost_price*product.quantity}
+                                        ${product.cost_price*product.quantity}
                                     </td>
 
                                 </tr>`;
@@ -806,9 +806,9 @@
                     }
 
                 }
-                $('#shipping').val(`${shipping}`);
-                $('#subtotal').text(`$${subtotal.toFixed(2)}`);
-                $('#total_amount').text(`$${total.toFixed(2)}`);
+                $('#shipping').val(shipping);
+                $('#subtotal').text(subtotal.toFixed(2));
+                $('#total_amount').text(total.toFixed(2));
 
                 return total;
 
