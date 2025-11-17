@@ -360,14 +360,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('purchase')->name('purchase.')->group(function () {
 
         Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
-        // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
-        // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
-        // Route::post('customers', [CustomerController::class, 'store'])->name('store');
-        // Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
-        // Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
-        // Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
-        // Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
-        // Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+        
 
     });
 
