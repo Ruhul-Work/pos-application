@@ -316,7 +316,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('supplier')->name('supplier.')->group(function () {
 
         Route::get('suppliers', [SupplierController::class, 'index'])->name('index');
-        Route::get('suppliers/create', [SupplierController::class, 'createModal'])->name('create');
+        Route::get('suppliers/create', [SupplierController::class, 'create'])->name('create');
+        Route::get('suppliers/createModal', [SupplierController::class, 'createModal'])->name('createModal');
         Route::post('suppliers/list', [SupplierController::class, 'listAjax'])->name('list.ajax');
         Route::post('suppliers', [SupplierController::class, 'store'])->name('store');
         Route::get('suppliers/edit/{supplier}', [SupplierController::class, 'editModal'])->whereNumber('supplier')->name('edit');
@@ -326,6 +327,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('suppliers/select2/type', [SupplierController::class, 'select2'])->name('select2');
         Route::get('suppliers/import_csv/file', [SupplierController::class, 'importCsvModal'])->name('import_csv');
         Route::post('suppliers/handle/upload_csv', [SupplierController::class, 'importCsv'])->name('handle_csv');
+        Route::get('suppliers/recent/supplier',[SupplierController::class, 'recent_record'])->name('recent');
     });
 
     Route::prefix('customer')->name('customer.')->group(function () {
@@ -346,28 +348,14 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('pos')->name('pos.')->group(function () {
 
         Route::get('pos', [PosController::class, 'index'])->name('index');
-        // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
-        // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
-        // Route::post('customers', [CustomerController::class, 'store'])->name('store');
-        // Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
-        // Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
-        // Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
-        // Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
-        // Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+        
 
     });
 
     Route::prefix('purchase')->name('purchase.')->group(function () {
 
         Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
-        // Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
-        // Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
-        // Route::post('customers', [CustomerController::class, 'store'])->name('store');
-        // Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
-        // Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
-        // Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
-        // Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
-        // Route::get('customers/select2/type', [CustomerController::class, 'select2'])->name('select2');
+      
 
     });
 

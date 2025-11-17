@@ -757,9 +757,10 @@
             // merge + init
             const cfg = $.extend(true, {}, base, opts);
             $el.select2(cfg);
-
+            
+            
             // preselected support (server side selected option থাকলে টিকে যাবে)
-            if ($el.find('option[selected]').length) {
+            if ($el.find('option[selected]').length ) {
                 $el.trigger('change.select2');
             } else if ($el.data('initId') && $el.data('initText')) {
                 // data-init-id / data-init-text দিলে client-side প্রিসেট
@@ -782,6 +783,7 @@
                         q: params?.term || ''
                     }),
                     processResults: data => (
+                        
                         Array.isArray(data?.results) ? {
                             results: data.results
                         } : {
@@ -790,7 +792,7 @@
                     )
                 },
                 ...extra
-            });
+            })
         }
 
         // scope-wise auto init: .js-s2, .js-s2-ajax[data-url]

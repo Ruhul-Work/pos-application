@@ -178,35 +178,35 @@
 
             @endpermgroup
 
-            @permgroup(['org.btypes','company_setting'])
+            @permgroup(['org.btypes', 'company_setting'])
                 <li class="sidebar-menu-group-title">Organization</li>
-               @permgroup(['org.btypes'])
+                @permgroup(['org.btypes'])
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
                         <a href="javascript:void(0)">
-                            <iconify-icon icon="mdi:shape" class="menu-icon"></iconify-icon>
+                            <iconify-icon icon="mdi:shape-outline" class="menu-icon"></iconify-icon>
                             <span>Business Types</span>
                         </a>
                         <ul class="sidebar-submenu">
-                              @perm('org.btypes.index')
-                            <li>
-                                <a class="{{ Route::is('org.btypes.index') ? 'active' : '' }}"
-                                    href="{{ route('org.btypes.index') }}">
-                                    <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Types List
-                                </a>
-                            </li>
+                            @perm('org.btypes.index')
+                                <li>
+                                    <a class="{{ Route::is('org.btypes.index') ? 'active' : '' }}"
+                                        href="{{ route('org.btypes.index') }}">
+                                        <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Types List
+                                    </a>
+                                </li>
                             @endperm
                         </ul>
-                        @endpermgroup
-                        @perm('company_setting.index')
-                        <li>
-                            <a class="{{ Route::is('company_setting.index') ? 'active' : '' }}"
-                                href="{{ route('company_setting.index') }}">
-                                   <iconify-icon icon="mdi:cog" class="menu-icon"></iconify-icon> Company Setting
-                            </a>
-                        </li>
-                        @endperm
+                    @endpermgroup
+                    @perm('company_setting.index')
+                    <li>
+                        <a class="{{ Route::is('company_setting.index') ? 'active' : '' }}"
+                            href="{{ route('company_setting.index') }}">
+                            <iconify-icon icon="mdi:cog-outline" class="menu-icon"></iconify-icon> Company Setting
+                        </a>
                     </li>
-             
+                @endperm
+                </li>
+
             @endpermgroup
             {{-- Location managemnt module start --}}
 
@@ -287,7 +287,7 @@
 
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
                         <a href="javascript:void(0)">
-                            <iconify-icon icon="mdi:account-circle" class="menu-icon"></iconify-icon>
+                            <iconify-icon icon="mdi:account-circle-outline" class="menu-icon"></iconify-icon>
                             <span>Contact</span>
                         </a>
                         <ul class="sidebar-submenu">
@@ -432,8 +432,9 @@
                             </a>
                         </li>
                     @endperm
-                </ul>
+                  </ul>
                 </li>
+                
 
 
 
