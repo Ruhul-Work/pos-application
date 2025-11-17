@@ -263,19 +263,36 @@
 
                 </div>
 
-                <div class="p-3 border border-danger bg-light rounded">
+                {{-- <div class="p-3 border border-danger bg-light rounded">
                     <h1 class="text-md lh-1 fw-semibold">Select Payment Method</h1>
                     <div class="row gap-3  mt-5 px-3 justify-content-center">
-                        {{-- <div class="col-lg"><button class="btn btn-outline-dark btn-sm">Cash</button></div> --}}
-                        {{-- <button class="btn col-lg-3 payment-btn btn-sm">Cash</button> --}}
-                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm" id="btn-cash" data-bs-toggle="modal"
+                       
+                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm payment-modal" id="btn-cash" data-bs-toggle="modal"
                             data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="cash">Cash</button>
-                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm" id="btn-cash" data-bs-toggle="modal"
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal btn-sm" id="btn-cash" data-bs-toggle="modal"
                             data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="bkash">Bkash</button>
-                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm" id="btn-cash" data-bs-toggle="modal"
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal btn-sm" id="btn-cash" data-bs-toggle="modal"
                             data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="card">Card</button>
                        
 
+                    </div>
+                </div> --}}
+
+
+                <div class="d-flex justify-content-center mt-3  mb-3">
+                    {{-- <button style="padding: 10px"
+                        class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
+                            icon="flowbite:printer-outline" class="menu-icon fs-5 "></iconify-icon><span>Print
+                            Order</span>
+                    </button> --}}
+                    <button data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap"
+                        class="btn btn-danger payment-modal border p-3  col-lg-10  d-flex align-items-center justify-content-center "><iconify-icon
+                            icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Purchase</span>
+                    </button>
+                    
+                </div>
+                    {{-- checkout form modal --}}
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
                             <div class="modal-dialog modal-lg">
@@ -336,25 +353,6 @@
                                 </div>
                             </div>
                         </div>
-                       
-
-
-                    </div>
-                </div>
-                <div class="d-flex mt-3 gap-2 mb-3">
-                    <button style="padding: 10px"
-                        class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
-                            icon="flowbite:printer-outline" class="menu-icon fs-5 "></iconify-icon><span>Print
-                            Order</span>
-                    </button>
-                    <button
-                        class="btn btn-danger border  col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
-                            icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Place
-                            Order</span>
-                    </button>
-
-
-                </div>
 
             </div>
         </div>
@@ -503,7 +501,7 @@
 
             });
 
-            $(document).on('click','.payment-btn',function(){
+            $(document).on('click','.payment-modal',function(){
                 let payment = $(this).data('payment_method');
                 let total = calculateSubtotal();
                 $('#checkout_total_amount').val(total);
