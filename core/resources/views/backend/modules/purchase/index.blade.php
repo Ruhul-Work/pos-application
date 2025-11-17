@@ -232,7 +232,7 @@
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" data-bs-toggle="modal"
-                                                        class="btn btn-dark btn-sm">Save</button>
+                                                        class="btn btn-dark btn-sm" id="discount-save">Save</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -815,9 +815,9 @@
             }
 
             //discount calculation
-            $('#discount-input').on('input', function() {
+            $('#discount-save').on('click', function() {
                 let discountType = $('#discount-type').val();
-                let discountAmount = parseFloat($(this).val()) || 0;
+                let discountAmount = parseFloat($('#discount-input').val()) || 0;
 
                 localStorage.setItem('discount', JSON.stringify({
                     'type': discountType,
