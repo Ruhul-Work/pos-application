@@ -201,7 +201,7 @@
                     <li>
                         <a class="{{ Route::is('company_setting.index') ? 'active' : '' }}"
                             href="{{ route('company_setting.index') }}">
-                            <iconify-icon icon="mdi:cog-outline" class="menu-icon"></iconify-icon> Company Setting
+                            <iconify-icon icon="mdi:cog" class="menu-icon"></iconify-icon> Company Setting
                         </a>
                     </li>
                 @endperm
@@ -497,14 +497,14 @@
                             </li>
                         @endperm
                         {{-- opening stock --}}
-                        @perm('inventory.openingStock.index')
+                        {{-- @perm('inventory.openingStock.index')
                             <li class="{{ Route::is('inventory.openingStock.index') ? 'active' : '' }}">
                                 <a href="{{ route('inventory.openingStock.index') }}">
                                     <i class="ri-upload-2-line"></i>
                                     <span>Opening Stock</span>
                                 </a>
                             </li>
-                        @endperm
+                        @endperm --}}
                         {{-- stock adjustment --}}
                         @perm('inventory.adjustments.index')
                             <li class="{{ Route::is('inventory.adjustments.index') ? 'active' : '' }}">
