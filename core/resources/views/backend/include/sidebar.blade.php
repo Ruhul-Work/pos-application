@@ -183,7 +183,7 @@
                 @permgroup(['org.btypes'])
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
                         <a href="javascript:void(0)">
-                            <iconify-icon icon="mdi:shape" class="menu-icon"></iconify-icon>
+                            <iconify-icon icon="mdi:shape-outline" class="menu-icon"></iconify-icon>
                             <span>Business Types</span>
                         </a>
                         <ul class="sidebar-submenu">
@@ -287,7 +287,7 @@
 
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
                         <a href="javascript:void(0)">
-                            <iconify-icon icon="mdi:account-circle" class="menu-icon"></iconify-icon>
+                            <iconify-icon icon="mdi:account-circle-outline" class="menu-icon"></iconify-icon>
                             <span>Contact</span>
                         </a>
                         <ul class="sidebar-submenu">
@@ -432,8 +432,9 @@
                             </a>
                         </li>
                     @endperm
-                </ul>
+                  </ul>
                 </li>
+                
 
 
 

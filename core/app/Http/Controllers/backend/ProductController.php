@@ -20,7 +20,7 @@ class ProductController extends Controller
     {
         $products = Product::with(['category'])
             ->where('parent_id', null)
-            ->paginate(6);
+            ->paginate(100);
 
         // $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
@@ -31,7 +31,7 @@ class ProductController extends Controller
         $products = Product::with(['category'])
             ->where('parent_id', null)
             ->where('name', 'like', "%$name%")
-            ->paginate(6);
+            ->paginate(100);
 
        // $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
@@ -42,7 +42,7 @@ class ProductController extends Controller
         $products = Product::with(['category'])
             ->where('parent_id', null)
             ->where('category_id', $category)
-            ->paginate(6);
+            ->paginate(100);
 
       //  $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
@@ -54,11 +54,11 @@ class ProductController extends Controller
         $products = [];
 
         if ($product->has_variants == 1) {
-            $products = Product::select('id','parent_id', 'name', 'price')
+            $products = Product::select('id','parent_id', 'name', 'price','cost_price')
                 ->where('parent_id', $product->id)->get();
         }
         else{
-            $products = Product::select('id', 'name', 'price')
+            $products = Product::select('id', 'name', 'price','cost_price')
                 ->where('id', $product->id)->get();
         }
         return response()->json(['products' => $products]);

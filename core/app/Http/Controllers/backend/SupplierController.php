@@ -94,9 +94,14 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function createModal()
+
+    public function create()
     {
         return view('backend.modules.suppliers.create'); // partial only
+    }
+    public function createModal()
+    {
+        return view('backend.modules.suppliers.createModal'); // partial only
     }
 
     public function store(Request $req)
@@ -104,13 +109,13 @@ class SupplierController extends Controller
         // dd($req->all());
         $data = $req->validate([
             'name'             => ['required', 'string', 'max:150', 'unique:suppliers,name'],
-            'slug'             => ['required', 'string', 'max:150', 'unique:suppliers,slug'],
+            'slug'             => ['nullable', 'string', 'max:150', 'unique:suppliers,slug'],
             'email'             => ['required', 'string', 'max:150', 'unique:suppliers,email'],
             'phone'             => ['required', 'string', 'max:50', 'unique:suppliers,phone'],
-            'postal_code'             => ['required', 'string'],
+            'postal_code'             => ['nullable', 'string'],
             'address'             => ['required', 'string', 'max:255'],
             'image'             => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'is_active'        => ['required', 'integer'],
+            'is_active'        => ['nullable', 'integer'],
 
         ]);
 
@@ -122,13 +127,13 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create([
             'name'             => ucwords($data['name']),
-            'slug'             => $data['slug'],
-            'email'             => $data['email'],
-            'phone'             => $data['phone'],
-            'address'             => $data['address'],
-            'postal_code' => $data['postal_code'],
+            'slug'             => $data['slug']??null,
+            'email'             => $data['email']??null,
+            'phone'             => $data['phone']??null,
+            'address'             => $data['address']??null,
+            'postal_code' => $data['postal_code']??null,
             'image'             => $imagePath,
-            'is_active'        => $data['is_active'] ?? null,
+            'is_active'        => $data['is_active'] ?? 1,
 
         ]);
 
@@ -275,6 +280,12 @@ class SupplierController extends Controller
         return response()->json(['ok' => true, 'msg' => 'supplier deleted']);
     }
 
+    public function recent_record(Request $req)
+    {
+        $supplier = Supplier::select('id','name')->latest('id')->first();
+        return response()->json(['supplier' => $supplier]);
+    }
+
     public function select2(Request $r)
     {
 
@@ -289,14 +300,16 @@ class SupplierController extends Controller
             });
         }
 
-        $items = $base->orderBy('id')->orderBy('name')
+        $items = $base->orderBy('id','desc')
             ->limit(20)->get(['id', 'name']);
 
 
         return response()->json([
             'results' => $items->map(fn($t) => [
                 'id'   => $t->id,
-                'text' => $t->name
+                'text' => $t->name,
+                'selected' => true,
+                
             ])
         ]);
     }
