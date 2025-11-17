@@ -355,7 +355,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('purchase')->name('purchase.')->group(function () {
 
         Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
-      
+        
 
     });
 
