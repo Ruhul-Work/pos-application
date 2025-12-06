@@ -287,7 +287,7 @@
                     </button> --}}
                     <button data-bs-toggle="modal"
                             data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap"
-                        class="btn btn-danger payment-modal border p-3  col-lg-10  d-flex align-items-center justify-content-center "><iconify-icon
+                        class="btn btn-danger payment-modal border p-3 col-lg-10  d-flex align-items-center justify-content-center "><iconify-icon
                             icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Purchase</span>
                     </button>
                     
@@ -580,7 +580,7 @@
                                 style="height: 100px; width:20%; cursor: pointer;">
                                  <img class="w-50 h-100 rounded product-img my-1" src="${image}" alt="img">
                                      <div class="px-3">
-                                         <p class="py- lh-sm text-sm">${product.name}</p>
+                                         <p class="lh-sm text-sm">${product.name}</p>
                                                  <hr class="">
                                                  <h1 class="text-sm lh-1 fw-semibold p-1">${product.cost_price}</h1>
 

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\backend\Customer;
+use App\Models\backend\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class CustomerController extends Controller
+class couponController extends Controller
 {
     public function index()
     {
-        return view('backend.modules.customers.index');
+        return view('backend.modules.coupons.index');
     }
 
     public function listAjax(Request $request)
@@ -24,7 +24,7 @@ class CustomerController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = customer::query()
+        $base = Coupon::query()
             ->select(['id', 'name', 'slug', 'email', 'birth_date', 'phone', 'postal_code', 'address', 'is_active']);
 
         $total = (clone $base)->count();
@@ -53,17 +53,17 @@ class CustomerController extends Controller
                 : '<span class="badge text-sm fw-semibold bg-dark-warning-gradient px-20 py-9 radius-4 text-white">Inactive</span>';
 
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
-                <a href="' . route('customer.edit', $b->id) . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                <a href="' . route('coupon.edit', $b->id) . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
                     bg-success-focus text-success-main "
                     data-size="lg"
-                    data-onload="customerIndex.onLoad"
-                    data-onsuccess="customerIndex.onSaved"
+                    data-onload="couponIndex.onLoad"
+                    data-onsuccess="couponIndex.onSaved"
                     title="Edit">
                     <iconify-icon icon="lucide:edit"></iconify-icon>
                 </a>
                 <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center bg-danger-focus text-danger-main btn-branch-delete"
                     data-id="' . $b->id . '"
-                    data-url="' . route('customer.destroy', $b->id) . '"
+                    data-url="' . route('coupon.destroy', $b->id) . '"
                     title="Delete">
                     <iconify-icon icon="mdi:delete"></iconify-icon>
                 </a>
@@ -97,7 +97,7 @@ class CustomerController extends Controller
 
     public function createModal()
     {
-        return view('backend.modules.customers.create'); // partial only
+        return view('backend.modules.coupons.createModal'); // partial only
     }
 
     public function store(Request $req)
@@ -106,8 +106,8 @@ class CustomerController extends Controller
         $data = $req->validate([
             'name'             => ['required', 'string', 'max:150'],
             'slug'             => ['nullable', 'string', 'max:150'],
-            'email'             => ['required', 'string', 'max:150', 'unique:customers,email'],
-            'phone'             => ['required', 'string', 'max:50', 'unique:customers,phone'],
+            'email'             => ['required', 'string', 'max:150', 'unique:coupons,email'],
+            'phone'             => ['required', 'string', 'max:50', 'unique:coupons,phone'],
             'alternate_phone'             => ['nullable', 'string', 'max:50'],
             'birth_date'             => ['nullable', 'string', 'max:50'],
             'postal_code'             => ['nullable', 'integer'],
@@ -120,10 +120,10 @@ class CustomerController extends Controller
 
         $imagePath = null;
         if ($req->hasFile('image')) {
-            $imagePath = uploadImage($req->file('image'), 'customer/images');
+            $imagePath = uploadImage($req->file('image'), 'coupon/images');
         }
 
-        $customer = customer::create([
+        $coupon = Coupon::create([
             'name'             => ucwords($data['name']),
             'slug'             => $data['slug']??null,
             'email'             => $data['email'],
@@ -137,27 +137,27 @@ class CustomerController extends Controller
 
         ]);
 
-        return response()->json(['ok' => true, 'msg' => 'customer created', 'id' => $customer->id,'name'=>$customer->name]);
+        return response()->json(['ok' => true, 'msg' => 'coupon created', 'id' => $coupon->id,'name'=>$coupon->name]);
     }
 
-    public function editModal(customer $customer)
+    public function editModal(coupon $coupon)
     {
-        return view('backend.modules.customers.edit', compact('customer'));
+        return view('backend.modules.coupons.editModal', compact('coupon'));
     }
 
-    public function show(customer $customer)
+    public function show(coupon $coupon)
     {
 
         return response()->json([
-            'id'   => $customer->id,
-            'name' => $customer->name,
-            'slug' => $customer->slug,
+            'id'   => $coupon->id,
+            'name' => $coupon->name,
+            'slug' => $coupon->slug,
 
         ]);
     }
 
 
-    public function update(Request $req, customer $customer)
+    public function update(Request $req, Coupon $coupon)
     {
 
         $data = $req->validate([
@@ -175,12 +175,12 @@ class CustomerController extends Controller
         ]);
 
 
-        $previousImage = $customer->image;
+        $previousImage = $coupon->image;
 
 
         if ($req->hasFile('image')) {
-            $imagePath       = uploadImage($req->file('image'), 'customer/images');
-            $customer->image = $imagePath;
+            $imagePath       = uploadImage($req->file('image'), 'coupon/images');
+            $coupon->image = $imagePath;
 
 
             if ($previousImage && file_exists($previousImage)) {
@@ -189,25 +189,25 @@ class CustomerController extends Controller
         }
 
 
-        $customer->name             = ucwords($data['name']);
-        $customer->slug             = $data['slug'];
-        $customer->email             = $data['email'];
-        $customer->phone             = $data['phone'];
-        $customer->alternate_phone             = $data['alternate_phone'] ?? null;
-        $customer->birth_date             = $data['birth_date'] ?? null;
-        $customer->address             = $data['address'];
-        $customer->postal_code             = $data['postal_code'];
-        $customer->is_active        = $data['is_active'];
+        $coupon->name             = ucwords($data['name']);
+        $coupon->slug             = $data['slug'];
+        $coupon->email             = $data['email'];
+        $coupon->phone             = $data['phone'];
+        $coupon->alternate_phone             = $data['alternate_phone'] ?? null;
+        $coupon->birth_date             = $data['birth_date'] ?? null;
+        $coupon->address             = $data['address'];
+        $coupon->postal_code             = $data['postal_code'];
+        $coupon->is_active        = $data['is_active'];
 
-        $customer->save();
+        $coupon->save();
 
-        return redirect()->route('customer.index')
-            ->with('success', 'customer updated successfully!');
+        return redirect()->route('coupon.index')
+            ->with('success', 'coupon updated successfully!');
     }
 
     public function importCsvModal()
     {
-        return view('backend.modules.customers.import_csv');
+        return view('backend.modules.coupons.import_csv');
     }
 
     public function importCsv(Request $req)
@@ -258,32 +258,32 @@ class CustomerController extends Controller
 
         if (!empty($insertRows)) {
             // Upsert in bulk (Laravel 8+). Unique by email (or phone)
-            Customer::upsert($insertRows, ['name', 'slug', 'phone', 'address', 'postal_code', 'alternate_phone', 'birth_date', 'image', 'is_active']);
+            coupon::upsert($insertRows, ['name', 'slug', 'phone', 'address', 'postal_code', 'alternate_phone', 'birth_date', 'image', 'is_active']);
         }
 
-        return response()->json(['ok' => true, 'msg' => 'Customers imported successfully']);
+        return response()->json(['ok' => true, 'msg' => 'coupons imported successfully']);
     }
 
-    public function destroy(customer $customer)
+    public function destroy(Coupon $coupon)
     {
-        // $inUse = DB::table('customers')->where('customer_id', $customer->id)->count();
+        // $inUse = DB::table('coupons')->where('coupon_id', $coupon->id)->count();
         // if ($inUse > 0) {
         //     return response()->json([
         //         'ok'  => false,
-        //         'msg' => "This customer has {$inUse} subcategorie(s). Reassign them first.",
+        //         'msg' => "This coupon has {$inUse} subcategorie(s). Reassign them first.",
         //     ], 422);
         // }
 
-        $image      = $customer->image;
+        $image      = $coupon->image;
 
-        $customer->delete();
+        $coupon->delete();
 
         if (isset($image) && file_exists($image)) {
             unlink($image);
         }
 
 
-        return response()->json(['ok' => true, 'msg' => 'customer deleted']);
+        return response()->json(['ok' => true, 'msg' => 'coupon deleted']);
     }
 
     public function select2(Request $r)
@@ -291,7 +291,7 @@ class CustomerController extends Controller
 
         $q = trim($r->input('q', ''));
         $type = $r->type;
-        $base = customer::query()->where('is_active', 1);
+        $base = Coupon::query()->where('is_active', 1);
 
 
         if ($q !== '') {

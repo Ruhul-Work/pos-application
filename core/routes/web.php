@@ -6,6 +6,7 @@ use App\Http\Controllers\backend\CategoryTypeController;
 use App\Http\Controllers\backend\ColorController;
 use App\Http\Controllers\backend\CompanySettingController;
 use App\Http\Controllers\backend\CountryController;
+use App\Http\Controllers\backend\CouponController;
 use App\Http\Controllers\backend\CustomerController;
 use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
@@ -336,7 +337,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('customers/create', [CustomerController::class, 'createModal'])->name('create');
         Route::post('customers/list', [CustomerController::class, 'listAjax'])->name('list.ajax');
         Route::post('customers', [CustomerController::class, 'store'])->name('store');
-        Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('supplier')->name('edit');
+        Route::get('customers/edit/{customer}', [CustomerController::class, 'editModal'])->whereNumber('customer')->name('edit');
         Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('update');
         Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('show');
         Route::get('customers/import_csv/file', [CustomerController::class, 'importCsvModal'])->name('import_csv');
@@ -370,6 +371,20 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('paymentType/{paymentType}', [PaymentTypeController::class, 'show'])->name('show');
         Route::delete('paymentType/{paymentType}', [PaymentTypeController::class, 'destroy'])->name('destroy');
         Route::get('paymentType/select2/type', [PaymentTypeController::class, 'select2'])->name('select2');
+    });
+
+
+    Route::prefix('coupon')->name('coupon.')->group(function () {
+
+        Route::get('coupon', [CouponController::class, 'index'])->name('index');
+        Route::get('coupon/create', [CouponController::class, 'createModal'])->name('create');
+        Route::post('coupon/list', [CouponController::class, 'listAjax'])->name('list.ajax');
+        Route::post('coupon', [CouponController::class, 'store'])->name('store');
+        Route::get('coupon/edit/{coupon}', [CouponController::class, 'editModal'])->whereNumber('coupon')->name('edit');
+        Route::put('coupon/{coupon}', [CouponController::class, 'update'])->name('update');
+        Route::get('coupon/{coupon}', [CouponController::class, 'show'])->name('show');
+        Route::delete('coupon/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
+        Route::get('coupon/select2/type', [CouponController::class, 'select2'])->name('select2');
     });
 
     Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {

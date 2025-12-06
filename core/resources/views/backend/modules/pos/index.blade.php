@@ -2,7 +2,7 @@
 @section('content')
     <div class="row ">
 
-        <div class="product-div col-lg-8 bg-gray " style="height: 80vh; overflow-y: auto;">
+        <div class="product-div col-lg-7 bg-gray " style="height: 80vh; overflow-y: auto;">
             <div class="row justify-content-between">
                 {{-- welcome div --}}
                 <div class="col-lg-4">
@@ -16,7 +16,7 @@
 
                     <button class="btn btn-dark btn-sm px-3 text-xs d-flex align-items-center justify-content-center gap-1">
                         {{-- <iconify-icon icon="flowbite:tag-outline" class="menu-icon fs-6"></iconify-icon> --}}
-                        <span>View All Brands</span>
+                        <span>All Brands</span>
                     </button>
 
                     <button class="btn btn-primary btn-sm px-3 text-xs">Featured</button>
@@ -48,7 +48,7 @@
         </div>
 
 
-        <div class="order-div col-lg-4 bg-white rounded-3 " style="height: 80vh; overflow-y: auto;">
+        <div class="order-div col-lg-5 bg-white rounded-3 " style="height: 80vh; overflow-y: auto;">
 
             <div class="d-flex p-1 justify-content-between mt-3">
                 <h1 class="text-xl lh-1 fw-semibold p-1">Order List</h1>
@@ -65,18 +65,55 @@
                     <div class="col-lg-9 d-flex gap-2">
                         <div class="mt-1">
                             <select class="form-control form-control-sm col-lg-3 js-s2-ajax" name="customer_id"
-                                id="supplier" data-url="{{ route('customer.select2') }}"
+                                id="customer" data-url="{{ route('customer.select2') }}"
                                 data-placeholder="Select Customer">
-                                <option id="recent" value="" selected></option>
+                                <option id="recent" value="customer" selected>Walk In Customer</option>
 
                             </select>
                             <div class="invalid-feedback d-block category_id-error" style="display:none"> </div>
                         </div>
                         <div class="p- my-1 d-flex gap-2">
-                            <button class="btn btn-success rounded-1 btn-sm AjaxModal"
-                                data-ajax-modal="{{ route('supplier.createModal') }}" data-size="lg"
-                                data-onload="CategoryIndex.onLoad" data-onsuccess="CategoryIndex.onSaved"> <iconify-icon
-                                    icon="flowbite:users-outline" class="menu-icon"></iconify-icon></button>
+                            <button class="btn btn-success rounded-1 btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#customerModal"> <iconify-icon icon="flowbite:users-outline"
+                                    class="menu-icon"></iconify-icon>
+                            </button>
+                            {{-- modal --}}
+                            <div class="modal fade" id="customerModal" tabindex="-1"
+                                aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-lg" id="exampleModalCenterTitle">Add Customer
+                                            </h5>
+                                            <button type="button" class="btn-close " data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <form id="customer_form">
+                                            <div class="modal-body p-3">
+                                                <label for="" class="form-label">Name</label>
+                                                <input type="text" class="form-control" id="customer_name"
+                                                    name="name">
+                                                <label for="" class="form-label mt-3">Email</label>
+                                                <input type="email" min="0" class="form-control"
+                                                    id="customer_email" name="email">
+                                                <label for="" class="form-label">Phone</label>
+                                                <input type="text" class="form-control" id="customer_name"
+                                                    name="phone">
+                                                <label for="" class="form-label mt-3">Adress</label>
+                                                <input type="text" min="0" class="form-control"
+                                                    id="customer_email" name="address">
+                                            </div>
+                                            <div class="modal-footer ">
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" data-bs-toggle="modal" class="btn btn-dark btn-sm"
+                                                    id="customer_submit">Save</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- modal ends --}}
                             <button class="btn btn-primary rounded-1 btn-sm"><iconify-icon icon="mdi:qrcode-scan"
                                     class="menu-icon"></iconify-icon></button>
                         </div>
@@ -87,7 +124,8 @@
                     style="background:#FFEEE9;border:1px solid #E04F16">
                     <div class="">
                         <h1 class="text-md lh-1 fw-semibold ">James Anderson</h1>
-                        <p class="text-sm lh-1">Bonus: <span class="bg-info rounded-3 fw-semibold p-1 text-white">148</span>
+                        <p class="text-sm lh-1">Bonus: <span
+                                class="bg-info rounded-3 fw-semibold p-1 text-white">148</span>
                             |
                             Loyality: <span class="bg-success rounded-3 fw-semibold p-1 text-white">520</span></p>
                     </div>
@@ -116,7 +154,8 @@
 
                                 <th scope="col" class="text-center">Item</th>
                                 <th scope="col" class="text-center">Quantity</th>
-                                <th scope="col" class="text-center">Cost</th>
+                                <th scope="col" class="text-center">Price</th>
+                                <th scope="col" class="text-center">Total</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm " id="cart_items">
@@ -152,13 +191,22 @@
                             <tr>
 
                                 <td class="text-secondary">
+                                    <span>Subtotal</span>
+
+                                </td>
+                                <td class="text-secondary" id="subtotal">$2300</td>
+
+                            </tr>
+
+                            <tr>
+                                <td class="text-secondary">
                                     <span>Shippping</span>
                                     <button class="bg-light rounded-4 border-0 p-1 icon" data-bs-toggle="modal"
-                                        data-bs-target="#exampleModalCenter1">
+                                        data-bs-target="#shippingModal">
                                         <iconify-icon icon="flowbite:edit-outline" class="menu-icon fs-7"></iconify-icon>
                                     </button>
                                     <!-- Modal -->
-                                    <div class="modal fade" id="exampleModalCenter1" tabindex="-1"
+                                    <div class="modal fade" id="shippingModal" tabindex="-1"
                                         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
@@ -178,7 +226,7 @@
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" data-bs-toggle="modal"
-                                                        class="btn btn-dark btn-sm">Save</button>
+                                                        class="btn btn-dark btn-sm" id="shipping-save">Save</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -193,11 +241,11 @@
                                 <td class="text-secondary">
                                     <span>Coupon</span>
                                     <button class="bg-light rounded-4 border-0 p-1 icon" data-bs-toggle="modal"
-                                        data-bs-target="#exampleModalCenter2">
+                                        data-bs-target="#couponModal">
                                         <iconify-icon icon="flowbite:edit-outline" class="menu-icon fs-7"></iconify-icon>
                                     </button>
                                     <!-- Modal -->
-                                    <div class="modal fade" id="exampleModalCenter2" tabindex="-1"
+                                    <div class="modal fade" id="couponModal" tabindex="-1"
                                         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
@@ -235,12 +283,12 @@
                                 <td class="text-secondary">
                                     <span>Discount</span>
                                     <button type="button" class="bg-light rounded-4 border-0 p-1 icon"
-                                        data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                                        data-bs-toggle="modal" data-bs-target="#discountModal">
                                         <iconify-icon icon="flowbite:edit-outline" class="menu-icon fs-7"></iconify-icon>
                                     </button>
 
                                     <!-- Modal -->
-                                    <div class="modal fade" id="exampleModalCenter" tabindex="-1"
+                                    <div class="modal fade" id="discountModal" tabindex="-1"
                                         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
@@ -265,7 +313,7 @@
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" data-bs-toggle="modal"
-                                                        class="btn btn-dark btn-sm">Save</button>
+                                                        class="btn btn-dark btn-sm" id="discount-save">Save</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -275,17 +323,7 @@
                                         class="text-danger" style="width: 80px"></td>
 
                             </tr>
-                            <tr>
 
-                                <td class="text-secondary">
-                                    <span>Subtotal</span>
-                                    <button class="bg-light rounded-4 border-0 p-1 icon">
-                                        <iconify-icon icon="flowbite:edit-outline" class="menu-icon fs-7"></iconify-icon>
-                                    </button>
-                                </td>
-                                <td class="text-secondary" id="subtotal">$2300</td>
-
-                            </tr>
 
 
                             <tr>
@@ -311,10 +349,10 @@
                     <div class="row gap-3  mt-5 px-3 justify-content-center">
                         {{-- <div class="col-lg"><button class="btn btn-outline-dark btn-sm">Cash</button></div> --}}
                         {{-- <button class="btn col-lg-3 payment-btn btn-sm">Cash</button> --}}
-                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap">Cash</button>
-
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal-btn btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#paymentModal" data-bs-whatever="@getbootstrap" data-payment_method="cash">Cash</button>
+                            {{-- payment modal starts here --}}
+                        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
@@ -327,30 +365,29 @@
                                         <form>
                                             <div class="row">
                                                 <div class="mb-3 col-lg-4">
-                                                    <label for="received_amount" class="col-form-label">Received
-                                                        Amount</label>
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        id="recipient-name" value="$ 1400">
+                                                    <label for="checkout_amount" class="col-form-label">Total Amount</label>
+                                                    <input type="number" min="0" class="form-control form-control-sm"
+                                                        id="checkout_total_amount" disabled value="0">
                                                 </div>
                                                 <div class="mb-3 col-lg-4">
                                                     <label for="received_amount" class="col-form-label">Paying
                                                         Amount</label>
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        id="recipient-name" value="$ 800">
+                                                    <input type="number" min="0" class="form-control form-control-sm"
+                                                        id="paid_amount" value="0">
                                                 </div>
                                                 <div class="mb-3 col-lg-4">
                                                     <label for="received_amount" class="col-form-label">Change</label>
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        id="recipient-name" value="$ 0">
+                                                    <input type="number"  disabled min="0" class="form-control form-control-sm"
+                                                        id="change_amount" value="$ 0">
                                                 </div>
                                             </div>
                                             <div class="mb-3 ">
                                                 <label for="received_amount" class="col-form-label">Payment Type</label>
-                                                <select name="" id=""
+                                                <select name="payment_method" id="payment_method"
                                                     class="form-control form-control-sm">
-                                                    <option value="" selected>Cash</option>
-                                                    <option value="">Card</option>
-                                                    <option value="">Bkash</option>
+                                                    <option value="cash" selected>Cash</option>
+                                                    <option value="card">Card</option>
+                                                    <option value="bkash">Bkash</option>
                                                 </select>
                                             </div>
                                             <div class="mb-3 ">
@@ -377,19 +414,22 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn col-lg-3 payment-btn btn-sm">Bkash</button>
-                        <button class="btn col-lg-3 payment-btn btn-sm">Card</button>
+                        <button class="btn col-lg-3 payment-btn btn-sm payment-modal-btn" data-bs-toggle="modal"
+                            data-bs-target="#paymentModal" data-payment_method="bkash">Bkash</button>
+                        <button class="btn col-lg-3 payment-btn btn-sm payment-modal-btn" data-bs-toggle="modal"
+                            data-bs-target="#paymentModal" data-payment_method="card">Card</button>
 
                     </div>
                 </div>
                 <div class="d-flex mt-3 gap-2 mb-3">
                     <button style="padding: 10px"
                         class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
-                            icon="flowbite:printer-outline" class="menu-icon fs-5 "></iconify-icon><span>Print
+                            icon="flowbite:printer-outline payment-modal-btn" class="menu-icon fs-5 "></iconify-icon><span>Print
                             Order</span>
                     </button>
-                    <button
-                        class="btn btn-danger border  col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
+                    <button  data-bs-toggle="modal"
+                            data-bs-target="#paymentModal"
+                        class="btn btn-danger border payment-modal-btn   col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
                             icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Place
                             Order</span>
                     </button>
@@ -558,7 +598,7 @@
                     cartItemsHtml += `
                        <tr>
                                     <td class="d-flex align-items-center text-center justify-content-start gap-2 text-secondary ">
-                                        <span class="order-item">${item.name}
+                                        <span class="order-item">${stringShortner(item.name,20)}
                                             </span><button class="icon product-delete" data-product_id="${item.id}"><iconify-icon icon="mdi:delete"
                                                 class="menu-icon fs-7 "></button>
                                     </td>
@@ -575,8 +615,11 @@
                                                 class="menu-icon fs-7"></iconify-icon>
                                         </button>
                                     </td>
+                                    <td class="">
+                                        ${item.price}
+                                    </td>
                                     <td class="product-price">
-                                        $ ${item.price*item.quantity}
+                                        ${item.price*item.quantity}
                                     </td>
 
                                 </tr>`;
@@ -626,7 +669,7 @@
                 if (product) {
                     let newPrice = product.price * product.quantity;
                     $(this).closest('tr').find('.product-price').html(
-                        `$${newPrice}`);
+                        `${newPrice}`);
                 }
                 calculateSubtotal();
 
@@ -644,7 +687,7 @@
                 i.val(parseInt(i.val()) + 1);
 
                 updateQuantityInCart(productId, product.quantity + 1);
-                price.html('$ ' + product.price * (product.quantity + 1));
+                price.html(product.price * (product.quantity + 1));
 
                 calculateSubtotal();
 
@@ -664,7 +707,7 @@
                     i.val(parseInt(i.val()) - 1);
 
                     $(this).closest('tr').find('.product-price').html(
-                        `$${product.price * (product.quantity-1)}`);
+                        `${product.price * (product.quantity-1)}`);
 
                 }
                 calculateSubtotal();
@@ -715,7 +758,7 @@
 
             function updatePrice(element, price) {
                 a = $(element).closest('tr').find('.product-price');
-                a.html('$ ' + price);
+                a.html(price);
             }
             // Reusable function to load products
             function loadProducts(url) {
@@ -735,13 +778,12 @@
                             image = a.replace('theme/frontend/assets/img/default/book.png', p);
 
                             productsHtml += `<div class="product-card  bg-white rounded-3 m-3 d-flex p-3 " data-product_id="${product.id}"
-                                style="height: 150px; width:30%; cursor: pointer;">
-                                 <img class="img-fluid rounded col-lg-6 product-img" src="${image}" alt="img">
-                                     <div class="px-3">
-                                         <p class="py-1 lh-sm text-lg">${product.name}<br><span
-                                             class="text-xs lh-1 py-1 fw-semibold my-1"><span>${ product.name }</span></p>
-                                                 <hr class="my-1 lh-1">
-                                                 <h1 class="text-sm lh-1 fw-semibold p-1">$${product.price}</h1>
+                                style="height: 110px; width:20%; cursor: pointer;">
+                               <img class="img-fluid h-75 rounded col-lg-5  product-img" src="${image}" alt="img">
+                                     <div class="px-3 flex-grow-1">
+                                         <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,20)}</p>
+                                               
+                                                 <h1 class="text-sm lh-1 fw-semibold px-1 mt-1">${product.price}</h1>
 
                                     </div>
                             </div> `;
@@ -795,7 +837,7 @@
                 });
 
             } //loadProducts function ends here
-          
+
 
             //check if product exists in cart with product id
             function productExistsInCart(productId) {
@@ -843,7 +885,7 @@
                             let cartItemsHtml = `
                        <tr>
                                     <td class="d-flex align-items-center justify-content-start gap-2 text-secondary ">
-                                        <span class="order-item">${product.name}
+                                        <span class="order-item">${stringShortner(product.name,20)}
                                             </span><button class="icon product-delete" data-product_id="${product.id}"><iconify-icon icon="mdi:delete"
                                                 class="menu-icon fs-7 "></button>
                                     </td>
@@ -860,8 +902,11 @@
                                                 class="menu-icon fs-7"></iconify-icon>
                                         </button>
                                     </td>
+                                    <td class=''>
+                                        ${product.price}
+                                    </td>
                                     <td class='product-price'>
-                                        $${product.price*product.quantity}
+                                        ${product.price*product.quantity}
                                     </td>
 
                                 </tr>`;
@@ -898,6 +943,11 @@
             //empty product card from localstorage 
             function emptyCart() {
                 localStorage.removeItem('cart');
+                localStorage.setItem('discountPos', JSON.stringify({
+                    'type': 'flat',
+                    'value': 0.00
+                }));
+                localStorage.setItem('shippingChargePos', 0);
                 // alert('cart emptied successfully!');
                 loadCartItems();
                 $('.product-card').removeClass('active');
@@ -919,8 +969,8 @@
 
             function calculateSubtotal() {
                 let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                let discount = JSON.parse(localStorage.getItem('discount')) || 0;
-                let shipping = parseFloat(localStorage.getItem('shippingCharge')) || 0;
+                let discount = JSON.parse(localStorage.getItem('discountPos')) || 0;
+                let shipping = parseFloat(localStorage.getItem('shippingChargePos')) || 0;
                 let subtotal = 0;
                 let total = 0;
 
@@ -937,19 +987,21 @@
                     $('#discount').val(`${discount.value.toFixed(2)}`);
                 }
                 $('#shipping').val(`${shipping.toFixed(2)}`);
-                $('#subtotal').text(`$${subtotal.toFixed(2)}`);
-                $('#total_amount').text(`$${total.toFixed(2)}`);
+                $('#subtotal').text(subtotal.toFixed(2));
+                $('#total_amount').text(total.toFixed(2));
+
+                return total;
 
 
 
             }
 
             //discount calculation
-            $('#discount-input').on('input', function() {
+            $('#discount-save').on('click', function() {
                 let discountType = $('#discount-type').val();
-                let discountAmount = parseFloat($(this).val()) || 0;
+                let discountAmount = parseFloat($('#discount-input').val()) || 0;
 
-                localStorage.setItem('discount', JSON.stringify({
+                localStorage.setItem('discountPos', JSON.stringify({
                     'type': discountType,
                     'value': discountAmount
                 }));
@@ -958,14 +1010,29 @@
                 calculateSubtotal();
 
             });
-            $('#shipping-input').on('input', function() {
-                let shippingCharge = parseFloat($(this).val()) || 0;
+            $('#shipping-save').on('click', function() {
+                let shippingCharge = parseFloat($('#shipping-input').val()) || 0;
                 $('#shipping').val(shippingCharge);
-                localStorage.setItem('shippingCharge', shippingCharge);
+                localStorage.setItem('shippingChargePos', shippingCharge);
 
                 calculateSubtotal();
 
             });
+
+            //checkout form functionality
+             $(document).on('click','.payment-modal-btn',function(){
+                let payment = $(this).data('payment_method')??'cash';
+                $('#payment_method').val(payment);
+                let total = parseFloat(calculateSubtotal()) ;
+                $('#checkout_total_amount').val(total.toFixed(2));
+                 $('#change_amount').val(0);
+
+            })
+            $(document).on('input','#paid_amount', function(){
+                let paid =parseFloat($(this).val()) ;
+                let total =parseFloat($('#checkout_total_amount').val()) ;
+                $('#change_amount').val((total-paid).toFixed(2));
+            })
 
 
 
@@ -991,6 +1058,12 @@
 
         //customer select2
         window.S2.auto();
+
+        function stringShortner(name, length) {
+            if (name.length > length)
+                return name.slice(0, length) + '...';
+            else return name;
+        }
 
         function loadSupplier() {
             let a = ' {{ route('supplier.recent') }}';
@@ -1019,5 +1092,27 @@
         $('#exampleModalCenter1').on('shown.bs.modal', function() {
             $('#myInput').trigger('focus');
         });
+
+        $('#customer_form').on('submit', function(e) {
+            e.preventDefault(); // stop normal form submit
+
+            let formData = $(this).serialize(); // collects all fields
+
+            $.ajax({
+                url: '{{ route('customer.store') }}',
+                type: 'POST',
+                data: formData,
+                success: function(res) {
+                    $('#customer')
+                        .append(new Option(res.name, res.id, true, true))
+                        .trigger('change');
+                    
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            });
+        });
+       
     </script>
 @endsection
