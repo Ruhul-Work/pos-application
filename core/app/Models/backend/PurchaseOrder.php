@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PurchaseOrder extends Model
 {
+    protected $table = 'purchase_orders';
     protected $fillable = [
         'supplier_id', 'branch_id', 'warehouse_id',
         'po_number', 'status', 'order_date', 'expected_date',
-        'currency', 'subtotal', 'tax_amount', 'shipping_amount', 'total_amount', 'notes',
+        'currency', 'subtotal', 'tax_amount', 'shipping_amount', 'total_amount','paid_amount', 'outstanding_amount', 'payment_status', 'notes','discount_type', 'discount_value', 'discount_amount', 'purchase_invoice',
         'created_by', 'updated_by',
     ];
+
+
 
     protected $casts = [
         'order_date'      => 'date',

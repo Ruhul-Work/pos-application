@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockCurrent extends Model
 {
       protected $table = 'stock_currents';
-    public $timestamps = false; // we update timestamps manually in service
+    // public $timestamps = false; 
 
     protected $fillable = [
         'product_id',
