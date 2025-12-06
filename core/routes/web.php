@@ -18,6 +18,8 @@ use App\Http\Controllers\backend\PosController;
 use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\ProductTypeController;
 use App\Http\Controllers\backend\PurchaseController;
+use App\Http\Controllers\backend\PurchasePaymentController;
+use App\Http\Controllers\backend\PurchaseReceiptController;
 use App\Http\Controllers\backend\SizeController;
 use App\Http\Controllers\backend\StockAdjustmentController;
 use App\Http\Controllers\backend\StockOpeningController;
@@ -267,7 +269,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('openingStock/list', [StockOpeningController::class, 'listAjax'])->name('openingStock.list');
         Route::get('openingStock/create-modal', [StockOpeningController::class, 'createModal'])->name('openingStock.createModal');
         Route::post('openingStock', [StockOpeningController::class, 'store'])->name('openingStock.store');
-        
 
         // Transfer Stock Management
         Route::get('transfers', [StockTransferController::class, 'index'])->name('transfers.index');
@@ -277,7 +278,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::delete('transfers/{transfer}/delete', [StockTransferController::class, 'destroy'])->name('transfers.destroy');
         Route::get('transfers/{transfer}', [StockTransferController::class, 'show'])->name('transfers.show');
         Route::post('transfers/{transfer}/post', [StockTransferController::class, 'post'])->name('transfers.post');
-        
+
         Route::get('transfers/{transfer}/edit', [StockTransferController::class, 'edit'])->name('transfers.edit');
         Route::post('transfers/{transfer}', [StockTransferController::class, 'update'])->name('transfers.update');
 
@@ -286,7 +287,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('adjustments/list', [StockAdjustmentController::class, 'listAjax'])->name('adjustments.list');
         Route::get('adjustments/create', [StockAdjustmentController::class, 'create'])->name('adjustments.create');
         Route::post('adjustments', [StockAdjustmentController::class, 'store'])->name('adjustments.store');
-        
+
         Route::POST('adjustments/{id}/post', [StockAdjustmentController::class, 'post'])->name('adjustments.post');
         Route::get('adjustments/{adjustment}', [StockAdjustmentController::class, 'show'])->name('adjustments.show');
         Route::get('adjustments/{ledger}/edit', [StockAdjustmentController::class, 'edit'])->name('adjustments.edit');
@@ -294,15 +295,13 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::put('adjustments/{ledger}', [StockAdjustmentController::class, 'update'])->name('adjustments.update');
         Route::delete('adjustments/{ledger}/delete', [StockAdjustmentController::class, 'destroy'])->name('adjustments.destroy');
 
-        
         // bulk system qty endpoint
         Route::post('adjustments/stock-currents/bulk', [StockAdjustmentController::class, 'systemQtyBulk'])->name('adjustments.stock.currents.bulk');
 
         // store already exists per your previous code
-   
+
         Route::get('adjustments/parent/{parent}/edit', [StockAdjustmentController::class, 'editParent'])
             ->name('adjustments.parent.edit');
-        
 
         // product variants endpoint (if not already present)
         Route::get('product/{parent}/variants', [StockAdjustmentController::class, 'ajaxParentVariants'])->name('product.variants');
@@ -328,7 +327,7 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('suppliers/select2/type', [SupplierController::class, 'select2'])->name('select2');
         Route::get('suppliers/import_csv/file', [SupplierController::class, 'importCsvModal'])->name('import_csv');
         Route::post('suppliers/handle/upload_csv', [SupplierController::class, 'importCsv'])->name('handle_csv');
-        Route::get('suppliers/recent/supplier',[SupplierController::class, 'recent_record'])->name('recent');
+        Route::get('suppliers/recent/supplier', [SupplierController::class, 'recent_record'])->name('recent');
     });
 
     Route::prefix('customer')->name('customer.')->group(function () {
@@ -349,14 +348,31 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('pos')->name('pos.')->group(function () {
 
         Route::get('pos', [PosController::class, 'index'])->name('index');
-        
 
     });
 
     Route::prefix('purchase')->name('purchase.')->group(function () {
 
         Route::get('purchase', [PurchaseController::class, 'index'])->name('index');
+        Route::get('purchase/create', [PurchaseController::class, 'create'])->name('orders.create');
+        Route::post('purchase/list', [PurchaseController::class, 'listAjax'])->name('list.ajax');
+        Route::post('purchase', [PurchaseController::class, 'store'])->name('orders.store');
+        Route::get('purchase/edit/{purchase}', [PurchaseController::class, 'edit'])->whereNumber('purchase')->name('orders.edit');
+
+        Route::put('purchase/{purchase}', [PurchaseController::class, 'update'])->name('orders.update');
+        Route::delete('purchase/{purchase}', [PurchaseController::class, 'destroy'])->name('orders.destroy');
+        Route::get('purchase/select2/type', [PurchaseController::class, 'select2'])->name('orders.select2');
+        Route::get('purchase/orders/{order}', [PurchaseController::class, 'show'])->name('orders.show');
+
+        Route::get('purchase/orders/{order}/payment-modal',[PurchaseController::class, 'paymentModal'])->name('orders.payment.modal');
+        Route::post('purchase/orders/{order}/payments', [PurchasePaymentController::class, 'storeForOrder'])
+            ->name('orders.payments.store');
         
+        Route::get('purchase/orders/{order}/receive-all-modal', [PurchaseReceiptController::class, 'receiveAllModal'])
+    ->name('orders.receive-all.modal');
+        Route::post('purchase/receipts', [PurchaseReceiptController::class, 'store'])
+    ->name('receipts.store');
+         
 
     });
 

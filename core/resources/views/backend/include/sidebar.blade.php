@@ -141,6 +141,14 @@
                         </a>
                     </li>
                 @endperm
+                @perm('purchase.create')
+                    <li>
+                        <a class="{{ Route::is('purchase.orders.create') ? 'active' : '' }}" href="{{ route('purchase.orders.create') }}">
+                            <iconify-icon icon="tabler:shopping-cart" class="menu-icon"></iconify-icon>
+                            <span>Add Purchase</span>
+                        </a>
+                    </li>
+                @endperm
 
 
 
