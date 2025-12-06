@@ -209,7 +209,7 @@
                     <li>
                         <a class="{{ Route::is('company_setting.index') ? 'active' : '' }}"
                             href="{{ route('company_setting.index') }}">
-                            <iconify-icon icon="mdi:cog" class="menu-icon"></iconify-icon> Company Setting
+                            <iconify-icon icon="mdi:cog" class="menu-icon"></iconify-icon> <span>Company Setting</span>
                         </a>
                     </li>
                 @endperm
@@ -291,6 +291,12 @@
                 <li class="sidebar-menu-group-title">Item Management</li>
                 @permgroup(['customer', 'supplier'])
 
+                    <li class="{{ Route::is('coupon.index') ? 'active' : '' }}">
+                        <a href="{{ route('coupon.index') }}">
+                             <iconify-icon icon="mdi:ticket-percent-outline" class="menu-icon"></iconify-icon>
+                            <span>Coupon</span>
+                        </a>
+                    </li>
 
 
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
@@ -440,9 +446,9 @@
                             </a>
                         </li>
                     @endperm
-                  </ul>
+                </ul>
                 </li>
-                
+
 
 
 

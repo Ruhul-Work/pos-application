@@ -1,11 +1,11 @@
-<div class="modal-header py-16 px-24 border-0" data-modal-key="branch-edit">
-  <h5 class="modal-title">Edit Country</h5>
+<div class="modal-header py-16 px-24 border-0" data-modal-key="coupon-edit">
+  <h5 class="modal-title">Edit Coupon</h5>
   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
 <div class="modal-body p-26">
-  <form id="branchEditForm"
-        action="{{ route('country.countries.update', $country->id) }}"
+  <form id="couponEditForm"
+        action="{{ route('coupon.update', $country->id) }}"
         method="post"
         data-ajax="true">
     @csrf
