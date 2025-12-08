@@ -364,15 +364,17 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::get('purchase/select2/type', [PurchaseController::class, 'select2'])->name('orders.select2');
         Route::get('purchase/orders/{order}', [PurchaseController::class, 'show'])->name('orders.show');
 
-        Route::get('purchase/orders/{order}/payment-modal',[PurchaseController::class, 'paymentModal'])->name('orders.payment.modal');
+        Route::get('purchase/orders/{order}/payment-modal', [PurchaseController::class, 'paymentModal'])->name('orders.payment.modal');
         Route::post('purchase/orders/{order}/payments', [PurchasePaymentController::class, 'storeForOrder'])
             ->name('orders.payments.store');
-        
+
         Route::get('purchase/orders/{order}/receive-all-modal', [PurchaseReceiptController::class, 'receiveAllModal'])
-    ->name('orders.receive-all.modal');
+            ->name('orders.receive-all.modal');
         Route::post('purchase/receipts', [PurchaseReceiptController::class, 'store'])
-    ->name('receipts.store');
-         
+            ->name('receipts.store');
+
+        Route::get('purchase/edit/{purchase}', [PurchaseController::class, 'edit'])->whereNumber('purchase')->name('orders.edit');
+        Route::put('purchase/{purchase}', [PurchaseController::class, 'update'])->name('orders.update');
 
     });
 
@@ -388,7 +390,6 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::delete('paymentType/{paymentType}', [PaymentTypeController::class, 'destroy'])->name('destroy');
         Route::get('paymentType/select2/type', [PaymentTypeController::class, 'select2'])->name('select2');
     });
-
 
     Route::prefix('coupon')->name('coupon.')->group(function () {
 

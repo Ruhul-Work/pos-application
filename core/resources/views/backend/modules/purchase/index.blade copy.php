@@ -1,5 +1,4 @@
 @extends('backend.layouts.master')
-
 @section('content')
     <div class="row ">
 
@@ -31,15 +30,17 @@
                     Categories
                 </button>
                 @foreach ($categories as $category)
-                    <button class="btn nav-btn  rounded-4 py-1 text-md" data-category-id="{{ $category->id }}">
+                    <button class="btn nav-btn  rounded-4 py-1 text-md"data-category-id="{{ $category->id }}">
                         {{ $category->name }}
                     </button>
                 @endforeach
             </div>
-
             {{-- products --}}
             <div class="products-div mt-3 row gap-space-between h-auto align-item-center justify-content-center"
                 id="product-list">
+
+                {{-- @include('backend.modules.products.product_list', ['products' => $products]) --}}
+
 
             </div>
 
@@ -49,153 +50,339 @@
 
         <div class="order-div col-lg-5 bg-white rounded-3 " style="height: 80vh; overflow-y: auto;">
 
-            {{-- purchase form --}}
-            @include('backend.modules.purchase._form', [
-                'purchase' => $purchase ?? null,
-                'isEditable' => $isEditable ?? true,
-            ])
+            <div class="d-flex p-1 justify-content-between mt-3">
+                <h1 class="text-xl lh-1 fw-semibold p-1">Purchase List</h1>
 
+                <div>
+                    <h6 class="text-xs   p-1 px-3 bg-dark text-white rounded-pill">#ord1247</h6>
+                </div>
+            </div>
+            <hr class=" px-3" style="border-top: 1px dashed #000;">
+            <div class="p-1 mt-3">
+                <h1 class="text-lg lh-1 fw-semibold p-1">Supplier's Information</h1>
+                <div class="d-flex gap-2">
+
+                    <div class="col-lg-9 d-flex gap-2">
+                        <div class="mt-1">
+                            <select class="form-control form-control-sm col-lg-3 js-s2-ajax" name="supplier_id"
+                                id="supplier" data-url="{{ route('supplier.select2') }}"
+                                data-placeholder="Select Supplier">
+                                <option id="recent" value="" selected></option>
+
+                            </select>
+                            <div class="invalid-feedback d-block category_id-error" style="display:none"> </div>
+                        </div>
+                        <div class="p- my-1 d-flex gap-2">
+                            <button class="btn btn-success rounded-1 btn-sm AjaxModal"
+                                data-ajax-modal="{{ route('supplier.createModal') }}" data-size="lg"
+                                data-onload="CategoryIndex.onLoad" data-onsuccess="CategoryIndex.onSaved"> <iconify-icon
+                                    icon="flowbite:users-outline" class="menu-icon"></iconify-icon></button>
+                            <button class="btn btn-primary rounded-1 btn-sm"><iconify-icon icon="mdi:qrcode-scan"
+                                    class="menu-icon"></iconify-icon></button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 py-1 px-3">
+                        <label for="warehouse_id" class="form-label">Warehouse</label>
+                        <select class="form-control form-control-sm col-lg-3 purchase-ware-select js-s2-ajax"
+                            name="warehouse_id" id="warehouse" data-url="{{ route('inventory.warehouses.select2') }}"
+                            data-placeholder="Select warehouse">
+                            <option id="recent" value="" selected></option>
+
+                        </select>
+                        <div class="invalid-feedback d-block category_id-error" style="display:none"> </div>
+                    </div>
+                    <div class="col-md-6 py-1 px-3">
+                        <label for="branch_id" class="form-label">Branch</label>
+                        <select name="branch_id" id="branchSelect" class="form-control purchase-ware-select js-s2-ajax"
+                            data-url="{{ route('org.branches.select2') }}" data-placeholder="Select branch">
+                        </select>
+                    </div>
+
+                    <div class="col-lg-6 py-1 px-3">
+                        <label for="warehouse_id" class="form-label">Order Status</label>
+                        <select name="status" id="status" class="form-control form-control-sm">
+                            <option value="draft" selected>Draft</option>
+                            {{-- <option value="received">Received</option> --}}
+                        </select>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <label for="" class="form-label">Purchase Date</label>
+                        <input type="date" lang="en-GB" class="form-control form-control-sm" name="purchase_date">
+                    </div>
+                    <div class="col-lg-6">
+                        <label for="" class="form-label">Reference</label>
+                        <input type="text" class="form-control form-control-sm" name="reference"
+                            placeholder="Ruhul Amin">
+                    </div>
+                    <div class="col-lg-6 mt-1">
+                        <label for="purchase_invoice" class="form-label">Invoice</label>
+                        <input type="file" class="form-control form-control-sm p-1" name="purchase_invoice"
+                            id="purchase_invoice">
+                    </div>
+
+                </div>
+
+
+                <hr class="my-3">
+                {{-- order details --}}
+                <div class="d-flex justify-content-between p-3">
+
+                    <div class="d-flex gap-2">
+                        <h1 class="text-md lh-1 fw-semibold mt-1 p-2">Order Details</h1>
+                        <button class="btn btn-outline-dark  border btn-sm px-1 py-0 ">Items :
+                            <span id="total_items">3</span></button>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-danger empty-cart btn-xs py-1 text-xs">Clear all</button>
+                    </div>
+
+                </div>
+                {{-- table --}}
+                <div class="p-3" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-borderless text-gray scrollable-table ">
+                        <thead class="text-sm  fw-semibold">
+                            <tr class="table-light rounded-3 px-1">
+
+                                <th scope="col" class="text-center">Item</th>
+                                <th scope="col" class="text-center">Stock Qty</th>
+                                <th scope="col" class="text-center">Quantity</th>
+                                <th scope="col" class="text-center">Price</th>
+                                <th scope="col" class="text-center">Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm " id="purchase_items">
+
+
+                        </tbody>
+                    </table>
+
+
+                </div>
+
+                {{-- <div class="d-flex justify-content-between mt-3 mb-0 rounded-3 p-3 "
+                    style="background:#e9e0ef;border:1px solid #8035ba">
+                    <div class="">
+                        <h1 class="text-md lh-1 fw-semibold ">Discount 5%</h1>
+                        <p class="text-sm ">For $20 Minimum Purchase, all Items</p>
+                    </div>
+                    <div> <button class="btn btn-danger btn-xs py-1 text-xs">Apply</button></div>
+
+                </div> --}}
+
+                <div class="p-3">
+                    <table class="table table-sm table-borderless  text-gray">
+                        <thead class="text-sm fw-semibold">
+                            <tr class=" rounded-3  px-1">
+
+                                <th scope="col">Payment Summary</th>
+
+
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr>
+
+                                <td class="text-secondary">
+                                    <span>Subtotal</span>
+
+                                </td>
+                                <td class="text-secondary" id="subtotal">$2300</td>
+
+                            </tr>
+                            <tr>
+
+                                <td class="text-secondary">
+                                    <span>Shippping</span>
+
+                                    <!-- Modal -->
+
+                                </td>
+                                <td class="text-secondary "><input type="number" id="shipping" min="0"
+                                        class="border-1 rounded py-1 " value="0" style="width:120px; height:35px">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="text-secondary">
+                                    <span>Discount</span>
+                                    <button type="button" class="bg-light rounded-4 border-0 p-1 icon"
+                                        data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                                        <iconify-icon icon="flowbite:edit-outline" class="menu-icon fs-7"></iconify-icon>
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModalCenter" tabindex="-1"
+                                        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title text-lg" id="exampleModalCenterTitle">Discount
+                                                    </h5>
+                                                    <button type="button" class="btn-close " data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body p-3">
+                                                    <label for="" class="form-label">Discount Type</label>
+                                                    <select class="form-control " name="discount_type"
+                                                        id="discount-type">
+                                                        <option value="flat">Flat</option>
+                                                        <option value="percentage" selected>Percentage</option>
+                                                    </select>
+                                                    <label for="" class="form-label mt-3">Amount</label>
+                                                    <input type="number" min="0" class="form-control "
+                                                        id="discount-input">
+                                                </div>
+                                                <div class="modal-footer ">
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" data-bs-toggle="modal"
+                                                        class="btn btn-dark btn-sm" id="discount-save">Save</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td> <input type="number" min="0" value="0" disabled id="discount"
+                                        class="text-danger " style="width: 80px"></td>
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <td>
+                                    <hr class="mt-2" />
+                                </td>
+                                <td>
+                                    <hr class="mt-2" />
+                                </td>
+                            </tr>
+                            <tr class="fw-semibold">
+                                <td>Total Amount</td>
+                                <td id="total_amount" class="">$2360</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                {{-- <div class="p-3 border border-danger bg-light rounded">
+                    <h1 class="text-md lh-1 fw-semibold">Select Payment Method</h1>
+                    <div class="row gap-3  mt-5 px-3 justify-content-center">
+                       
+                        <button type="button" class=" btn col-lg-3 payment-btn btn-sm payment-modal" id="btn-cash" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="cash">Cash</button>
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal btn-sm" id="btn-cash" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="bkash">Bkash</button>
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal btn-sm" id="btn-cash" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap" data-payment_mode="card">Card</button>
+                       
+
+                    </div>
+                </div> --}}
+
+
+                <div class="d-flex justify-content-center mt-3  mb-3">
+                    {{-- <button style="padding: 10px"
+                        class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
+                            icon="flowbite:printer-outline" class="menu-icon fs-5 "></iconify-icon><span>Print
+                            Order</span>
+                    </button> --}}
+                    <button data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap"
+                        class="btn btn-danger payment-modal border p-3  col-lg-10  d-flex align-items-center justify-content-center "><iconify-icon
+                            icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Purchase</span>
+                    </button>
+
+                </div>
+                {{-- checkout form modal --}}
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="row">
+                                        <div class="mb-3 col-lg-4">
+                                            <label for="total_amount" class="col-form-label">Total
+                                                Amount</label>
+                                            <input type="number" name="total_amount" disabled
+                                                class="form-control form-control-sm" id="checkout_total_amount"
+                                                value="0">
+                                        </div>
+                                        <div class="mb-3 col-lg-4">
+                                            <label for="paid_amount" class="col-form-label">Paid
+                                                Amount</label>
+                                            <input type="number" name="paid_amount" min="0"
+                                                class="form-control form-control-sm" id="paid_amount" value="0">
+                                        </div>
+                                        <div class="mb-3 col-lg-4">
+                                            <label for="due_amount" class="col-form-label">Due Amount</label>
+                                            <input type="number" name="due_amount" disabled
+                                                class="form-control form-control-sm" id="due_amount" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 ">
+                                        <label for="payment_type" class="col-form-label">Payment Type</label>
+                                        <select name="payment_type" id="payment_type"
+                                            class="form-control form-control-sm">
+                                            <option value="cash" selected>Cash</option>
+                                            <option value="card">Card</option>
+                                            <option value="bkash">Bkash</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 ">
+                                        <label for="payment_receiver" class="col-form-label">Payment
+                                            Receiver</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                            name="payment_receiver" id="recipient-name">
+                                    </div>
+                                    <div class="mb-3 ">
+                                        <label for="payment_note" class="col-form-label">Payment Note</label>
+                                        <textarea rows="2" name="payment_note" id="payment_note" class="col-md-12 rounded-3"></textarea>
+                                    </div>
+
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger btn-sm rounded-4"
+                                    data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" id="submit_purchase_btn"
+                                    class="btn btn-dark btn-sm rounded-4 submit-purchase">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-    </div>
 
     </div>
 @endsection
 @section('script')
     <script>
         $(document).ready(function() {
-            // -----------------------
-            // CONTEXT: detect edit mode and seed data
-            // -----------------------
-            // detect edit context (blade inject)
-
-            @if (isset($purchase))
-                window.EDIT_ORDER_ID = {{ $purchase->id }};
-                window.EDIT_ORDER = @json($purchase);
-                window.IS_EDITABLE = {{ $isEditable ? 'true' : 'false' }};
-            @else
-                window.EDIT_ORDER_ID = null;
-                window.EDIT_ORDER = null;
-                window.IS_EDITABLE = true;
-            @endif
-
-            // On load, if edit -> seed localStorage cart and prefill selects/fields
-            $(function() {
-                if (window.EDIT_ORDER) {
-                    // build client cart array from server items
-                    const serverItems = (window.EDIT_ORDER.items || []).map(i => ({
-                        id: i.product_id,
-                        name: i.product ? i.product.name : ('Product ' + i.product_id),
-                        cost_price: parseFloat(i.unit_cost) || 0,
-                        quantity: parseFloat(i.quantity) || 1,
-                        stock_quantity: (i.product && i.product.stock_quantity) ? i.product
-                            .stock_quantity : 0,
-                        sku: i.sku ?? null,
-                        description: i.description ?? null
-                    }));
-                    localStorage.setItem('purchaseCart', JSON.stringify(serverItems));
-                    // prefill selects: supplier, warehouse, branch
-                    if (window.EDIT_ORDER.supplier_id) {
-                        $('#supplier').append(new Option(window.EDIT_ORDER.supplier?.name || 'Supplier',
-                            window.EDIT_ORDER.supplier_id, true, true)).trigger('change');
-                    }
-                    if (window.EDIT_ORDER.warehouse_id) {
-                        $('#warehouse').append(new Option(window.EDIT_ORDER.warehouse?.name || 'Warehouse',
-                            window.EDIT_ORDER.warehouse_id, true, true)).trigger('change');
-                    }
-                    if (window.EDIT_ORDER.branch_id) {
-                        $('#branchSelect').append(new Option(window.EDIT_ORDER.branch?.name || 'Branch',
-                            window.EDIT_ORDER.branch_id, true, true)).trigger('change');
-                    }
-                    // fill date & reference & shipping/discount if you saved them as fields
-                    if (window.EDIT_ORDER.order_date) {
-                        $('input[name="purchase_date"]').val(window.EDIT_ORDER.order_date.split('T')[
-                            0]); // safe date part
-                    }
-                    $('input[name="reference"]').val(window.EDIT_ORDER.reference || '');
-                    // seed shipping/discount in localStorage if you stored them in DB as fields
-                    localStorage.setItem('shippingCharge', parseFloat(window.EDIT_ORDER.shipping_amount ||
-                        0));
-                    localStorage.setItem('discount', JSON.stringify({
-                        type: window.EDIT_ORDER.discount_type ?? 'flat',
-                        value: window.EDIT_ORDER.discount_value ?? 0
-                    }));
-
-                    // render cart items UI
-                    loadPurchaseItems();
-
-                    // If not editable, disable controls
-                    if (!window.IS_EDITABLE) {
-                        // disable inputs inside form (except maybe actions you allow)
-                        $('#purchase-main-form :input').prop('disabled', true);
-                        // but allow e.g. print / refresh buttons outside form (they can remain)
-                    }
-                }
-
-                // -----------------------
-                // CONTEXT: adjust payment fields based on edit mode
-
-                if (window.EDIT_ORDER_ID) {
-                    // disable payment fields
-                    $('#paid_amount, #payment_type, #payment_reference, #recipient-name, #payment_note')
-                        .prop('disabled', true);
-                    $('#submit_purchase_btn').text('Save changes').prop('disabled', false);
-                    // optionally show a note
-                    $('#checkout-note').remove();
-                    $('#exampleModal .modal-body').prepend(
-                        '<div id="checkout-note" class="alert alert-info">Payments disabled on edit — use Add Payment on order page.</div>'
-                    );
-                } else {
-                    // create case: enable payment fields
-                    $('#paid_amount, #payment_type, #payment_reference, #payment_note').prop('disabled',
-                        false);
-                    $('#checkout-note').remove();
-                }
-
-            });
-
-            // --- submission: modify postPurchase detect edit ---
-            function postPurchase(payload, invoiceFile = null, successCb = null, errorCb = null) {
-                const updateUrl = "{{ route('purchase.orders.update', ':id') }}";
-                const fd = new FormData();
-                // CSRF token from meta
-                fd.append('_token', CSRF_TOKEN);
-                fd.append('payload', JSON.stringify(payload));
-                if (invoiceFile) fd.append('purchase_invoice', invoiceFile);
-
-
-                let url = PURCHASE_STORE_URL;
-                // if editing, override url and use _method=PUT
-                if (window.EDIT_ORDER_ID) {
-                    url = updateUrl.replace(':id', window.EDIT_ORDER_ID);
-                    // append method override
-                    fd.append('_method', 'PUT');
-                }
-
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    data: fd,
-                    processData: false,
-                    contentType: false,
-                    success: function(res) {
-                        if (successCb) successCb(res);
-                    },
-                    error: function(xhr) {
-                        if (errorCb) errorCb(xhr);
-                        else console.error(xhr.responseText || xhr);
-                    }
-                });
-            }
-
-
-
 
             // -----------------------
             // CONFIG: replace if needed
             // -----------------------
-            const PURCHASE_STORE_URL = "{{ route('purchase.orders.store') }}";
-            const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const PURCHASE_STORE_URL =
+                "{{ route('purchase.orders.store') }}"; // <-- change to your real store route (e.g. "{{ route('purchase.orders.store') }}")
+            const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                ''; // ensure <meta name="csrf-token" content="{{ csrf_token() }}">
             // -----------------------
 
             // helper: route config (you can inject real routes here)
@@ -545,7 +732,26 @@
             });
 
             // clear cart
-
+            // $(document).on('click', '.empty-cart', function() {
+            //     // if (!confirm('Are you sure you want to empty the purchase cart?')) return;
+            //     if(swal.fire({
+            //         title: 'Are you sure?',
+            //         text: "You won't be able to revert this!",
+            //         icon: 'warning',
+            //         showCancelButton: true,
+            //         confirmButtonColor: '#3085d6',
+            //         cancelButtonColor: '#d33',
+            //         confirmButtonText: 'Yes, clear it!'
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+            //             emptyCart();
+            //             swal.fire('Cleared!', 'Purchase cart has been cleared.', 'success');
+            //         }
+            //     })) {
+            //         return;
+            //     }
+            //     emptyCart();
+            // });
 
             // clear cart (fixed confirm with SweetAlert)
             $(document).on('click', '.empty-cart', function() {
@@ -587,13 +793,8 @@
             $(document).on('click', '.payment-modal', function() {
                 const total = calculateSubtotal();
                 $('#checkout_total_amount').val(total.toFixed(2));
-
-                // new line: initial due calculation
-                const paid = parseFloat($('#paid_amount').val()) || 0;
-                $('#due_amount').val((total - paid).toFixed(2));
             });
 
-            // update due on paid input change
             $('#paid_amount').on('input', function() {
                 const paid = parseFloat($(this).val()) || 0;
                 const total = parseFloat($('#checkout_total_amount').val()) || 0;
@@ -604,9 +805,10 @@
             // -----------------------
             // Branch-Warehouse linkage logic
             // -----------------------
+            // Branch-Warehouse linkage logic
             // Helper: current branch id (returns integer or 0)
             const warehouseAjaxUrlTemplate =
-                "{{ route('inventory.warehouses.showForAjax', ['warehouse' => ':id']) }}";
+                "{{ route('inventory.warehouses.showForAjax', ['warehouse' => ':id']) }}"; // <-- change to your real route
             const $branchSelect = $('#branchSelect'); // admin branch select (if any)
             const $branchHidden = $('input[name="branch"]'); // hidden branch input (if any)
             const $warehouse = $('#warehouse');
@@ -759,8 +961,7 @@
 
 
 
-            // Convert payload + file to FormData for multipart --------now postPurchase is above ^
-
+            // Convert payload + file to FormData for multipart
             // function postPurchase(payload, invoiceFile = null, successCb = null, errorCb = null) {
             //     const fd = new FormData();
             //     fd.append('_token', CSRF_TOKEN);
@@ -786,9 +987,101 @@
             //         }
             //     });
             // }
-            // -----------------------
 
+            function postPurchase(payload, invoiceFile = null, successCb = null, errorCb = null) {
+                const fd = new FormData();
+                fd.append('_token', CSRF_TOKEN);
+                fd.append('payload', JSON.stringify(payload));
+                if (invoiceFile) fd.append('purchase_invoice', invoiceFile);
 
+                // Optional: debug — remove in production
+                // for (let pair of fd.entries()) {
+                //     console.log('FormData entry:', pair[0], pair[1]);
+                // }
+
+                $.ajax({
+                    url: PURCHASE_STORE_URL,
+                    method: 'POST',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    success: function(res) {
+                        if (successCb) successCb(res);
+                    },
+                    error: function(xhr) {
+                        if (errorCb) errorCb(xhr);
+                        else {
+                            console.error(xhr.responseText || xhr);
+                            const msg = xhr.responseJSON?.message || 'Server error';
+                            Swal.fire('Error', msg, 'error');
+                        }
+                    }
+                });
+            }
+
+            // Bind submit button on checkout modal to call postPurchase
+            // $(document).on('click', '#submit_purchase_btn, .submit-purchase', function(e) {
+            //     e.preventDefault();
+
+            //     // basic client validation
+            //     const cart = getCart();
+            //     if (!cart.length) {
+            //         // alert('Cart is empty. Add products first.');
+            //         swal.fire('Error', 'Cart is empty. Add products first.', 'error');
+            //         return;
+            //     }
+            //     const supplier = $('#supplier').val();
+            //     if (!supplier) {
+            //         // alert('Please choose a supplier.');
+            //         swal.fire('warning', 'Please choose a supplier.', 'warning');
+            //         return;
+            //     }
+            //     const warehouse = $('#warehouse').val();
+            //     if (!warehouse) {
+            //         swal.fire('warning', 'Please choose a warehouse.', 'warning');
+            //         return;
+            //     }
+
+            //     const payload = assemblePurchasePayload();
+            //     // invoice file input (if present)
+            //     const invoiceInput = document.querySelector('input[name="purchase_invoice"]');
+            //     const invoiceFile = invoiceInput?.files?.[0] ?? null;
+
+            //     // disable button while processing
+            //     const $btn = $(this);
+            //     $btn.prop('disabled', true).text('Processing...');
+
+            //     postPurchase(payload, invoiceFile, function(res) {
+            //         // success
+            //         $btn.prop('disabled', false).text('Submit');
+            //         // clear local cart only if server responded ok
+            //         if (res.success) {
+            //             swal.fire('Success', res.message || 'Purchase created successfully.',
+            //                 'success');
+            //             emptyCart();
+            //             // optional: redirect to purchase show page if returned
+            //             if (res.redirect_url) swal.fire('Success',
+            //                 'Redirecting to purchase details...', 'success').then(() => {
+            //                 window.location.href = res.redirect_url;
+            //             });
+            //         } else {
+            //             // alert(res.message || 'Server processed but returned no success flag.');
+            //             swal.fire('Error', res.message ||
+            //                 'Server processed but returned no success flag.', 'error');
+            //         }
+            //     }, function(xhr) {
+            //         $btn.prop('disabled', false).text('Submit');
+            //         const msg = xhr.responseJSON?.message ||
+            //             'Failed to create purchase. Check console.';
+            //         // alert(msg);
+            //         swal.fire('Check Paid Amount', msg, 'error');
+            //         console.error(xhr.responseText || xhr);
+            //     });
+
+            // });
 
             $(document).on('click', '#submit_purchase_btn, .submit-purchase', function(e) {
                 e.preventDefault();
@@ -798,7 +1091,7 @@
                 // basic client validation
                 const cart = getCart();
                 if (!cart.length) {
-                    Swal.fire('Cart is empty. Add products first.', '', 'warning');
+                    Swal.fire('Error', 'Cart is empty. Add products first.', 'error');
                     return;
                 }
                 const supplier = $('#supplier').val();
@@ -808,7 +1101,7 @@
                 }
                 const warehouse = $('#warehouse').val();
                 if (!warehouse) {
-                    Swal.fire('Please choose a warehouse.', '', 'warning');
+                    Swal.fire('Warning', 'Please choose a warehouse.', 'warning');
                     return;
                 }
 
@@ -836,13 +1129,10 @@
                     $btn.prop('disabled', false).text(originalText);
                     const msg = xhr.responseJSON?.message ||
                         'Failed to create purchase. Check console.';
-                    swal.fire('Check Paid Amount', msg, 'error');
+                    Swal.fire('Error', msg, 'error');
                     console.error(xhr);
                 });
             });
-
-
-
             // -----------------------
 
             window.S2.auto();

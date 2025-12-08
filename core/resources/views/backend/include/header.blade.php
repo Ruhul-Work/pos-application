@@ -8,6 +8,7 @@
     <meta name="author" >
     <meta name="robots" content="noindex, nofollow">
     <link rel="shortcut icon" type="image/x-icon" >
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('meta')
 
     {{-- Core CSS --}}
