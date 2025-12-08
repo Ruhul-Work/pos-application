@@ -14,11 +14,6 @@
                     <input class="border  px-3 fst-italic rounded bg-light form-control" id="product-search-input"
                         type="text" placeholder="search product" style="width: 240px;">
 
-                    <button class="btn btn-dark btn-sm px-3 text-xs d-flex align-items-center justify-content-center gap-1">
-                        {{-- <iconify-icon icon="flowbite:tag-outline" class="menu-icon fs-6"></iconify-icon> --}}
-                        <span>All Brands</span>
-                    </button>
-
                     <button class="btn btn-primary btn-sm px-3 text-xs">Featured</button>
                 </div>
 
@@ -781,7 +776,7 @@
                                 style="height: 110px; width:20%; cursor: pointer;">
                                <img class="img-fluid h-75 rounded col-lg-5  product-img" src="${image}" alt="img">
                                      <div class="px-3 flex-grow-1">
-                                         <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,20)}</p>
+                                         <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,15)}</p>
                                                
                                                  <h1 class="text-sm lh-1 fw-semibold px-1 mt-1">${product.price}</h1>
 
