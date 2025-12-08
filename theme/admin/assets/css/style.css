@@ -16191,6 +16191,7 @@ div.dt-container .dt-paging .dt-paging-button.current {
 }
 
 /* ===== Multiple and single select2 dropdown (Routes) ===== */
+
 .select2-container--default .select2-selection--single {
   background-color: #fff;
   border: 1px solid #aaa;
@@ -16214,8 +16215,15 @@ div.dt-container .dt-paging .dt-paging-button.current {
   height: 44px !important;
 }
 
-
 /* শুধুমাত্র .product-select এর select2 dropdown এর জন্য */
+.product-select + .select2-container--default .select2-selection--multiple {
+  border: 1px solid black;
+  outline: 0;
+  padding: 2px;
+  width: 1000px !important;
+  height: 50px !important;
+  padding-bottom: 20px !important;
+}
 .product-select + .select2-container--default .select2-selection--multiple {
   border: 1px solid black;
   outline: 0;
@@ -16243,6 +16251,18 @@ div.dt-container .dt-paging .dt-paging-button.current {
   outline: 0;
   box-shadow: none;
   padding-bottom: 20px !important;
+}
+/* শুধুমাত্র .cart-select এর select2 dropdown এর জন্য */
+
+.purchase-ware-select +.select2-container--default .select2-selection--single {
+  background-color: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  width: 300px !important;
+  height: 44px !important;
+}
+.select2-dropdown .select2-dropdown--below{
+  margin-top: 0px !important;
 }
 
 .footer-pos {
