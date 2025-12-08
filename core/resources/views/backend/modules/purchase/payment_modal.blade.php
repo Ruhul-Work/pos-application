@@ -69,8 +69,8 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" id="purchase-payment-submit" class="btn btn-primary btn-sm">
+          <button type="button" class="btn btn-danger btn-sm rounded-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" id="purchase-payment-submit" class="btn btn-dark btn-sm rounded-4">
             <span id="purchase-payment-submit-text">Submit</span>
             <span id="purchase-payment-submit-spinner" style="display:none;"> &nbsp; <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></span>
           </button>

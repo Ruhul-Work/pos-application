@@ -50,8 +50,8 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" id="receiveAllSubmit" class="btn btn-primary btn-sm">Receive All</button>
+          <button type="button" class="btn btn-danger btn-sm rounded-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" id="receiveAllSubmit" class="btn btn-dark btn-sm rounded-4">Receive All</button>
         </div>
       </form>
     </div>

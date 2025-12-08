@@ -348,6 +348,7 @@ class PurchaseController extends Controller
         return view('backend.modules.purchase.show', compact('order', 'paid', 'outstanding'));
     }
 
+
     public function edit(PurchaseOrder $purchase)
     {
         // eager load relations required by the view
@@ -357,13 +358,15 @@ class PurchaseController extends Controller
             'warehouse',
             'branch',
             'payments',
-
+       
         ]);
 
         // If you want to disallow full edit on received orders, pass a flag
         $isEditable = $purchase->status === 'draft';
 
+                                      
         $categories = Category::all(); // example, if your create uses categories
+                                       
 
         return view('backend.modules.purchase.index', [
             'purchase'   => $purchase,
@@ -374,189 +377,188 @@ class PurchaseController extends Controller
     }
 
     public function update(Request $request, PurchaseOrder $purchase)
-    {
-        // Authorization check (optional)
-        // $this->authorize('update', $purchase);
+{
+    // Authorization check (optional)
+    // $this->authorize('update', $purchase);
 
-        // If purchase already received, disallow full edit (rule you described)
-        if ($purchase->status === 'received') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Received orders cannot be edited.',
-            ], 403);
+    // If purchase already received, disallow full edit (rule you described)
+    if ($purchase->status === 'received') {
+        return response()->json([
+            'success' => false,
+            'message' => 'Received orders cannot be edited.'
+        ], 403);
+    }
+
+    // Expect payload either as JSON in 'payload' or direct form fields (same as store)
+    $payloadJson = $request->input('payload');
+    $payload = null;
+    if ($payloadJson) {
+        $payload = json_decode($payloadJson, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json(['success' => false, 'message' => 'Invalid payload JSON'], 422);
         }
+    } else {
+        // Normalize direct fields (compatible with your create form)
+        $payload = [
+            'supplier_id'     => $request->input('supplier_id') ?? $purchase->supplier_id,
+            'warehouse_id'    => $request->input('warehouse_id') ?? $purchase->warehouse_id,
+            'branch_id'       => $request->input('branch_id') ?? $purchase->branch_id,
+            'status'          => $request->input('status') ?? $purchase->status,
+            'order_date'      => $request->input('order_date') ?? $purchase->order_date,
+            'expected_date'   => $request->input('expected_date') ?? $purchase->expected_date,
+            'reference'       => $request->input('reference') ?? $purchase->reference,
+            'currency'        => $request->input('currency') ?? $purchase->currency,
+            'shipping_amount' => $request->input('shipping_amount') ?? $purchase->shipping_amount,
+            'discount'        => $request->input('discount') ?? null,
+            'items'           => $request->input('items') ?? [],
+        ];
+    }
 
-        // Expect payload either as JSON in 'payload' or direct form fields (same as store)
-        $payloadJson = $request->input('payload');
-        $payload     = null;
-        if ($payloadJson) {
-            $payload = json_decode($payloadJson, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return response()->json(['success' => false, 'message' => 'Invalid payload JSON'], 422);
-            }
+    // Validate top-level (adjust rules per your app)
+    $validator = Validator::make($payload, [
+        'supplier_id' => 'required|exists:suppliers,id',
+        'warehouse_id' => 'nullable|exists:warehouses,id',
+        'branch_id' => 'nullable|exists:branches,id',
+        'order_date' => 'nullable|date',
+        'shipping_amount' => 'nullable|numeric|min:0',
+        'items' => 'required|array|min:1',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.unit_cost' => 'required|numeric|min:0',
+        'items.*.quantity' => 'required|numeric|min:0.001',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+    }
+
+    // Recompute totals server-side (same as store)
+    $subtotal = 0.0;
+    foreach ($payload['items'] as $i) {
+        $line = (float)$i['unit_cost'] * (float)$i['quantity'];
+        $subtotal += $line;
+    }
+
+    $shipping = isset($payload['shipping_amount']) ? (float)$payload['shipping_amount'] : 0.0;
+    $discountAmount = 0.0;
+    if (! empty($payload['discount']) && isset($payload['discount']['value'])) {
+        $d = (float) $payload['discount']['value'];
+        if (($payload['discount']['type'] ?? 'flat') === 'percentage') {
+            $discountAmount = ($subtotal * $d) / 100.0;
         } else {
-            // Normalize direct fields (compatible with your create form)
-            $payload = [
-                'supplier_id'     => $request->input('supplier_id') ?? $purchase->supplier_id,
-                'warehouse_id'    => $request->input('warehouse_id') ?? $purchase->warehouse_id,
-                'branch_id'       => $request->input('branch_id') ?? $purchase->branch_id,
-                'status'          => $request->input('status') ?? $purchase->status,
-                'order_date'      => $request->input('order_date') ?? $purchase->order_date,
-                'expected_date'   => $request->input('expected_date') ?? $purchase->expected_date,
-                'reference'       => $request->input('reference') ?? $purchase->reference,
-                'currency'        => $request->input('currency') ?? $purchase->currency,
-                'shipping_amount' => $request->input('shipping_amount') ?? $purchase->shipping_amount,
-                'discount'        => $request->input('discount') ?? null,
-                'items'           => $request->input('items') ?? [],
-            ];
-        }
-
-        // Validate top-level (adjust rules per your app)
-        $validator = Validator::make($payload, [
-            'supplier_id'        => 'required|exists:suppliers,id',
-            'warehouse_id'       => 'nullable|exists:warehouses,id',
-            'branch_id'          => 'nullable|exists:branches,id',
-            'order_date'         => 'nullable|date',
-            'shipping_amount'    => 'nullable|numeric|min:0',
-            'items'              => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.unit_cost'  => 'required|numeric|min:0',
-            'items.*.quantity'   => 'required|numeric|min:0.001',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
-
-        // Recompute totals server-side (same as store)
-        $subtotal = 0.0;
-        foreach ($payload['items'] as $i) {
-            $line = (float) $i['unit_cost'] * (float) $i['quantity'];
-            $subtotal += $line;
-        }
-
-        $shipping       = isset($payload['shipping_amount']) ? (float) $payload['shipping_amount'] : 0.0;
-        $discountAmount = 0.0;
-        if (! empty($payload['discount']) && isset($payload['discount']['value'])) {
-            $d = (float) $payload['discount']['value'];
-            if (($payload['discount']['type'] ?? 'flat') === 'percentage') {
-                $discountAmount = ($subtotal * $d) / 100.0;
-            } else {
-                $discountAmount = $d;
-            }
-        }
-
-        $total = $subtotal + $shipping - $discountAmount;
-        if ($total < 0) {
-            $total = 0;
-        }
-
-        // File handling: if new invoice uploaded, store and replace old
-        $invoicePath = $purchase->purchase_invoice;
-        if ($request->hasFile('purchase_invoice')) {
-            $newPath = uploadImage($request->file('purchase_invoice'), 'purchase/images');
-            if ($newPath) {
-                // delete previous file (if any)
-                if ($purchase->purchase_invoice) {
-                    Storage::disk('public')->delete($purchase->purchase_invoice);
-                }
-                $invoicePath = $newPath;
-            }
-        }
-
-        DB::beginTransaction();
-        try {
-            // Update purchase order main fields
-            $purchase->supplier_id      = $payload['supplier_id'];
-            $purchase->warehouse_id     = $payload['warehouse_id'] ?? null;
-            $purchase->branch_id        = $payload['branch_id'] ?? null;
-            $purchase->status           = $payload['status'] ?? $purchase->status;
-            $purchase->order_date       = $payload['order_date'] ?? $purchase->order_date;
-            $purchase->expected_date    = $payload['expected_date'] ?? $purchase->expected_date;
-            $purchase->currency         = $payload['currency'] ?? $purchase->currency;
-            $purchase->subtotal         = round($subtotal, 2);
-            $purchase->shipping_amount  = round($shipping, 2);
-            $purchase->discount_amount  = round($discountAmount, 2); 
-            $purchase->total_amount     = round($total, 2);
-            $purchase->notes            = $payload['reference'] ?? $purchase->notes;
-            $purchase->purchase_invoice = $invoicePath;
-            $purchase->updated_by       = auth()->id(); // optional
-            $purchase->save();
-
-            // Sync items:
-            // Approach: map incoming items by id(product_id) and existing items by id
-            $incoming      = $payload['items'];
-            $existingItems = $purchase->items()->get()->keyBy(function ($it) {return $it->product_id;});
-
-            $seenProductIds = [];
-
-            foreach ($incoming as $i) {
-                $pid              = (int) $i['product_id'];
-                $seenProductIds[] = $pid;
-                $unitCost         = round((float) $i['unit_cost'], 2);
-                $qty              = (float) $i['quantity'];
-                $lineTotal        = round($unitCost * $qty, 2);
-
-                if ($existingItems->has($pid)) {
-                    // update existing row
-                    $row              = $existingItems->get($pid);
-                    $row->unit_cost   = $unitCost;
-                    $row->quantity    = $qty;
-                    $row->line_total  = $lineTotal;
-                    $row->sku         = $i['sku'] ?? $row->sku;
-                    $row->description = $i['description'] ?? $row->description;
-                    $row->save();
-                } else {
-                    // create new item
-                    PurchaseOrderItem::create([
-                        'purchase_order_id' => $purchase->id,
-                        'product_id'        => $pid,
-                        'sku'               => $i['sku'] ?? null,
-                        'description'       => $i['description'] ?? null,
-                        'unit_cost'         => $unitCost,
-                        'quantity'          => $qty,
-                        'received_quantity' => 0,
-                        'line_total'        => $lineTotal,
-                    ]);
-                }
-            }
-
-            // delete removed items (those existing but not in incoming payload)
-            foreach ($existingItems as $prodId => $row) {
-                if (! in_array($prodId, $seenProductIds)) {
-                    // you may want to prevent deleting if received_quantity > 0
-                    if ($row->received_quantity > 0) {
-                        // either block or set quantity to received_quantity
-                        // here we block delete and adjust quantity to received
-                        $row->quantity   = max($row->received_quantity, 0);
-                        $row->line_total = round($row->unit_cost * $row->quantity, 2);
-                        $row->save();
-                    } else {
-                        $row->delete();
-                    }
-                }
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success'      => true,
-                'message'      => 'Purchase order updated',
-                'order_id'     => $purchase->id,
-                'redirect_url' => route('purchase.orders.show', $purchase->id),
-            ], 200);
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            \Log::error('Purchase update error: ' . $e->getMessage());
-            // if we uploaded new file but transaction failed, consider deleting uploaded file
-            // Storage::disk('public')->delete($newPath ?? '');
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update purchase order',
-                'error'   => $e->getMessage(),
-            ], 500);
+            $discountAmount = $d;
         }
     }
+
+    $total = $subtotal + $shipping - $discountAmount;
+    if ($total < 0) $total = 0;
+
+    // File handling: if new invoice uploaded, store and replace old
+    $invoicePath = $purchase->purchase_invoice;
+    if ($request->hasFile('purchase_invoice')) {
+        $newPath = uploadImage($request->file('purchase_invoice'), 'purchase/images');
+        if ($newPath) {
+            // delete previous file (if any)
+            if ($purchase->purchase_invoice) {
+                Storage::disk('public')->delete($purchase->purchase_invoice);
+            }
+            $invoicePath = $newPath;
+        }
+    }
+
+    DB::beginTransaction();
+    try {
+        // Update purchase order main fields
+        $purchase->supplier_id = $payload['supplier_id'];
+        $purchase->warehouse_id = $payload['warehouse_id'] ?? null;
+        $purchase->branch_id = $payload['branch_id'] ?? null;
+        $purchase->status = $payload['status'] ?? $purchase->status;
+        $purchase->order_date = $payload['order_date'] ?? $purchase->order_date;
+        $purchase->expected_date = $payload['expected_date'] ?? $purchase->expected_date;
+        $purchase->currency = $payload['currency'] ?? $purchase->currency;
+        $purchase->subtotal = round($subtotal, 2);
+        $purchase->shipping_amount = round($shipping, 2);
+        $purchase->discount_amount = round($discountAmount, 2); // if you have this column
+        $purchase->total_amount = round($total, 2);
+        $purchase->notes = $payload['reference'] ?? $purchase->notes;
+        $purchase->purchase_invoice = $invoicePath;
+        $purchase->updated_by = auth()->id(); // optional
+        $purchase->save();
+
+        // Sync items:
+        // Approach: map incoming items by id(product_id) and existing items by id
+        $incoming = $payload['items'];
+        $existingItems = $purchase->items()->get()->keyBy(function($it){ return $it->product_id; });
+
+        $seenProductIds = [];
+
+        foreach ($incoming as $i) {
+            $pid = (int)$i['product_id'];
+            $seenProductIds[] = $pid;
+            $unitCost = round((float)$i['unit_cost'], 2);
+            $qty = (float)$i['quantity'];
+            $lineTotal = round($unitCost * $qty, 2);
+
+            if ($existingItems->has($pid)) {
+                // update existing row
+                $row = $existingItems->get($pid);
+                $row->unit_cost = $unitCost;
+                $row->quantity = $qty;
+                $row->line_total = $lineTotal;
+                $row->sku = $i['sku'] ?? $row->sku;
+                $row->description = $i['description'] ?? $row->description;
+                $row->save();
+            } else {
+                // create new item
+                PurchaseOrderItem::create([
+                    'purchase_order_id' => $purchase->id,
+                    'product_id' => $pid,
+                    'sku' => $i['sku'] ?? null,
+                    'description' => $i['description'] ?? null,
+                    'unit_cost' => $unitCost,
+                    'quantity' => $qty,
+                    'received_quantity' => 0,
+                    'line_total' => $lineTotal,
+                ]);
+            }
+        }
+
+        // delete removed items (those existing but not in incoming payload)
+        foreach ($existingItems as $prodId => $row) {
+            if (! in_array($prodId, $seenProductIds)) {
+                // you may want to prevent deleting if received_quantity > 0
+                if ($row->received_quantity > 0) {
+                    // either block or set quantity to received_quantity
+                    // here we block delete and adjust quantity to received
+                    $row->quantity = max($row->received_quantity, 0);
+                    $row->line_total = round($row->unit_cost * $row->quantity, 2);
+                    $row->save();
+                } else {
+                    $row->delete();
+                }
+            }
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Purchase order updated',
+            'order_id' => $purchase->id,
+            'redirect_url' => route('purchase.orders.show', $purchase->id),
+        ], 200);
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        \Log::error('Purchase update error: ' . $e->getMessage());
+        // if we uploaded new file but transaction failed, consider deleting uploaded file
+        // Storage::disk('public')->delete($newPath ?? '');
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update purchase order',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
 
 }

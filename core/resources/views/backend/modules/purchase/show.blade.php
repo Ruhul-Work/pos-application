@@ -82,13 +82,14 @@
                 </table>
 
             <div class="d-flex justify-content-between align-items-center">
-                <button class="btn btn-sm btn-warning AjaxModal d-flex align-items-center gap-1" id="btn-add-payment"
-                    data-onsuccess="purchasePayment.onSaved" data-order-id="{{ $order->id }}"> <iconify-icon icon="material-symbols:currency-exchange-rounded" class="text-lg"></iconify-icon> Add
+                <button class="btn btn-sm btn-warning d-flex gap-1 AjaxModal" id="btn-add-payment"
+                    data-onsuccess="purchasePayment.onSaved" data-order-id="{{ $order->id }}"
+                    data-ajax-modal="{{ route('purchase.orders.payment.modal', $order->id) }}"><iconify-icon icon="material-symbols:currency-exchange-rounded" class="text-lg"></iconify-icon> Add
                     Payment</button>
 
                 <div >
                     @if ($order->status === 'draft')
-                        <button id="btn-receive-all " class="btn btn-sm btn-success d-flex align-items-center gap-1 AjaxModal" data-ajax-modal="{{ route('purchase.orders.receive-all.modal', $order->id) }}" data-onsuccess="purchaseReceipt.onReceived"><iconify-icon icon="material-symbols:inventory" class="text-lg"></iconify-icon> Receive All</button>
+                        <button id="btn-receive-all " class="btn btn-sm btn-success d-flex gap-1 AjaxModal" data-ajax-modal="{{ route('purchase.orders.receive-all.modal', $order->id) }}" data-onsuccess="purchaseReceipt.onReceived"><iconify-icon icon="material-symbols:inventory" class="text-lg"></iconify-icon> Receive All</button>
                     @else
                         <span class="badge bg-success">Received</span>
                     @endif
