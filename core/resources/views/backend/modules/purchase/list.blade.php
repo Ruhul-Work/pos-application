@@ -115,7 +115,7 @@
                 const msg = xhr.responseJSON?.msg || 'Cannot delete this purchase.';
                 Swal && Swal.fire({ icon:'warning', title:'Blocked', text: msg });
               } else if (xhr.status === 403){
-                Swal && Swal.fire({ icon:'warning', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
+                Swal && Swal.fire({ icon:'error', title:'Forbidden', text: xhr.responseJSON?.message || 'Permission denied' });
               } else {
                 Swal && Swal.fire({ icon:'error', title:'Failed', text:'Delete failed' });
               }

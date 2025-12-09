@@ -6,9 +6,8 @@
     $outstanding = max(0.0, round($total - $paid, 2));
 @endphp
 
-{{-- <div class="modal fade" id="purchasePaymentModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-md modal-dialog-centered "> --}}
-    <div class="modal-content">
+
+ 
       <form id="purchase-payment-form" data-ajax="true" method="POST" action="{{ route('purchase.orders.payments.store', $order->id) }}">
         @csrf
 
@@ -76,9 +75,7 @@
           </button>
         </div>
       </form>
-    </div>
-  {{-- </div>
-</div> --}}
+    
 
 {{-- Inline script to handle AJAX submit and UX — safe to include in partial (it binds only to this modal's form) --}}
 <script>

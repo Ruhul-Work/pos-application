@@ -67,8 +67,8 @@
    <script src="{{asset('theme/admin/assets/plugins/fileupload/image-uploader.min.js')}}" type="text/javascript"></script>
    <script src="{{asset('theme/admin/assets/plugins/fileupload/spartan-multi-image-picker-min.js')}}" type="text/javascript"></script>
 
-    {{-- Modal --}}
-
+   
+   {{-- Modal --}}
     <div class="modal fade" id="AjaxModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog  modal-dialog-centered">
             <div class="modal-content">

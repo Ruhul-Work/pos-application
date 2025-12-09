@@ -106,7 +106,7 @@ class PurchaseController extends Controller
                     bg-warning-focus text-warning-main  AjaxModal"    data-ajax-modal="' . route('purchase.orders.payment.modal', $r->id) . '" title="Add Payment" data-onSuccess="purchasePayIndex.onSaved"> <iconify-icon icon="material-symbols:currency-exchange-rounded" class="text-lg"></iconify-icon></a>
 
             <a href="#" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
-                    bg-danger-focus text-danger-main " data-id="' . $r->id . '" data-url="' . route('purchase.orders.destroy', $r->id) . '" title="Delete"><iconify-icon icon="solar:trash-bin-trash-outline" class="text-lg"></iconify-icon></a>
+                    bg-danger-focus text-danger-main btn-order-delete" data-id="' . $r->id . '" data-url="' . route('purchase.orders.destroy', $r->id) . '" title="Delete"><iconify-icon icon="solar:trash-bin-trash-outline" class="text-lg"></iconify-icon></a>
 
         </div>';
 
@@ -757,7 +757,7 @@ class PurchaseController extends Controller
                     'outstanding'    => (float) $purchase->outstanding_amount,
                     'payment_status' => $purchase->payment_status,
                 ],
-            ], 200);
+            ], 200); 
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -773,5 +773,52 @@ class PurchaseController extends Controller
             ], 500);
         }
     }
+
+
+
+    public function destroy(PurchaseOrder $purchase)
+{
+    // CASE 1: Draft → allow delete
+    if ($purchase->status === 'draft') {
+
+        DB::beginTransaction();
+        try {
+            // Delete invoice file
+            if ($purchase->purchase_invoice) {
+                Storage::disk('public')->delete($purchase->purchase_invoice);
+            }
+
+            // Delete items
+            $purchase->items()->delete();
+
+            // Delete payments (optional; depends on your business rule)
+            $purchase->payments()->delete();
+
+            // Finally delete order
+            $purchase->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Purchase deleted successfully'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Delete failed',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // CASE 2 & 3: Received OR Partially received → deny
+    return response()->json([
+        'success' => false,
+        'message' => 'Cannot delete purchase because items are already received.'
+    ], 403);
+}
+
 
 }

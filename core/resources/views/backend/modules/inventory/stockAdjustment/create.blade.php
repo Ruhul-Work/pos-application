@@ -491,8 +491,8 @@
             // stock currents bulk endpoint (POST)
             const stockCurrentsBulkUrl = "{{ route('inventory.adjustments.stock.currents.bulk') }}";
             // product variants base url prefix (we will append /{parent}/variants)
-            const productVariantsBase =
-            "{{ url('product/products') }}"; // will become /product/products/{parent}/variants
+            const productVariantsBase = "{{ url('product/products') }}"; 
+
 
             // ---- State + DOM refs ----
             const $form = $('#adjForm');
