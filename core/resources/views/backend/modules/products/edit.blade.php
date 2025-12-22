@@ -546,7 +546,7 @@
             function generateSku() {
                 const name = ($('#name').val().slice(0, 3)).toUpperCase();
 
-                $('#sku').val(name ? name + Math.floor(100 + Math.random() * 900) : '');
+                $('#sku').val(name ? name + Math.floor(1000000 + Math.random() * 9000000) : '');
             }
             $('#name').on('input', generateSku);
 
@@ -581,7 +581,7 @@
                         sizeIds.forEach((sizeId, j) => {
                             const oldChild = variantExists(colorId, sizeId, null) ?? null;
                             const childSKU =
-                                `${parentSKU}-${colorNames[i].trim().slice(0,2)}-${sizeNames[j].trim()}`;
+                                `${parentSKU}-${colorNames[i].trim().slice(0,2).toUpperCase()}-${sizeNames[j].trim()}`;
                             $('#child_products').append(`
                     <div class="col-lg-12 row mb-2 g-2">
                         <div class="col-lg-2">
@@ -625,7 +625,7 @@
 
                     colorIds.forEach((colorId, i) => {
                         const oldChild = variantExists(colorId, null, null) ?? null;
-                        const childSKU = `${parentSKU}-${colorNames[i].trim().slice(0,2)}`;
+                        const childSKU = `${parentSKU}-${colorNames[i].trim().slice(0,2).toUpperCase()}`;
                         $('#child_products').append(`
                 <div class="col-lg-12 row mb-2 g-2">
                     <div class="col-lg-2">

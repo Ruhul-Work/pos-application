@@ -291,6 +291,7 @@ class ProductController extends Controller
                         'name'             => ucwords($names[$i]),
                         'slug'             => $data['slug'],
                         'sku'              => $skus[$i],
+                        'barcode'              => $skus[$i],
                         'category_type_id' => $data['category_type_id'],
                         'category_id'      => $data['category_id'],
                         'subcategory_id'   => $data['subcategory_id'],
@@ -322,6 +323,7 @@ class ProductController extends Controller
                             'name'             => ucwords($names[$i]),
                             'slug'             => $data['slug'],
                             'sku'              => $skus[$i],
+                            'barcode'              => $skus[$i],
                             'category_type_id' => $data['category_type_id'],
                             'category_id'      => $data['category_id'],
                             'subcategory_id'   => $data['subcategory_id'],
@@ -349,6 +351,7 @@ class ProductController extends Controller
                             'name'             => ucwords($names[$i]),
                             'slug'             => $data['slug'],
                             'sku'              => $skus[$i],
+                            'barcode'              => $skus[$i],
                             'category_type_id' => $data['category_type_id'],
                             'category_id'      => $data['category_id'],
                             'subcategory_id'   => $data['subcategory_id'],
@@ -375,6 +378,7 @@ class ProductController extends Controller
                             'parent_id'        => $product->id,
                             'name'             => ucwords($names[$i]),
                             'sku'              => $skus[$i],
+                            'barcode'              => $skus[$i],
                             'slug'             => $data['slug'],
                             'category_type_id' => $data['category_type_id'],
                             'category_id'      => $data['category_id'],
@@ -434,6 +438,7 @@ class ProductController extends Controller
         $validator = Validator::make($req->all(), [
             'name'              => ['required', 'string', 'max:150'],
             'slug'              => ['required', 'string', 'max:150'],
+            'sku'              => ['required', 'string', 'max:150'],
             'category_type_id'  => ['required', 'integer'],
             'category_id'       => ['required', 'integer'],
             'subcategory_id'    => ['required', 'integer'],
@@ -517,6 +522,7 @@ class ProductController extends Controller
 
         $product->name             = ucwords($data['name']);
         $product->slug             = $data['slug'];
+        $product->sku             = $data['sku'];
         $product->category_type_id = $data['category_type_id'];
         $product->category_id      = $data['category_id'];
         $product->subcategory_id   = $data['subcategory_id'];
@@ -562,6 +568,7 @@ class ProductController extends Controller
                 if ($child_product) {
                     $child_product->name     = $child_data['child_name'][$i];
                     $child_product->sku      = $child_data['child_sku'][$i];
+                    $child_product->barcode      = $child_data['child_sku'][$i];
                     $child_product->color_id = $child_data['child_color_id'][$i] ?? null;
                     $child_product->size_id  = $child_data['child_size_id'][$i] ?? null;
                     $child_product->paper_id = $child_data['child_paper_id'][$i] ?? null;
@@ -574,6 +581,7 @@ class ProductController extends Controller
                         'name'             => ucwords($child_data['child_name'][$i]),
                         'slug'             => $data['slug'],
                         'sku'              => $child_data['child_sku'][$i],
+                        'barcode'              => $child_data['child_sku'][$i],
                         'category_type_id' => $data['category_type_id'],
                         'category_id'      => $data['category_id'],
                         'subcategory_id'   => $data['subcategory_id'],
