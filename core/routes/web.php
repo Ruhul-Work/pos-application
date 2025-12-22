@@ -348,6 +348,19 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
     Route::prefix('pos')->name('pos.')->group(function () {
 
         Route::get('pos', [PosController::class, 'index'])->name('index');
+        // web.php or api.php
+        Route::post('pos/sales', [PosController::class, 'store'])->name('sales.store');
+
+        Route::post('pos/sales/hold', [PosController::class, 'hold'])->name('sales.hold');
+        Route::get('pos/sales/hold/list', [PosController::class, 'holdList'])->name('sales.hold.list');
+        Route::get('pos/sales/{sale}/resume', [PosController::class, 'resume'])->name('sales.resume');
+
+        Route::get('pos/sales/{sale}/invoice', [PosController::class, 'invoice'])->name('sales.invoice');
+        Route::get('pos/sales/today', [PosController::class, 'todayOrders'])->name('sales.today');
+        Route::post('pos/sales/{sale}/void', [PosController::class, 'void'])->name('sales.void');
+        Route::get('pos/sales/{sale}', [PosController::class, 'show'])->name('sales.show');
+        Route::get('pos/sales/{sale}/invoice',[PosController::class, 'invoice'])->name('sales.invoice');
+        Route::get('pos/transactions/today',[PosController::class, 'todayTransactions'])->name('transactions.today');
 
     });
 

@@ -1,19 +1,18 @@
 <?php
-
 namespace App\Models\backend;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $table = 'products';
+    protected $table   = 'products';
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
-        'deleted_at'
+        'deleted_at',
     ];
-    
+
     protected $casts = ['cost_price' => 'float'];
 
     public function product_type()
@@ -26,11 +25,12 @@ class Product extends Model
     }
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_id');
     }
+
     public function subcategory()
     {
-        return $this->belongsTo(Subcategory::class);
+        return $this->belongsTo(Subcategory::class, 'subcategory_id');
     }
     public function brand()
     {
@@ -50,7 +50,7 @@ class Product extends Model
     }
     public function paper_quality()
     {
-        return $this->belongsTo(PaperQuality::class,'paper_id');
+        return $this->belongsTo(PaperQuality::class, 'paper_id');
     }
 
     public function children()
@@ -58,7 +58,14 @@ class Product extends Model
         return $this->hasMany(Product::class, 'parent_id', 'id');
     }
 
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
 
+    public function stockLedgers()
+    {
+        return $this->hasMany(StockLedger::class);
+    }
 
-    
 }

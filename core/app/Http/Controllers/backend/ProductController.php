@@ -1,13 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\backend\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class ProductController extends Controller
 {
@@ -16,16 +13,38 @@ class ProductController extends Controller
         return view('backend.modules.products.index');
     }
 
+    // public function productList()
+    // {
+    //     $products = Product::with(['category'])
+    //         ->where('parent_id', null)
+    //         ->paginate(100);
+
+    //     // $html =  view('backend.modules.products.product_list', compact('products'))->render();
+
+    //     return response()->json(['products' => $products]);
+    // }
+
     public function productList()
     {
-        $products = Product::with(['category'])
-            ->where('parent_id', null)
-            ->paginate(100);
+        try {
+            $products = Product::query()
+                ->with(['category:id,name']) // limit category fields
+                ->whereNull('parent_id')
+                ->select('id', 'name', 'price', 'mrp', 'image', 'category_id', 'parent_id')
+                ->paginate(100);
 
-        // $html =  view('backend.modules.products.product_list', compact('products'))->render();
+            return response()->json(['products' => $products], 200);
+        } catch (\Throwable $e) {
+            \Log::error("PRODUCT LIST ERROR", [
+                'error' => $e->getMessage(),
+            ]);
 
-        return response()->json(['products' => $products]);
-    }
+            return response()->json([
+                'message' => 'Server error loading products',
+            ], 500);
+        }
+        }
+        
     public function productSearch($name)
     {
         $products = Product::with(['category'])
@@ -33,9 +52,9 @@ class ProductController extends Controller
             ->where('name', 'like', "%$name%")
             ->paginate(100);
 
-       // $html =  view('backend.modules.products.product_list', compact('products'))->render();
+        // $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
-         return response()->json(['products' => $products]);
+        return response()->json(['products' => $products]);
     }
     public function productByCategory($category)
     {
@@ -44,7 +63,7 @@ class ProductController extends Controller
             ->where('category_id', $category)
             ->paginate(100);
 
-      //  $html =  view('backend.modules.products.product_list', compact('products'))->render();
+        //  $html =  view('backend.modules.products.product_list', compact('products'))->render();
 
         return response()->json(['products' => $products]);
     }
@@ -54,11 +73,10 @@ class ProductController extends Controller
         $products = [];
 
         if ($product->has_variants == 1) {
-            $products = Product::select('id','parent_id', 'name', 'price','cost_price')
+            $products = Product::select('id', 'parent_id', 'name', 'price', 'cost_price', 'mrp')
                 ->where('parent_id', $product->id)->get();
-        }
-        else{
-            $products = Product::select('id', 'name', 'price','cost_price')
+        } else {
+            $products = Product::select('id', 'name', 'price', 'cost_price', 'mrp')
                 ->where('id', $product->id)->get();
         }
         return response()->json(['products' => $products]);
@@ -98,7 +116,6 @@ class ProductController extends Controller
             $nameCol = '<p>' . e($b->name) .
                 ($b->has_variants === 1 ? ' <a href="' . route('product.products.show', $b->id) . '" class="badge bg-success">Has Child</a>' : '') .
                 '</p>';
-
 
             $actions = '<div class="d-inline-flex justify-content-end gap-1 w-100">
                 <a href="' . route('product.products.editModal', $b->id) . '" class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
@@ -152,7 +169,7 @@ class ProductController extends Controller
 
     public function createModal()
     {
-        // @perm গার্ড চাইলে দিন
+                                                        // @perm গার্ড চাইলে দিন
         return view('backend.modules.products.create'); // partial only
     }
 
@@ -225,8 +242,6 @@ class ProductController extends Controller
             $metaImagePath = uploadImage($req->file('meta_image'), 'product/meta_images');
         }
 
-
-
         $product = product::create([
             'name'              => ucwords($data['name']),
             'slug'              => $data['slug'],
@@ -261,14 +276,12 @@ class ProductController extends Controller
         ]);
         if ($data['has_variant'] == 1) {
             $colors = $child_data['child_color_id'] ?? [];
-            $sizes = $child_data['child_size_id'] ?? [];
+            $sizes  = $child_data['child_size_id'] ?? [];
             $papers = $child_data['child_paper_id'] ?? [];
             // $variant = $data['variant_type'];
             $names  = $child_data['child_name'];
             $skus   = $child_data['child_sku'];
             $prices = $child_data['child_price'];
-
-
 
             if (sizeof($colors) > 0 && sizeof($sizes) > 0) {
 
@@ -280,24 +293,24 @@ class ProductController extends Controller
                         'sku'              => $skus[$i],
                         'category_type_id' => $data['category_type_id'],
                         'category_id'      => $data['category_id'],
-                        'subcategory_id'      => $data['subcategory_id'],
-                        'product_type_id'      => $data['product_type_id'],
-                        'brand_id'      => $data['brand_id'],
-                        'size_id'      => $child_data['child_size_id'][$i],
-                        'color_id'      => $child_data['child_color_id'][$i],
-                        'unit_id' => $data['unit_id'],
-                        'cost_price'      => $data['cost_price'],
-                        'mrp'      => $data['mrp'],
-                        'discount_type'      => $data['discount_type'],
-                        'discount_value'      => $data['discount_value'],
-                        'price'      =>  $prices[$i],
-                        'has_variants' => 0,
-                        'is_sellable' => 1,
-                        'is_active' => $data['is_active'],
-                        'image' => $imagePath,
-                        'thumbnail_image' => $thumbnail_image,
+                        'subcategory_id'   => $data['subcategory_id'],
+                        'product_type_id'  => $data['product_type_id'],
+                        'brand_id'         => $data['brand_id'],
+                        'size_id'          => $child_data['child_size_id'][$i],
+                        'color_id'         => $child_data['child_color_id'][$i],
+                        'unit_id'          => $data['unit_id'],
+                        'cost_price'       => $data['cost_price'],
+                        'mrp'              => $data['mrp'],
+                        'discount_type'    => $data['discount_type'],
+                        'discount_value'   => $data['discount_value'],
+                        'price'            => $prices[$i],
+                        'has_variants'     => 0,
+                        'is_sellable'      => 1,
+                        'is_active'        => $data['is_active'],
+                        'image'            => $imagePath,
+                        'thumbnail_image'  => $thumbnail_image,
                         'size_chart_image' => $size_chart_image,
-                        'meta_image' => $metaImagePath,
+                        'meta_image'       => $metaImagePath,
                     ]);
                 }
             } else {
@@ -357,8 +370,6 @@ class ProductController extends Controller
                     }
                 } else {
 
-
-
                     for ($i = 0; $i < sizeof($papers); $i++) {
                         $child_product = product::create([
                             'parent_id'        => $product->id,
@@ -407,8 +418,6 @@ class ProductController extends Controller
 
         $products = Product::where('parent_id', $product->id)->get();
 
-
-
         return view('backend.modules.products.edit', compact('product'), ['colors' => $colors, 'sizes' => $sizes, 'papers' => $papers, 'products' => $products]);
     }
 
@@ -423,30 +432,30 @@ class ProductController extends Controller
     {
         //   dd($req->all());
         $validator = Validator::make($req->all(), [
-            'name'      => ['required', 'string', 'max:150'],
-            'slug'      => ['required', 'string', 'max:150'],
-            'category_type_id' => ['required', 'integer'],
-            'category_id' => ['required', 'integer'],
-            'subcategory_id' => ['required', 'integer'],
-            'product_type_id' => ['required', 'integer'],
-            'brand_id' => ['required', 'integer'],
-            'unit_id' => ['required', 'integer'],
-            'cost_price' => ['required', 'numeric'],
-            'mrp' => ['required', 'numeric'],
-            'discount_type' => ['required', 'integer'],
-            'discount_value' => ['required', 'numeric'],
-            'price' => ['required', 'numeric'],
-            'is_active' => ['required', 'integer'],
-            'material'     => ['nullable', 'string', 'max:150'],
-            'description'     => ['nullable', 'string', 'max:350'],
-            'short_description'     => ['nullable', 'string', 'max:250'],
-            'image' => 'image|mimes:jpeg,png,jpg|max:2048',
-            'thumbnail_image' => 'image|mimes:jpeg,png,jpg|max:2048',
-            'size_chart_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'meta_title'     => ['nullable', 'string', 'max:150'],
-            'meta_description'     => ['nullable', 'string', 'max:350'],
+            'name'              => ['required', 'string', 'max:150'],
+            'slug'              => ['required', 'string', 'max:150'],
+            'category_type_id'  => ['required', 'integer'],
+            'category_id'       => ['required', 'integer'],
+            'subcategory_id'    => ['required', 'integer'],
+            'product_type_id'   => ['required', 'integer'],
+            'brand_id'          => ['required', 'integer'],
+            'unit_id'           => ['required', 'integer'],
+            'cost_price'        => ['required', 'numeric'],
+            'mrp'               => ['required', 'numeric'],
+            'discount_type'     => ['required', 'integer'],
+            'discount_value'    => ['required', 'numeric'],
+            'price'             => ['required', 'numeric'],
+            'is_active'         => ['required', 'integer'],
+            'material'          => ['nullable', 'string', 'max:150'],
+            'description'       => ['nullable', 'string', 'max:350'],
+            'short_description' => ['nullable', 'string', 'max:250'],
+            'image'             => 'image|mimes:jpeg,png,jpg|max:2048',
+            'thumbnail_image'   => 'image|mimes:jpeg,png,jpg|max:2048',
+            'size_chart_image'  => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'meta_title'        => ['nullable', 'string', 'max:150'],
+            'meta_description'  => ['nullable', 'string', 'max:350'],
             'meta_keywords'     => ['nullable', 'string', 'max:250'],
-            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'meta_image'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
         ]);
         if ($validator->fails()) {
@@ -455,11 +464,10 @@ class ProductController extends Controller
 
         $data = $validator->validated();
 
-
         $previousImage          = $product->image;
         $previousThumbnailImage = $product->thumbnail_image;
-        $previousSizeImage = $product->size_chart_image;
-        $previousMetaImage = $product->meta_image;
+        $previousSizeImage      = $product->size_chart_image;
+        $previousMetaImage      = $product->meta_image;
 
         //  dd($data);
         $imagePath = null;
@@ -507,18 +515,18 @@ class ProductController extends Controller
             $final_price = $data['mrp'] - (($data['mrp'] * $data['discount_value']) / 100);
         }
 
-        $product->name      = ucwords($data['name']);
-        $product->slug      = $data['slug'];
+        $product->name             = ucwords($data['name']);
+        $product->slug             = $data['slug'];
         $product->category_type_id = $data['category_type_id'];
-        $product->category_id = $data['category_id'];
-        $product->subcategory_id = $data['subcategory_id'];
+        $product->category_id      = $data['category_id'];
+        $product->subcategory_id   = $data['subcategory_id'];
         // $product->size_id = $data['size_id'];
         // $product->color_id = $data['color_id'];
-        $product->brand_id = $data['brand_id'];
-        $product->unit_id = $data['unit_id'];
-        $product->product_type_id = $data['product_type_id'];
-        $product->cost_price     = $data['cost_price'];
-        $product->mrp     = $data['mrp'];
+        $product->brand_id          = $data['brand_id'];
+        $product->unit_id           = $data['unit_id'];
+        $product->product_type_id   = $data['product_type_id'];
+        $product->cost_price        = $data['cost_price'];
+        $product->mrp               = $data['mrp'];
         $product->discount_type     = $data['discount_type'];
         $product->discount_value    = $data['discount_value'];
         $product->price             = $final_price;
@@ -532,61 +540,59 @@ class ProductController extends Controller
 
         $product->save();
 
-
         if ($product->has_variants === 1) {
             //   dd($req->child_id);
             $validator = Validator::make($req->all(), [
-                'child_id.*' => ['required'],
-                'child_name.*' => ['required', 'string'],
-                'child_sku.*' => ['required', 'string'],
+                'child_id.*'       => ['required'],
+                'child_name.*'     => ['required', 'string'],
+                'child_sku.*'      => ['required', 'string'],
                 'child_color_id.*' => ['nullable', 'numeric'],
-                'child_size_id.*' => ['nullable', 'numeric'],
+                'child_size_id.*'  => ['nullable', 'numeric'],
                 'child_paper_id.*' => ['nullable', 'numeric'],
-                'child_price.*' => ['required', 'numeric']
+                'child_price.*'    => ['required', 'numeric'],
             ]);
             if ($validator->fails()) {
                 dd($validator->errors());
             }
             $child_data = $validator->validated();
 
-
             for ($i = 0; $i < count($child_data['child_id']); $i++) {
-                $id = isset($child_data['child_id'][$i]) ? (int)$child_data['child_id'][$i] : null;
+                $id            = isset($child_data['child_id'][$i]) ? (int) $child_data['child_id'][$i] : null;
                 $child_product = Product::where('id', $id)->first();
                 if ($child_product) {
-                    $child_product->name =  $child_data['child_name'][$i];
-                    $child_product->sku =  $child_data['child_sku'][$i];
-                    $child_product->color_id =  $child_data['child_color_id'][$i] ?? null;
-                    $child_product->size_id =  $child_data['child_size_id'][$i] ?? null;
-                    $child_product->paper_id =  $child_data['child_paper_id'][$i] ?? null;
-                    $child_product->price =  $child_data['child_price'][$i];
+                    $child_product->name     = $child_data['child_name'][$i];
+                    $child_product->sku      = $child_data['child_sku'][$i];
+                    $child_product->color_id = $child_data['child_color_id'][$i] ?? null;
+                    $child_product->size_id  = $child_data['child_size_id'][$i] ?? null;
+                    $child_product->paper_id = $child_data['child_paper_id'][$i] ?? null;
+                    $child_product->price    = $child_data['child_price'][$i];
 
                     $child_product->save();
                 } else {
                     $child_product = product::create([
-                        'parent_id' => $product->id,
-                        'name'      => ucwords($child_data['child_name'][$i]),
-                        'slug' => $data['slug'],
-                        'sku' =>  $child_data['child_sku'][$i],
+                        'parent_id'        => $product->id,
+                        'name'             => ucwords($child_data['child_name'][$i]),
+                        'slug'             => $data['slug'],
+                        'sku'              => $child_data['child_sku'][$i],
                         'category_type_id' => $data['category_type_id'],
                         'category_id'      => $data['category_id'],
-                        'subcategory_id'      => $data['subcategory_id'],
-                        'product_type_id'      => $data['product_type_id'],
-                        'brand_id'      => $data['brand_id'],
-                        'size_id'      =>  $child_data['child_size_id'][$i] ?? null,
-                        'color_id'      =>  $child_data['child_color_id'][$i] ?? null,
-                        'paper_id'      =>  $child_data['child_paper_id'][$i] ?? null,
-                        'unit_id' => $data['unit_id'],
-                        'cost_price'      => $data['cost_price'],
-                        'mrp'      => $data['mrp'],
-                        'discount_type'      => $data['discount_type'],
-                        'discount_value'      => $data['discount_value'],
-                        'price'      =>   $child_data['child_price'][$i],
-                        'has_variants' => 0,
-                        'is_sellable' => 1,
-                        'is_active' => $data['is_active'],
-                        'image' => $imagePath,
-                        'thumbnail_image' => $thumbnail_imagePath,
+                        'subcategory_id'   => $data['subcategory_id'],
+                        'product_type_id'  => $data['product_type_id'],
+                        'brand_id'         => $data['brand_id'],
+                        'size_id'          => $child_data['child_size_id'][$i] ?? null,
+                        'color_id'         => $child_data['child_color_id'][$i] ?? null,
+                        'paper_id'         => $child_data['child_paper_id'][$i] ?? null,
+                        'unit_id'          => $data['unit_id'],
+                        'cost_price'       => $data['cost_price'],
+                        'mrp'              => $data['mrp'],
+                        'discount_type'    => $data['discount_type'],
+                        'discount_value'   => $data['discount_value'],
+                        'price'            => $child_data['child_price'][$i],
+                        'has_variants'     => 0,
+                        'is_sellable'      => 1,
+                        'is_active'        => $data['is_active'],
+                        'image'            => $imagePath,
+                        'thumbnail_image'  => $thumbnail_imagePath,
                         'size_chart_image' => $sizeImagePath,
                     ]);
                 }
@@ -611,7 +617,7 @@ class ProductController extends Controller
 
     //     $rows = $sheets[0];
 
-    //     // dd($rows);  
+    //     // dd($rows);
 
     //     // If first row is header, normalize it and map rows to assoc arrays
     //     $header = array_map(fn($h) => strtolower(trim($h)), $rows[0]);
@@ -819,9 +825,8 @@ class ProductController extends Controller
     public function select2(Request $r)
     {
 
-        $q = trim($r->input('q', ''));
+        $q    = trim($r->input('q', ''));
         $base = Product::query()->where('has_variants', 0)->where('is_active', 1);
-
 
         if ($q !== '') {
             $base->where(function ($x) use ($q) {
@@ -959,7 +964,7 @@ class ProductController extends Controller
     public function variants(Request $request, Product $product)
     {
         $warehouseId = $request->query('warehouse_id') ?? null;
-        $branchId = $request->query('branch_id') ?? 0; // default 0 if not provided
+        $branchId    = $request->query('branch_id') ?? 0; // default 0 if not provided
 
         // 1) Try real children
         $variants = Product::query()
@@ -975,11 +980,11 @@ class ProductController extends Controller
             $variants = collect([$product->only(['id', 'name', 'sku', 'image', 'cost_price'])]);
             // normalize key names
             $variants = $variants->map(function ($p) {
-                return (object)[
-                    'id' => $p['id'],
-                    'name' => $p['name'],
-                    'sku' => $p['sku'],
-                    'image' => $p['image'],
+                return (object) [
+                    'id'                => $p['id'],
+                    'name'              => $p['name'],
+                    'sku'               => $p['sku'],
+                    'image'             => $p['image'],
                     'default_unit_cost' => $p['cost_price'],
                 ];
             });

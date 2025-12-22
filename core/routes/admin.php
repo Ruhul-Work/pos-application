@@ -103,6 +103,4 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
 
     });
 
-
-
 });

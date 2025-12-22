@@ -12,9 +12,9 @@
     <div class="d-flex p-1 justify-content-between mt-3">
         <h1 class="text-xl lh-1 fw-semibold p-1">Purchase List</h1>
 
-        <div>
+        {{-- <div>
             <h6 class="text-xs   p-1 px-3 bg-dark text-white rounded-pill">#ord1247</h6>
-        </div>
+        </div> --}}
     </div>
 
     <hr class=" px-3" style="border-top: 1px dashed #000;">
@@ -22,9 +22,9 @@
         <h1 class="text-lg lh-1 fw-semibold p-1">Supplier's Information</h1>
 
         {{-- Supplier select (same as create) --}}
-        <div class="col-lg-9 d-flex gap-2">
-            <div class="mt-1">
-                <select class="form-control form-control-sm col-lg-3 js-s2-ajax" name="supplier_id" id="supplier"
+        <div class="col-lg-10 d-flex gap-2">
+            <div class="mt-1 col-lg-12">
+                <select class="   js-s2-ajax" name="supplier_id" id="supplier"
                     data-url="{{ route('supplier.select2') }}" data-placeholder="Select Supplier">
                     <option id="recent" value="" selected></option>
                 </select>

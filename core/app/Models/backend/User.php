@@ -35,4 +35,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(\App\Models\backend\Branch::class, 'branch_id');
     }
+
+    public function isSuperAdmin()
+    {
+        return $this->role?->is_super == 1;
+    }
 }

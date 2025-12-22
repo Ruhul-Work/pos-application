@@ -48,21 +48,20 @@
             <div class="d-flex p-1 justify-content-between mt-3">
                 <h1 class="text-xl lh-1 fw-semibold p-1">Order List</h1>
 
-                <div>
+                {{-- <div>
                     <h6 class="text-xs   p-1 px-3 bg-dark text-white rounded-pill">#ord1247</h6>
-                </div>
+                </div> --}}
             </div>
             <hr class=" px-3" style="border-top: 1px dashed #000;">
             <div class="p-1 mt-3">
                 <h1 class="text-lg lh-1 fw-semibold p-1">Customer's Information</h1>
                 <div class="d-flex gap-2">
 
-                    <div class="col-lg-9 d-flex gap-2">
-                        <div class="mt-1">
-                            <select class="form-control form-control-sm col-lg-3 js-s2-ajax" name="customer_id"
-                                id="customer" data-url="{{ route('customer.select2') }}"
-                                data-placeholder="Select Customer">
-                                <option id="recent" value="customer" selected>Walk In Customer</option>
+                    <div class="col-lg-12 d-flex gap-2">
+                        <div class="mt-1 col-lg-10">
+                            <select class="form-control form-control-sm  js-s2-ajax" name="customer_id" id="customer"
+                                data-url="{{ route('customer.select2') }}" data-placeholder="Select Customer">
+                                <option id="recent" value="1" selected>Walk In Customer</option>
 
                             </select>
                             <div class="invalid-feedback d-block category_id-error" style="display:none"> </div>
@@ -150,6 +149,7 @@
                                 <th scope="col" class="text-center">Item</th>
                                 <th scope="col" class="text-center">Quantity</th>
                                 <th scope="col" class="text-center">Price</th>
+                                <th scope="col" class="text-center">MRP</th>
                                 <th scope="col" class="text-center">Total</th>
                             </tr>
                         </thead>
@@ -344,15 +344,16 @@
                     <div class="row gap-3  mt-5 px-3 justify-content-center">
                         {{-- <div class="col-lg"><button class="btn btn-outline-dark btn-sm">Cash</button></div> --}}
                         {{-- <button class="btn col-lg-3 payment-btn btn-sm">Cash</button> --}}
-                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal-btn btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#paymentModal" data-bs-whatever="@getbootstrap" data-payment_method="cash">Cash</button>
-                            {{-- payment modal starts here --}}
+                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal-btn btn-sm"
+                            data-bs-toggle="modal" data-bs-target="#paymentModal" data-bs-whatever="@getbootstrap"
+                            data-payment_method="cash">Cash</button>
+                        {{-- payment modal starts here --}}
                         <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout Form</h1>
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
@@ -360,51 +361,73 @@
                                         <form>
                                             <div class="row">
                                                 <div class="mb-3 col-lg-4">
-                                                    <label for="checkout_amount" class="col-form-label">Total Amount</label>
-                                                    <input type="number" min="0" class="form-control form-control-sm"
-                                                        id="checkout_total_amount" disabled value="0">
+                                                    <label for="checkout_amount" class="col-form-label">Total
+                                                        Amount</label>
+                                                    <input type="number" min="0"
+                                                        class="form-control form-control-sm" id="checkout_total_amount"
+                                                        disabled value="0">
                                                 </div>
                                                 <div class="mb-3 col-lg-4">
                                                     <label for="received_amount" class="col-form-label">Paying
                                                         Amount</label>
-                                                    <input type="number" min="0" class="form-control form-control-sm"
-                                                        id="paid_amount" value="0">
+                                                    <input type="number" min="0"
+                                                        class="form-control form-control-sm" id="paid_amount"
+                                                        value="0">
                                                 </div>
                                                 <div class="mb-3 col-lg-4">
                                                     <label for="received_amount" class="col-form-label">Change</label>
-                                                    <input type="number"  disabled min="0" class="form-control form-control-sm"
-                                                        id="change_amount" value="$ 0">
+                                                    <input type="number" disabled min="0"
+                                                        class="form-control form-control-sm" id="change_amount"
+                                                        value="$ 0">
                                                 </div>
                                             </div>
-                                            <div class="mb-3 ">
-                                                <label for="received_amount" class="col-form-label">Payment Type</label>
-                                                <select name="payment_method" id="payment_method"
-                                                    class="form-control form-control-sm">
-                                                    <option value="cash" selected>Cash</option>
-                                                    <option value="card">Card</option>
-                                                    <option value="bkash">Bkash</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3 ">
-                                                <label for="received_amount" class="col-form-label">Payment
-                                                    Receiver</label>
-                                                <input type="text" class="form-control form-control-sm"
-                                                    id="recipient-name">
-                                            </div>
-                                            <div class="mb-3 ">
-                                                <label for="received_amount" class="col-form-label">Payment Note</label>
-                                                <textarea rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
-                                            </div>
-                                            <div class="mb-3 ">
-                                                <label for="received_amount" class="col-form-label">Sale Note</label>
-                                                <textarea type="text" rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
+                                            <div class="row">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="received_amount" class=" col-form-label">Sale
+                                                        Status</label>
+                                                    <select name="sale_status" id="sale_status"
+                                                        class="form-control form-control-sm">
+                                                        <option value="delivered" selected>Delivered</option>
+                                                        <option value="order">order placed</option>
+                                                        <option value="hold">Hold</option>
+                                                        <option value="pending">Pending</option>
+                                                        <option value="cancel">cancel</option>
+
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="received_amount" class=" col-form-label">Payment
+                                                        Type</label>
+                                                    <select name="payment_method" id="payment_method"
+                                                        class="form-control form-control-sm">
+                                                        <option value="cash" selected>Cash</option>
+                                                        <option value="card">Card</option>
+                                                        <option value="bkash">Bkash</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3 ">
+                                                    <label for="received_amount" class="col-form-label">Payment
+                                                        Receiver</label>
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        id="recipient-name">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="received_amount" class="col-form-label">Payment
+                                                        Note</label>
+                                                    <textarea rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="received_amount" class="col-form-label">Sale Note</label>
+                                                    <textarea type="text" rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-danger btn-sm rounded-4"
                                             data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-dark btn-sm rounded-4">Submit</button>
+                                        <button type="button" id="pos-submit-sale"
+                                            class="btn btn-dark btn-sm rounded-4">Submit</button>
                                     </div>
                                 </div>
                             </div>
@@ -419,11 +442,11 @@
                 <div class="d-flex mt-3 gap-2 mb-3">
                     <button style="padding: 10px"
                         class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
-                            icon="flowbite:printer-outline payment-modal-btn" class="menu-icon fs-5 "></iconify-icon><span>Print
+                            icon="flowbite:printer-outline payment-modal-btn"
+                            class="menu-icon fs-5 "></iconify-icon><span>Print
                             Order</span>
                     </button>
-                    <button  data-bs-toggle="modal"
-                            data-bs-target="#paymentModal"
+                    <button data-bs-toggle="modal" data-bs-target="#paymentModal"
                         class="btn btn-danger border payment-modal-btn   col-lg-6 p-1 d-flex align-items-center justify-content-center gap-2"><iconify-icon
                             icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon><span>Place
                             Order</span>
@@ -439,16 +462,27 @@
     <div class="footer-pos d-flex justify-content-center align-items-center gap-3 mt-3 position-absoulte bg-white p-3 "
         style="position:absoulte;width:100vw">
         <div class="p-0">
-            <button class="btn btn-primary btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
-                    icon="flowbite:pause-outline" class="menu-icon fs-5 "></iconify-icon>Hold</button>
+            <button id="hold-sale"
+                class="btn btn-danger btn-sm rounded-4 d-flex align-item-center justify-content-center">
+                <iconify-icon icon="flowbite:pause-outline" class="menu-icon fs-5"></iconify-icon>
+                Hold
+            </button>
         </div>
         <div class="p-0">
-            <button class="btn btn-danger btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
-                    icon="mdi:trash-outline" class="menu-icon fs-5 "></iconify-icon>Void</button>
+            <button id="view-hold-sales"
+                class="btn btn-secondary btn-sm rounded-4 d-flex align-item-center justify-content-center">
+                <iconify-icon icon="mdi:pause-circle-outline" class="menu-icon fs-5"></iconify-icon>
+                Hold Orders
+            </button>
         </div>
+
+        {{-- <div class="p-0">
+            <button class="btn btn-danger btn-sm rounded-4 d-flex align-item-center justify-content-center "><iconify-icon
+                    icon="mdi:trash-outline" class="menu-icon fs-5 "></iconify-icon>Void</button>
+        </div> --}}
         <div class="p-0">
 
-            <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel"
+            {{-- <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel"
                 tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -479,11 +513,11 @@
                     <div class="modal-content">
 
                         <div class="modal-body text-dark p-0 px-3">
-                            <img src="https://dreamspos.dreamstechnologies.com/html/template/assets/img/logo.svg"
-                                class="mt-0" alt="img" style="height: 30px">
+                            <img src="http://localhost/pos-application/theme/admin/assets/images/logo1.png" class="mt-0"
+                                alt="img" style="height: 32px">
                             <h1 class="text-xl mt-3">DK International Private Ltd.</h1>
                             <p class="lh-base text-sm mt-1 text-secondary fw-normal">
-                                {{-- <span>Address: Kualalampur, Malayshia</span><br> --}}
+                            
                                 <span>Phone Number: 01598929775</span><br>
                                 <span>Email Address: dk@email.com</span><br>
                             </p>
@@ -556,176 +590,560 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <button class="btn btn-success btn-sm  rounded-4 d-flex align-item-center justify-content-center"
-                data-bs-target="#exampleModalToggle" data-bs-toggle="modal">
+            </div> --}}
+            <button
+                class="btn btn-success btn-sm payment-modal-btn  rounded-4 d-flex align-item-center justify-content-center"
+                data-bs-toggle="modal" data-bs-target="#paymentModal">
                 <iconify-icon icon="flowbite:cash-outline" class="menu-icon fs-5 "></iconify-icon>Payment</button>
         </div>
         <div class="p-0">
-            <button class="btn btn-dark btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
-                    icon="flowbite:cart-outline" class="menu-icon fs-5 "></iconify-icon>View Orders</button>
+            <button class="btn btn-dark btn-sm rounded-4 d-flex align-item-center justify-content-center"
+                id="btn-view-orders"><iconify-icon icon="flowbite:cart-outline"
+                    class="menu-icon fs-5 "></iconify-icon>View Orders</button>
         </div>
         <div class="p-0">
-            <button class="btn btn-warning btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
-                    icon="mdi:reload" class="menu-icon fs-5 "></iconify-icon>Reset</button>
+            <button class="btn btn-warning btn-sm rounded-4 d-flex align-item-center justify-content-center"
+                id="pos-reset-btn"><iconify-icon icon="mdi:reload" class="menu-icon fs-5 "></iconify-icon>New
+                Order</button>
         </div>
         <div class="p-0">
-            <button class="btn btn-info btn-sm rounded-4 d-flex align-item-center justify-content-center"><iconify-icon
+            <button
+                class="btn btn-info btn-sm rounded-4 d-flex align-item-center justify-content-center btn-transactions"><iconify-icon
                     icon="mdi:swap-horizontal" class="menu-icon fs-5 "></iconify-icon>Transactions</button>
         </div>
 
-        <!-- Modal -->
+        <!-- ******* Modal ********-->
 
+        <!-- hold sales modal -->
+        <div class="modal fade" id="holdSalesModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header ">
+                        <h6 class="modal-title d-flex align-items-center gap-2"><iconify-icon
+                                icon="mdi:pause-circle-outline" class="menu-icon fs-5 "></iconify-icon> Hold Orders</h6>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <table class="table table-sm table-hover mb-0 text-sm text-center text-semibold">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Invoice</th>
+                                    <th class="text-center">Customer</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Unit Price</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hold-sales-body">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- end hold sales modal -->
+
+        <!-- today orders modal start-->
+        <div class="modal fade" id="todayOrdersModal" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header ">
+                        <h6 class="modal-title d-flex align-items-center gap-2">
+                            <iconify-icon icon="mdi:clipboard-list-outline" class="fs-5"></iconify-icon>
+                            Today Orders
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-0">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light text-sm fw-semibold ">
+                                <tr>
+                                    <th class="text-center">Invoice</th>
+                                    <th class="text-center">Customer</th>
+                                    <th class="text-center">Time</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="todayOrdersBody">
+                                <tr>
+                                    <td colspan="6" class="text-center p-3">
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- today orders modal end-->
+
+        <!-- order details modal start-->
+        <div class="modal fade" id="orderDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h6 class="modal-title d-flex align-items-center gap-2">
+                            <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
+                            Order Details
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body" id="orderDetailsBody">
+                        <div class="text-center p-4">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- order details modal end -->
+
+        <!-- transactions modal start-->
+        <div class="modal fade" id="transactionsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h6 class="modal-title d-flex align-items-center gap-2">
+                            <iconify-icon icon="mdi:swap-horizontal" class="fs-5"></iconify-icon>
+                            Today Transactions
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-0"  style="height: 750px !important; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0" >
+                            <thead class="table-light text-sm  fw-semibold sticky-top">
+                                <tr>
+                                    <th class="text-center">Time</th>
+                                    <th class="text-center">Invoice</th>
+                                    <th class="text-center">Method</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="transactionsBody">
+                                <tr>
+                                    <td colspan="4" class="text-center p-3">Loading...</td>
+                                </tr>
+                            </tbody>
+
+                            <tfoot class="table-light fw-semibold sticky-bottom">
+                                <tr class="table-success fs-6">
+                                    <td colspan="3" class="text-end">Cash Total</td>
+                                    <td class="text-end"> <span id="cashTotal">0.00</span></td>
+                                </tr>
+                                <tr class="table-primary fs-6">
+                                    <td colspan="3" class="text-end">Card Total</td>
+                                    <td class="text-end"> <span id="cardTotal">0.00</span></td>
+                                </tr>
+                                <tr class="table-danger fs-6">
+                                    <td colspan="3" class="text-end">bKash Total</td>
+                                    <td class="text-end"> <span id="bkashTotal">0.00</span></td>
+                                </tr>
+                                <tr class="table-warning fs-6">
+                                    <td colspan="3" class="text-end">Grand Total</td>
+                                    <td class="text-end"> <span id="grandTotal">0.00</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- end transactions modal -->
 
     </div>
 @endsection
+
 @section('script')
     <script>
+        // ====== tab-specific helpers ======
+        // Robust synchronous tab helpers with safe duplicate handling + cart-migration
+        (function() {
+            // utils
+            function randId() {
+                return Math.random().toString(36).slice(2, 9);
+            }
+
+            function makeTabId() {
+                return 'tab_' + Date.now() + '_' + randId();
+            }
+
+            // keys
+            const SESSION_KEY = 'pos_tab_id';
+            const PING_KEY = 'pos_tab_ping';
+            const CONFLICT_KEY = 'pos_tab_conflict';
+
+            // read existing session tab id (may have been copied on duplication)
+            let sessionTabId = sessionStorage.getItem(SESSION_KEY);
+
+            // If none, create and persist immediately (synchronous)
+            if (!sessionTabId) {
+                sessionTabId = makeTabId();
+                sessionStorage.setItem(SESSION_KEY, sessionTabId);
+            }
+
+            // derive storage keys (based on current sessionTabId)
+            function cartKeyFor(id) {
+                return 'cart_' + id;
+            }
+
+            function discountKeyFor(id) {
+                return 'discountPos_' + id;
+            }
+
+            function shippingKeyFor(id) {
+                return 'shippingChargePos_' + id;
+            }
+
+            // Synchronous API (available immediately)
+            window.getPosTabId = function() {
+                return sessionStorage.getItem(SESSION_KEY);
+            };
+            window.getCart = function() {
+                try {
+                    return JSON.parse(localStorage.getItem(cartKeyFor(window.getPosTabId()))) || [];
+                } catch (e) {
+                    return [];
+                }
+            };
+            window.setCart = function(cart) {
+                localStorage.setItem(cartKeyFor(window.getPosTabId()), JSON.stringify(cart || []));
+                window.dispatchEvent(new CustomEvent('pos:cart:updated', {
+                    detail: {
+                        tabKey: cartKeyFor(window.getPosTabId()),
+                        cart
+                    }
+                }));
+            };
+            window.clearCartForTab = function() {
+                localStorage.removeItem(cartKeyFor(window.getPosTabId()));
+                window.dispatchEvent(new CustomEvent('pos:cart:cleared', {
+                    detail: {
+                        tabKey: cartKeyFor(window.getPosTabId())
+                    }
+                }));
+            };
+            window.getDiscountKey = function() {
+                return discountKeyFor(window.getPosTabId());
+            };
+            window.getShippingKey = function() {
+                return shippingKeyFor(window.getPosTabId());
+            };
+
+            // --- Duplicate detection in background (non-blocking) ---
+            // If page was opened via "Duplicate tab" the sessionTabId value is copied.
+            // We ping localStorage to see if another tab claims same sessionTabId.
+            (function backgroundDuplicateCheck() {
+                const instanceId = randId();
+                // listen for pings: if another tab sends ping about same sessionTabId, we will respond indicating presence
+                window.addEventListener('storage', function(e) {
+                    if (!e.key) return;
+                    try {
+                        if (e.key === PING_KEY && e.newValue) {
+                            const ping = JSON.parse(e.newValue);
+                            if (ping && ping.tabId === sessionTabId && ping.instanceId !== instanceId) {
+                                // somebody pinged with same tabId -> indicate conflict
+                                localStorage.setItem(CONFLICT_KEY, JSON.stringify({
+                                    tabId: sessionTabId,
+                                    responder: instanceId,
+                                    ts: Date.now()
+                                }));
+                                setTimeout(() => localStorage.removeItem(CONFLICT_KEY), 100);
+                            }
+                        }
+                        // if we see conflict and it references our tabId, it means another tab exists with same tabId
+                        if (e.key === CONFLICT_KEY && e.newValue) {
+                            const conf = JSON.parse(e.newValue);
+                            if (conf && conf.tabId === sessionTabId) {
+                                // perform migration: copy current copied-cart (from sessionTabId) into a NEW unique tab id for this tab
+                                migrateToNewTabId();
+                            }
+                        }
+                    } catch (err) {}
+                });
+
+                // send ping shortly after load to probe others
+                try {
+                    localStorage.setItem(PING_KEY, JSON.stringify({
+                        tabId: sessionTabId,
+                        instanceId: instanceId,
+                        ts: Date.now()
+                    }));
+                    setTimeout(() => localStorage.removeItem(PING_KEY), 100);
+                } catch (e) {}
+
+                // also listen shortly for conflict key in case another tab responded
+                // give some time (200ms) for responders - if conflict arises, the storage listener above will trigger migration
+            })();
+
+            // If conflict detected for this tabId -> create a new tabId and migrate cart (copy) so user doesn't lose data
+            function migrateToNewTabId() {
+                try {
+                    const oldId = sessionStorage.getItem(SESSION_KEY);
+                    const oldCartKey = cartKeyFor(oldId);
+                    const oldCartRaw = localStorage.getItem(oldCartKey);
+                    // generate new id and persist
+                    const newId = makeTabId();
+                    sessionStorage.setItem(SESSION_KEY, newId);
+                    // copy cart data (if any) into new key so reload keeps it
+                    if (oldCartRaw !== null) {
+                        localStorage.setItem(cartKeyFor(newId), oldCartRaw);
+                    } else {
+                        // ensure new key exists (empty array)
+                        localStorage.setItem(cartKeyFor(newId), JSON.stringify([]));
+                    }
+                    // optionally remove old key? NO — do not remove old key (it belongs to other tab)
+                    // update window-level functions to refer to new id (they read from sessionStorage each call so OK)
+                    // emit event so UI can refresh
+                    window.dispatchEvent(new CustomEvent('pos:tab:migrated', {
+                        detail: {
+                            oldId,
+                            newId
+                        }
+                    }));
+                    // refresh UI so cart reflects migrated key
+                    try {
+                        if (typeof loadCartItems === 'function') loadCartItems();
+                    } catch (e) {}
+                } catch (e) {}
+            }
+
+            // finished helper init
+        })();
+        // end helper
+
+
+        // ====== POS UI Logic Global functions ======
+
+        // loadCartItems
+        function loadCartItems() {
+            let cartItems = window.getCart() || [];
+            let count = 0;
+            let cartItemsHtml = '';
+            cartItems.forEach(function(item) {
+                count += 1;
+
+                cartItemsHtml += `
+                   <tr>
+                                <td class="d-flex align-items-center text-center justify-content-start gap-2 text-secondary ">
+                                    <span class="order-item">${stringShortner(item.name,20)}
+                                        </span><button class="icon product-delete" data-product_id="${item.id}"><iconify-icon icon="mdi:delete"
+                                            class="menu-icon fs-7 "></button>
+                                </td>
+                                <td class=" align-items-center justify-content-center text-center gap-2 text-secondary">
+                                    <button class="bg-light  rounded-4 border-0 p-1 qty-button btn-minus">
+                                        <iconify-icon icon="flowbite:minus-outline"
+                                            class="menu-icon fs-7"></iconify-icon>
+                                    </button>
+
+                                    <span class="mx-3"><input class="form-control qty-input text-center text-black px-1 " type="number" value="${item.quantity}" min="1" style="min-width:30px !important; max-width:80px !important; height:35px; display:block; "></span>
+
+                                    <button class="bg-light rounded-4 p-1 qty-button btn-plus">
+                                        <iconify-icon icon="flowbite:plus-outline"
+                                            class="menu-icon fs-7"></iconify-icon>
+                                    </button>
+                                </td>
+                                <td class="">
+                                    ${item.price}
+                                </td>
+                                <td class="">
+                                    ${item.mrp}
+                                </td>
+                                <td class="product-price">
+                                    ${(item.price * item.quantity).toFixed(2)}
+                                </td>
+
+                            </tr>`;
+            });
+            $('#cart_items').html(cartItemsHtml);
+            $('#total_items').text(count);
+            calculateSubtotal();
+        } // loadCartItems
+
+        // deleteFromCart
+        function deleteFromCart(productId) {
+            let cart = window.getCart() || [];
+            let updatedCart = cart.filter(function(item) {
+                return item.id !== productId;
+            });
+            window.setCart(updatedCart);
+            calculateSubtotal();
+        }
+
+        // emptyCart (tab-specific)
+        function emptyCart() {
+            window.clearCartForTab();
+            // clear tab-specific discount/shipping
+            sessionStorage.removeItem(window.getDiscountKey());
+            sessionStorage.removeItem(window.getShippingKey());
+            loadCartItems();
+            $('.product-card').removeClass('active');
+        }
+
+        // updateQuantityInCart
+        function updateQuantityInCart(productId, newQuantity) {
+            let cart = window.getCart() || [];
+            cart.forEach(function(item) {
+                if (item.id === productId) {
+                    item.quantity = newQuantity;
+                }
+            });
+            window.setCart(cart);
+        }
+
+        // calculateSubtotal (uses tab-specific discount/shipping)
+        function calculateSubtotal() {
+            let cart = window.getCart() || [];
+            let discountObj = JSON.parse(sessionStorage.getItem(window.getDiscountKey())) || {
+                type: 'flat',
+                value: 0.00
+            };
+            let shipping = parseFloat(sessionStorage.getItem(window.getShippingKey())) || 0;
+            let subtotal = 0;
+            let total = 0;
+
+            cart.forEach(function(item) {
+                subtotal += (item.price * item.quantity);
+            });
+            if (discountObj.type === 'percentage') {
+                let d = (subtotal * discountObj.value / 100);
+                $('#discount').val(`${d.toFixed(2)}`);
+                total = subtotal + shipping - d;
+            } else {
+                total = subtotal + shipping - parseFloat(discountObj.value || 0);
+                $('#discount').val(`${(parseFloat(discountObj.value) || 0).toFixed(2)}`);
+            }
+            $('#shipping').val(`${shipping.toFixed(2)}`);
+            $('#subtotal').text(subtotal.toFixed(2));
+            $('#total_amount').text(total.toFixed(2));
+
+            return total;
+        }
+
+        // stringShortner
+        function stringShortner(name, length) {
+            if (!name) return '';
+            if (name.length > length) return name.slice(0, length) + '...';
+            else return name;
+        }
+
+        // ---------- Document Ready Start----------
         $(document).ready(function() {
 
-            function loadCartItems() {
-                let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-                let count = 0;
-                let cartItemsHtml = '';
-                cartItems.forEach(function(item) {
-                    count += 1;
+            loadCartItems();
 
-                    cartItemsHtml += `
-                       <tr>
-                                    <td class="d-flex align-items-center text-center justify-content-start gap-2 text-secondary ">
-                                        <span class="order-item">${stringShortner(item.name,20)}
-                                            </span><button class="icon product-delete" data-product_id="${item.id}"><iconify-icon icon="mdi:delete"
-                                                class="menu-icon fs-7 "></button>
-                                    </td>
-                                    <td class=" align-items-center justify-content-center text-center gap-2 text-secondary">
-                                        <button class="bg-light  rounded-4 border-0 p-1 qty-button btn-minus">
-                                            <iconify-icon icon="flowbite:minus-outline"
-                                                class="menu-icon fs-7"></iconify-icon>
-                                        </button>
-
-                                        <span class="mx-3"><input class="form-control qty-input text-center text-black px-1 " type="number" value="${item.quantity}" min="1" style="min-width:30px !important; max-width:80px !important; height:35px; display:block; "></span>
-
-                                        <button class="bg-light rounded-4 p-1 qty-button btn-plus">
-                                            <iconify-icon icon="flowbite:plus-outline"
-                                                class="menu-icon fs-7"></iconify-icon>
-                                        </button>
-                                    </td>
-                                    <td class="">
-                                        ${item.price}
-                                    </td>
-                                    <td class="product-price">
-                                        ${item.price*item.quantity}
-                                    </td>
-
-                                </tr>`;
-                });
-                $('#cart_items').html(cartItemsHtml);
-                $('#total_items').text(count);
-                calculateSubtotal();
-                // calculateDiscount();
-                // calculateTotalAmount();
-
-            } //loadCartItems function ends here
-            //delete individual cart item
+            // delete individual cart item
             $(document).off('click', '.product-delete').on('click', '.product-delete', function() {
                 let productId = $(this).data('product_id');
-                if (productExistsInCart(productId)) {
+                let cart = window.getCart() || [];
+                let exists = cart.some(i => i.id === productId);
+                if (exists) {
                     deleteFromCart(productId);
                     $(this).closest('tr').remove();
-                    // loadCartItems();
                 } else {
-                    alert('Product not found in cart!');
+                    // alert('Product not found in cart!');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Product not found in cart!'
+                    });
                 }
-
             });
 
             // clear cart
             $(document).off('click', '.empty-cart').on('click', '.empty-cart', function() {
                 emptyCart();
-
             });
 
-            //update cart on quantity change with input
+            // update cart on quantity change with input
             $(document).on('input', '.qty-input', function() {
                 let productId = $(this).closest('tr').find('.product-delete').data('product_id');
-
-
                 let newQuantity = parseInt($(this).val());
                 if (isNaN(newQuantity) || newQuantity < 1) {
-                    // alert('Invalid quantity!');
                     $(this).val(1);
                     return;
                 }
 
                 updateQuantityInCart(productId, newQuantity);
 
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                let cart = window.getCart() || [];
                 let product = cart.find(item => item.id === productId);
                 if (product) {
                     let newPrice = product.price * product.quantity;
-                    $(this).closest('tr').find('.product-price').html(
-                        `${newPrice}`);
+                    $(this).closest('tr').find('.product-price').html(`${newPrice.toFixed(2)}`);
                 }
                 calculateSubtotal();
-
             });
 
-            //increase quantity of individual item with + button
+            // increase quantity with + button
             $(document).off('click', '.btn-plus').on('click', '.btn-plus', function() {
                 let productId = $(this).closest('tr').find('.product-delete').data('product_id');
-
                 let i = $(this).closest('tr').find('.qty-input');
-                let price = $(this).closest('tr').find('.product-price');
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                let priceEl = $(this).closest('tr').find('.product-price');
+                let cart = window.getCart() || [];
                 let product = cart.find(item => item.id === productId);
-
-                i.val(parseInt(i.val()) + 1);
-
-                updateQuantityInCart(productId, product.quantity + 1);
-                price.html(product.price * (product.quantity + 1));
-
+                if (!product) return;
+                let newQty = (parseInt(i.val()) || product.quantity) + 1;
+                i.val(newQty);
+                updateQuantityInCart(productId, newQty);
+                priceEl.html((product.price * newQty).toFixed(2));
                 calculateSubtotal();
-
             });
 
-            //decrease quantity of individual with - button
+            // decrease quantity with - button
             $(document).off('click', '.btn-minus').on('click', '.btn-minus', function() {
-                let productId = $(this).closest('tr').find('.product-delete').data(
-                    'product_id');
-
+                let productId = $(this).closest('tr').find('.product-delete').data('product_id');
                 let i = $(this).closest('tr').find('.qty-input');
                 if (i.val() > 1) {
-                    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    let cart = window.getCart() || [];
                     let product = cart.find(item => item.id === productId);
-
-                    updateQuantityInCart(productId, product.quantity - 1);
-                    i.val(parseInt(i.val()) - 1);
-
+                    if (!product) return;
+                    let newQty = product.quantity - 1;
+                    updateQuantityInCart(productId, newQty);
+                    i.val(newQty);
                     $(this).closest('tr').find('.product-price').html(
-                        `${product.price * (product.quantity-1)}`);
-
+                        `${(product.price * newQty).toFixed(2)}`);
                 }
                 calculateSubtotal();
-
-
             });
 
-
-
-
-
-
-            // Delegate click event for pagination links
+            // pagination links delegate
             $(document).on('click', '.page-link-btn', function(e) {
                 e.preventDefault();
-
                 let url = $(this).data('url');
-                if (!url || url === '#') return; // skip disabled links
-
+                if (!url || url === '#') return;
                 loadProducts(url);
-                // loadCartItems();
             });
-            // Search functionality
+
+            // Search
             $('#product-search-input').on('input', function() {
                 let query = $(this).val();
                 if (query.length > 0) {
@@ -735,7 +1153,8 @@
                     loadProducts("{{ route('product.productsList') }}");
                 }
             });
-            // Category filter functionality
+
+            // category filter
             $('.nav-btn').on('click', function() {
                 if ($(this).data('category-id') == '') {
                     loadProducts("{{ route('product.productsList') }}");
@@ -747,7 +1166,7 @@
                 loadProducts(url);
             });
 
-            // Initial load if needed (you may already be doing this)
+            // initial load
             loadProducts("{{ route('product.productsList') }}");
             loadCartItems();
 
@@ -755,128 +1174,301 @@
                 a = $(element).closest('tr').find('.product-price');
                 a.html(price);
             }
-            // Reusable function to load products
+
+
+
             function loadProducts(url) {
-                let products = [];
                 let productsHtml = '';
+                // show loading spinner (optional)
+                $('#product-list').html('<div class="w-100 text-center p-4">Loading products...</div>');
+
                 $.ajax({
                     url: url,
                     type: 'GET',
+                    timeout: 10000,
                     success: function(res) {
-                        console.log(res.products.data);
-                        products = res.products.data;
-                        products.forEach(function(product) {
+                        // defensive checks
+                        if (!res || (typeof res !== 'object')) {
+                            console.error('Invalid response from products endpoint:', res);
+                            $('#product-list').html(
+                                '<div class="w-100 text-center text-danger p-4">Could not load products (invalid response).</div>'
+                            );
+                            return;
+                        }
 
+                        // if paginator structure is different, try res.products or res.data
+                        let products = res.products && res.products.data ? res.products.data : (res
+                            .products || res.data || null);
+
+                        if (!products || !Array.isArray(products)) {
+                            console.error('Products array missing in response:', res);
+                            $('#product-list').html(
+                                '<div class="w-100 text-center text-danger p-4">No products available.</div>'
+                            );
+                            return;
+                        }
+
+                        products.forEach(function(product) {
                             let a = "{{ image('') }}";
-                            console.log(a);
-                            let p = product.image;
-                            image = a.replace('theme/frontend/assets/img/default/book.png', p);
+                            let p = product.image || '';
+                            let image = a.replace('theme/frontend/assets/img/default/book.png',
+                                p || 'theme/frontend/assets/img/default/book.png');
 
                             productsHtml += `<div class="product-card  bg-white rounded-3 m-3 d-flex p-3 " data-product_id="${product.id}"
-                                style="height: 110px; width:20%; cursor: pointer;">
-                               <img class="img-fluid h-75 rounded col-lg-5  product-img" src="${image}" alt="img">
-                                     <div class="px-3 flex-grow-1">
-                                         <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,15)}</p>
-                                               
-                                                 <h1 class="text-sm lh-1 fw-semibold px-1 mt-1">${product.price}</h1>
-
-                                    </div>
-                            </div> `;
-                        })
+                    style="height: 110px; width:20%; cursor: pointer;">
+                   <img class="img-fluid h-75 rounded col-lg-5  product-img" src="${image}" alt="img">
+                         <div class="px-3 flex-grow-1">
+                             <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,15)}</p>
+                             <h1 class="text-sm lh-1 fw-semibold px-1 mt-1">${product.price}</h1>
+                        </div>
+                </div> `;
+                        });
 
                         $('#product-list').html(productsHtml);
-                        let paginationHtml = '';
-                        let links = res.products.links;
-                        links.forEach(function(link) {
-                            paginationHtml += `<button 
-                        class="btn btn-sm rounded-5 ${link.active ? 'btn-primary' : 'btn-outline-primary'} m-1 page-link-btn"
-                        data-url="${link.url ?? '#'}"
-                        ${!link.url ? 'disabled' : ''}>
-                        ${link.label}
-                    </button>`;
-                        })
-
-                        $('#product-list').append('<div class="col-lg-12 text-end ">' + paginationHtml +
-                            '</div>');
-
+                        // (re)bind click handlers safely
                         $(document).off('click', '.product-card').on('click', '.product-card',
                             function() {
                                 let productId = $(this).data('product_id');
-                                let cart = JSON.parse(localStorage.getItem('cart')) || null;
                                 if (productExistsInCart(productId)) {
-                                    cart.forEach(function(item) {
-                                        if (item.id === productId || item.parent_id ===
-                                            productId) {
-                                            deleteFromCart(item.id);
-                                        }
-                                    });
+                                    let cart = window.getCart() || [];
+                                    let newCart = cart.filter(item => !(item.parent_id ===
+                                        productId || item.id === productId));
+                                    window.setCart(newCart);
                                     loadCartItems();
-                                    // console.log('removed from cart');
-
                                     $(this).removeClass('active');
-
                                 } else {
                                     addToCart(productId);
                                     $(this).addClass('active');
-
                                 }
+                            });
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        // log detailed error for debugging
+                        console.error('Products AJAX error:', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            responseText: xhr.responseText,
+                            textStatus: textStatus,
+                            errorThrown: errorThrown
+                        });
+
+                        // show message to user
+                        $('#product-list').html(
+                            '<div class="w-100 text-center text-danger p-4">Failed to load products. <button id="retryProducts" class="btn btn-sm btn-outline-primary ms-2">Retry</button></div>'
+                        );
+
+                        safeLoadProducts(url);
+                        // optional: show server error body in console if JSON
+                        try {
+                            const body = JSON.parse(xhr.responseText);
+                            console.error('Server JSON error body:', body);
+                        } catch (e) {
+                            // not JSON — maybe HTML error page
+                        }
+
+                        // Attach retry handler
+                        $(document).off('click', '#retryProducts').on('click', '#retryProducts',
+                            function() {
+                                loadProducts(url);
 
                             });
+                    }
+                });
+            }
 
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
+            // ================= safeLoadProducts with auto-retry ===================
+            function safeLoadProducts(url, options = {}) {
+                // options: retries (number), timeoutMs (number), backoffMs (number)
+                const retries = typeof options.retries === 'number' ? options.retries :
+                    2; // try total up to retries
+                const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 10000;
+                const backoffMs = typeof options.backoffMs === 'number' ? options.backoffMs : 350;
+
+                // internal recursive attempt
+                function attempt(tryNo) {
+                    // show loading UI on first try (you can customize)
+                    if (tryNo === 0) {
+                        $('#product-list').html('<div class="w-100 text-center p-4">Loading products...</div>');
+                    } else {
+                        // subtle loader when retrying
+                        $('#product-list').prepend(
+                            `<div id="product-retry-notice" class="w-100 text-center p-2 small text-muted">Retrying... (${tryNo}/${retries})</div>`
+                        );
                     }
 
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        timeout: timeoutMs,
+                        success: function(res) {
+                            // remove retry notice if present
+                            $('#product-retry-notice').remove();
 
+                            // defensive parsing of response
+                            let products = null;
+                            if (!res || typeof res !== 'object') {
+                                console.error('Invalid products response:', res);
+                                loadProductsFailureUI(url, tryNo, null, 'Invalid response format');
+                                return;
+                            }
+                            products = res.products && res.products.data ? res.products.data : (res
+                                .products || res.data || null);
+
+                            if (!Array.isArray(products)) {
+                                console.error('Products array missing in response:', res);
+                                loadProductsFailureUI(url, tryNo, null,
+                                    'Products not found in response');
+                                return;
+                            }
+
+                            // build html
+                            let productsHtml = '';
+                            products.forEach(function(product) {
+                                let a = "{{ image('') }}";
+                                let p = product.image || '';
+                                let image = a.replace(
+                                    'theme/frontend/assets/img/default/book.png', p ||
+                                    'theme/frontend/assets/img/default/book.png');
+
+                                productsHtml += `<div class="product-card  bg-white rounded-3 m-3 d-flex p-3 " data-product_id="${product.id}"
+                        style="height: 110px; width:20%; cursor: pointer;">
+                       <img class="img-fluid h-75 rounded col-lg-5  product-img" src="${image}" alt="img">
+                             <div class="px-3 flex-grow-1">
+                                 <p class="lh-sm text-sm fw-semibold">${stringShortner(product.name,15)}</p>
+                                 <h1 class="text-sm lh-1 fw-semibold px-1 mt-1">${product.price}</h1>
+                            </div>
+                    </div> `;
+                            });
+
+                            $('#product-list').html(productsHtml);
+
+                            // bind click handlers (same as before)
+                            $(document).off('click', '.product-card').on('click', '.product-card',
+                                function() {
+                                    let productId = $(this).data('product_id');
+                                    if (productExistsInCart(productId)) {
+                                        let cart = window.getCart() || [];
+                                        let newCart = cart.filter(item => !(item.parent_id ===
+                                            productId || item.id === productId));
+                                        window.setCart(newCart);
+                                        loadCartItems();
+                                        $(this).removeClass('active');
+                                    } else {
+                                        addToCart(productId);
+                                        $(this).addClass('active');
+                                    }
+                                });
+
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            // remove retry notice if present
+                            $('#product-retry-notice').remove();
+
+                            console.error('Products AJAX error:', {
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                responseText: xhr.responseText,
+                                textStatus: textStatus,
+                                errorThrown: errorThrown
+                            });
+
+                            // If server error (5xx) or timeout, retry a bit (transient)
+                            const isServerError = xhr.status >= 500 && xhr.status < 600;
+                            const isTimeout = textStatus === 'timeout';
+                            const shouldRetry = isServerError || isTimeout;
+
+                            if (shouldRetry && tryNo < retries) {
+                                // exponential-ish backoff
+                                const wait = backoffMs * (tryNo + 1);
+                                console.warn(
+                                    `Transient error detected. Retrying loadProducts in ${wait}ms (attempt ${tryNo+1}/${retries})`
+                                );
+                                setTimeout(function() {
+                                    attempt(tryNo + 1);
+                                }, wait);
+                                return;
+                            }
+
+                            // final failure -> show friendly UI with Retry button
+                            loadProductsFailureUI(url, tryNo, xhr, errorThrown);
+                        }
+                    });
+                } // attempt
+
+                // start attempts
+                attempt(0);
+            }
+
+            // helper: show error UI and attach click retry
+            function loadProductsFailureUI(url, tryNo, xhr, err) {
+                let message = 'Failed to load products.';
+                if (xhr && xhr.status) {
+                    message += ` (Server returned ${xhr.status})`;
+                } else if (err) {
+                    message += ` (${err})`;
+                }
+                const html = `
+                    <div class="w-100 text-center text-danger p-4">
+                        ${message}
+                        <div class="mt-2">
+                        <button id="retryProductsBtn" class="btn btn-sm btn-outline-primary">Retry</button>
+                        </div>
+                    </div>
+                    `;
+                $('#product-list').html(html);
+
+                // wire retry click
+                $(document).off('click', '#retryProductsBtn').on('click', '#retryProductsBtn', function() {
+                    safeLoadProducts(url, {
+                        retries: 2,
+                        timeoutMs: 10000,
+                        backoffMs: 400
+                    });
                 });
 
-            } //loadProducts function ends here
-
-
-            //check if product exists in cart with product id
+                // optional: also log server body if present
+                try {
+                    if (xhr && xhr.responseText) {
+                        console.error('Server response body:', xhr.responseText);
+                    }
+                } catch (e) {}
+            }
+            // check product exists in cart
             function productExistsInCart(productId) {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                let cart = window.getCart() || [];
                 let exists = false;
-                // console.log(cart);  
                 cart.forEach(element => {
-
                     if (element.parent_id == productId || element.id == productId) {
                         exists = true;
-                        console.log(element.id);
                     }
                 });
                 return exists;
             }
 
-            //calculation total individual items in cart 
+            // total items in cart
             function totalItemsInCart() {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                let cart = window.getCart() || [];
                 $('#total_items').text(cart.length);
             }
 
-            //add product with child items in cart
+            // addToCart (child products flow)
             function addToCart(productId) {
                 let url = "{{ route('product.childProductList', ':parentId') }}".replace(':parentId', productId);
-                let childProducts = [];
                 $.ajax({
                     url: url,
                     type: 'GET',
                     success: function(res) {
                         let products = res.products;
-                        let notEmpty;
-                        let cart = [];
-                        if (localStorage.getItem('cart')) {
-                            cart = JSON.parse(localStorage.getItem('cart'));
-                            notEmpty = JSON.parse(localStorage.getItem('cart'));
-                        }
-                        childProducts = products.map(function(product) {
+                        let cart = window.getCart() || [];
+                        let newItems = products.map(function(product) {
                             product['quantity'] = 1;
                             return product;
                         });
-                        localStorage.setItem('cart', JSON.stringify(cart.concat(
-                            childProducts)));
-                        childProducts.map(function(product) {
+
+                        // concat and set
+                        window.setCart(cart.concat(newItems));
+                        // append rows dynamically
+                        newItems.forEach(function(product) {
                             let cartItemsHtml = `
                        <tr>
                                     <td class="d-flex align-items-center justify-content-start gap-2 text-secondary ">
@@ -900,214 +1492,751 @@
                                     <td class=''>
                                         ${product.price}
                                     </td>
+                                    <td class=''>
+                                        ${product.mrp}
+                                    </td>
                                     <td class='product-price'>
-                                        ${product.price*product.quantity}
+                                        ${(product.price * product.quantity).toFixed(2)}
                                     </td>
 
                                 </tr>`;
                             $('#cart_items').append(cartItemsHtml);
-                        })
-                        if (!notEmpty) {
+                        });
 
-                            loadCartItems();
-                        }
                         calculateSubtotal();
                         totalItemsInCart();
-
                     },
                     error: function(xhr) {
                         console.error(xhr.responseText);
                     }
                 });
-            } //addtToCart function ends here 
+            } // addToCart
 
 
 
-            //delete product from cart with product id
-            function deleteFromCart(productId) {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                let updatedCart = cart.filter(function(item) {
-
-                    return item.id !== productId;
-                });
-                localStorage.setItem('cart', JSON.stringify(updatedCart));
-                calculateSubtotal();
-
-            }
-
-            //empty product card from localstorage 
-            function emptyCart() {
-                localStorage.removeItem('cart');
-                localStorage.setItem('discountPos', JSON.stringify({
-                    'type': 'flat',
-                    'value': 0.00
-                }));
-                localStorage.setItem('shippingChargePos', 0);
-                // alert('cart emptied successfully!');
-                loadCartItems();
-                $('.product-card').removeClass('active');
-            }
-
-            function updateQuantityInCart(productId, newQuantity) {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                cart.forEach(function(item) {
-                    if (item.id === productId) {
-                        item.quantity = newQuantity;
-                    }
-                });
-                localStorage.setItem('cart', JSON.stringify(cart));
-                // loadCartItems();
-            }
-
-
-
-
-            function calculateSubtotal() {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                let discount = JSON.parse(localStorage.getItem('discountPos')) || 0;
-                let shipping = parseFloat(localStorage.getItem('shippingChargePos')) || 0;
-                let subtotal = 0;
-                let total = 0;
-
-                cart.forEach(function(item) {
-                    subtotal += (item.price * item.quantity);
-                });
-                if (discount.type === 'percentage') {
-
-                    let d = (subtotal * discount.value / 100);
-                    $('#discount').val(`${d.toFixed(2)}`);
-                    total = subtotal + shipping - d;
-                } else {
-                    total = subtotal + shipping - discount.value;
-                    $('#discount').val(`${discount.value.toFixed(2)}`);
-                }
-                $('#shipping').val(`${shipping.toFixed(2)}`);
-                $('#subtotal').text(subtotal.toFixed(2));
-                $('#total_amount').text(total.toFixed(2));
-
-                return total;
-
-
-
-            }
-
-            //discount calculation
+            // discount save (tab-specific)
             $('#discount-save').on('click', function() {
                 let discountType = $('#discount-type').val();
                 let discountAmount = parseFloat($('#discount-input').val()) || 0;
-
-                localStorage.setItem('discountPos', JSON.stringify({
+                sessionStorage.setItem(window.getDiscountKey(), JSON.stringify({
                     'type': discountType,
                     'value': discountAmount
                 }));
-
-
                 calculateSubtotal();
-
+                $('#discountModal').modal('hide');
             });
+
+            // shipping save (tab-specific)
             $('#shipping-save').on('click', function() {
                 let shippingCharge = parseFloat($('#shipping-input').val()) || 0;
                 $('#shipping').val(shippingCharge);
-                localStorage.setItem('shippingChargePos', shippingCharge);
-
+                sessionStorage.setItem(window.getShippingKey(), shippingCharge);
                 calculateSubtotal();
-
+                $('#shippingModal').modal('hide');
             });
 
-            //checkout form functionality
-             $(document).on('click','.payment-modal-btn',function(){
-                let payment = $(this).data('payment_method')??'cash';
-                $('#payment_method').val(payment);
-                let total = parseFloat(calculateSubtotal()) ;
+            // checkout modal open setup
+            // ensure subtotal recalculated instantly and modal receives correct value
+            $(document).on('click', '.payment-modal-btn', function() {
+                // recalc just before opening
+                const total = parseFloat(calculateSubtotal()) || 0;
                 $('#checkout_total_amount').val(total.toFixed(2));
-                 $('#change_amount').val(0);
+                // reset paid and change
+                $('#paid_amount').val('');
+                $('#change_amount').val('0.00');
+                // set payment_method from button data if present
+                const payment = $(this).data('payment_method') ?? 'cash';
+                $('#payment_method').val(payment);
+                // optionally store current cart snapshot id for trace
+                $('#paymentModal').data('pos_tab_id', window.getPosTabId());
+            });
 
-            })
-            $(document).on('input','#paid_amount', function(){
-                let paid =parseFloat($(this).val()) ;
-                let total =parseFloat($('#checkout_total_amount').val()) ;
-                $('#change_amount').val((total-paid).toFixed(2));
-            })
+            // paid amount change -> calculate change
+            $(document).on('input', '#paid_amount', function() {
+                let paid = parseFloat($(this).val()) || 0;
+                let total = parseFloat($('#checkout_total_amount').val()) || 0;
+                let change = (paid - total);
+                // if you want show positive change as customer change, else negative remains due
+                $('#change_amount').val(change.toFixed(2));
+            });
 
+            // customer create (unchanged)
+            $('#customer_form').on('submit', function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: '{{ route('customer.store') }}',
+                    type: 'POST',
+                    data: formData,
+                    success: function(res) {
+                        $('#customer').append(new Option(res.name, res.id, true, true)).trigger(
+                            'change');
+                        $('#customerModal').modal('hide');
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+            });
 
+            // listen cross-tab if you want (optional): we won't sync cart across tabs, but you may listen to other custom events
+            window.addEventListener('storage', function(e) {
+                // if someone else cleared or updated the same tab-key (unlikely), reload UI
+                if (e.key && e.key.startsWith('cart_')) {
+                    // only refresh if the key belongs to this tab to avoid cross-tab pollution
+                    if (e.key === ('cart_' + window.getPosTabId())) {
+                        loadCartItems();
+                    }
+                }
+            });
 
+        }); // document.ready
 
-
-        }); //document.ready function ends here
-
-        // Highlight active category button
+        // small helpers outside ready
         $(document).on('click', '.nav-btn', function(e) {
             $('.nav-btn').removeClass('active');
             $(this).addClass('active');
         });
         $(document).on('click', '.product-card', function(e) {
-            if ($(this).hasClass('active')) {
+            $(this).toggleClass('active');
+        });
 
-                $(this).removeClass('active');
-            } else {
-                $(this).addClass('active');
+        window.S2 && window.S2.auto && window.S2.auto();
+
+
+
+
+        // ================= POS SALE SUBMISSION ===================
+        window.AUTH_BRANCH_ID = {{ auth()->user()->branch_id ?? 1 }};
+        window.AUTH_WAREHOUSE_ID = {{ auth()->user()->warehouse_id ?? 1 }};
+
+
+        $(document).on('click', '#pos-submit-sale', function() {
+
+            // -----------------------------
+            // 1️⃣ Build ITEMS from cart
+            // -----------------------------
+            let cart = window.getCart() || [];
+
+            if (cart.length === 0) {
+                // alert('Cart is empty');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Cart',
+                    text: 'Cannot proceed with an empty cart.'
+                });
+                return;
             }
 
-        });
+            let items = cart.map(item => {
+                return {
+                    product_id: item.product_id ?? item.id,
+                    product_variant_id: item.product_variant_id ?? null,
+                    unit_id: item.unit_id ?? null,
+                    quantity: parseFloat(item.quantity),
+                    unit_price: parseFloat(item.price),
+                    discount_amount: 0,
+                    tax_amount: 0
+                };
+            });
 
+            // -----------------------------
+            // 2️⃣ Build PAYMENTS
+            // -----------------------------
+            let total = parseFloat($('#checkout_total_amount').val());
+            let paid = parseFloat($('#paid_amount').val()) || 0;
 
-        //customer select2
-        window.S2.auto();
+            if (paid <= 0) {
+                alert('Paid amount required');
+                return;
+            }
 
-        function stringShortner(name, length) {
-            if (name.length > length)
-                return name.slice(0, length) + '...';
-            else return name;
-        }
+            let payments = [{
+                payment_type_id: $('#payment_method').val() ? null : null, // optional
+                payment_type: $('#payment_method').val(), // cash / bkash / card
+                amount: paid,
+                reference: '',
+                received_by: $('#recipient-name').val() || 'POS',
+                note: ''
+            }];
 
-        function loadSupplier() {
-            let a = ' {{ route('supplier.recent') }}';
-            let recent_supplier;
+            // -----------------------------
+            // 3️⃣ Totals
+            // -----------------------------
+            let payload = {
+                branch_id: window.AUTH_BRANCH_ID, // inject from blade
+                warehouse_id: window.AUTH_WAREHOUSE_ID, // inject from blade
+                resume_sale_id: window.CURRENT_RESUME_SALE_ID ?? null,
+                customer_id: $('#customer').val() || null,
+
+                sale_type: 'retail',
+                status: $('#sale_status').val(),
+
+                subtotal: parseFloat($('#subtotal').text()),
+                discount: parseFloat($('#discount').val()) || 0,
+                tax_amount: 0,
+                shipping_charge: parseFloat($('#shipping').val()) || 0,
+                total: total,
+
+                sale_note: 'POS sale',
+
+                items: items,
+                payments: payments
+            };
+
+            // -----------------------------
+            // 4️⃣ Submit AJAX
+            // -----------------------------
             $.ajax({
-                url: a,
-                type: 'GET',
-                success: function(res) {
-                    recent_supplier = res.supplier;
-                    console.log(recent_supplier);
-                    $('#supplier')
-                        .append(new Option(res.supplier.name, res.supplier.id, true, true))
-                        .trigger('change');
+                url: "{{ route('pos.sales.store') }}",
+                type: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'X-POS-SESSION': window.getPosTabId()
                 },
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                success: function(res) {
 
+                    // alert('Sale completed. Invoice: ' + res.invoice);
+                    Swal.fire({
+                        title: 'Sale Completed',
+                        html: `Invoice: <strong>${res.invoice}</strong>`,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Print Invoice',
+                        cancelButtonText: 'Close'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            let invoiceUrl = "{{ route('pos.sales.invoice', ':id') }}".replace(
+                                ':id', res.id);
+                            window.open(invoiceUrl, '_blank');
+                        }
+                    });
+
+                    // -----------------------------
+                    // 5️⃣ Reset POS
+                    // -----------------------------
+                    window.clearCartForTab();
+                    $('#paid_amount').val('');
+                    $('#checkout_total_amount').val('');
+                    $('#change_amount').val('0.00');
+
+                    $('#paymentModal').modal('hide');
+
+                    // reload UI
+                    loadCartItems();
+                    emptyCart();
+                },
                 error: function(xhr) {
-                    console.error(xhr.responseText);
-                }
-            })
 
-        }
+                    let msg = 'Something went wrong';
 
-        $('#exampleModalCenter').on('shown.bs.modal', function() {
-            $('#myInput').trigger('focus');
-        });
-        $('#exampleModalCenter1').on('shown.bs.modal', function() {
-            $('#myInput').trigger('focus');
-        });
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
 
-        $('#customer_form').on('submit', function(e) {
-            e.preventDefault(); // stop normal form submit
-
-            let formData = $(this).serialize(); // collects all fields
-
-            $.ajax({
-                url: '{{ route('customer.store') }}',
-                type: 'POST',
-                data: formData,
-                success: function(res) {
-                    $('#customer')
-                        .append(new Option(res.name, res.id, true, true))
-                        .trigger('change');
-                    
-                },
-                error: function(err) {
-                    console.log(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: msg,
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
         });
-       
+
+        // ================= POS HOLD SALE ===================
+
+        $(document).on('click', '#hold-sale', function() {
+
+            let cart = window.getCart() || [];
+            if (cart.length === 0) {
+                Swal.fire('Empty Cart', 'Nothing to hold', 'info');
+                return;
+            }
+
+            let payload = {
+                branch_id: window.AUTH_BRANCH_ID,
+                warehouse_id: window.AUTH_WAREHOUSE_ID,
+                customer_id: $('#customer').val() || null,
+                subtotal: $('#subtotal').text(),
+                discount: $('#discount').val() || 0,
+                tax_amount: 0,
+                shipping_charge: $('#shipping').val() || 0,
+                total: $('#total_amount').text(),
+                items: cart.map(item => ({
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    unit_price: item.price
+                }))
+            };
+
+            $.ajax({
+                url: "{{ route('pos.sales.hold') }}",
+                type: "POST",
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function() {
+
+                    Swal.fire('On Hold', 'Sale has been put on hold', 'success');
+
+                    // reset POS
+                    window.clearCartForTab();
+                    loadCartItems();
+                    emptyCart();
+                    $('#customer').val('1').trigger('change');
+                },
+                error: function(xhr) {
+                    Swal.fire('Error', xhr.responseJSON?.message || 'Failed', 'error');
+                }
+            });
+        });
+
+        $(document).on('click', '#view-hold-sales', function() {
+
+            $('#holdSalesModal').modal('show');
+
+            $.get("{{ route('pos.sales.hold.list') }}", function(res) {
+
+                let html = '';
+
+                if (res.data.length === 0) {
+                    html = `<tr><td colspan="4" class="text-center text-muted">No hold orders</td></tr>`;
+                }
+
+                res.data.forEach(row => {
+                    html += `
+                <tr>
+                    <td class="text-center fw-semibold">${row.invoice_no}</td>
+                    <td>${row.customer ?? 'Walk-in'}</td>
+                    <td>${row.quantity}</td>
+                    <td>${row.unit_price}</td>
+                    <td class="text-center fw-semibold">${row.total}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-success  mt-4 resume-sale"
+                            data-id="${row.id}" title="Resume Sale"><iconify-icon icon="mdi:play-circle"
+                                class="menu-icon fs-5"></iconify-icon>
+                            
+                        </button>
+                    </td>
+                </tr>
+            `;
+                });
+
+                $('#hold-sales-body').html(html);
+            });
+        });
+
+        $(document).on('click', '.resume-sale', function() {
+
+            let saleId = $(this).data('id');
+            window.CURRENT_RESUME_SALE_ID = saleId;
+
+            $.get("{{ route('pos.sales.resume', ':id') }}".replace(':id', saleId), function(res) {
+
+                let sale = res.sale;
+
+                // clear current cart first
+                window.clearCartForTab();
+
+                // rebuild cart
+                let items = sale.items.map(i => ({
+                    id: i.product_id,
+                    product_id: i.product_id,
+                    name: i.product?.name ?? 'Unknown Product',
+                    price: parseFloat(i.unit_price),
+                    mrp: parseFloat(i.product?.mrp ?? i.unit_price),
+                    quantity: parseFloat(i.quantity)
+                }));
+
+                window.setCart(items);
+                loadCartItems();
+
+                // restore customer
+                if (sale.customer) {
+                    let newOption = new Option(sale.customer.name, sale.customer.id, true, true);
+                    $('#customer').append(newOption).trigger('change');
+                }
+                // restore discount
+                sessionStorage.setItem(
+                    window.getDiscountKey(),
+                    JSON.stringify({
+                        type: 'flat', // or percentage if you store it
+                        value: parseFloat(sale.discount || 0)
+                    })
+                );
+
+                // restore shipping
+                sessionStorage.setItem(
+                    window.getShippingKey(),
+                    parseFloat(sale.shipping_charge || 0)
+                );
+
+                // recalc totals
+                calculateSubtotal();
+
+                $('#holdSalesModal').modal('hide');
+                $('#todayOrdersModal').modal('hide');
+
+                Swal.fire('Resumed', 'Sale loaded successfully', 'success');
+
+            });
+
+        });
+
+        // ================= VIEW TODAY'S ORDERS ===================
+        $(document).on('click', '#btn-view-orders', function() {
+
+            $('#todayOrdersModal').modal('show');
+
+            $('#todayOrdersBody').html(`
+                    <tr>
+                        <td colspan="6" class="text-center p-3">Loading...</td>
+                    </tr>
+                `);
+
+            $.get("{{ route('pos.sales.today') }}", function(res) {
+
+                if (!res.success || res.sales.length === 0) {
+                    $('#todayOrdersBody').html(`
+                            <tr>
+                                <td colspan="6" class="text-center p-3">No orders today 💤</td>
+                            </tr>
+                        `);
+                    return;
+                }
+
+                let rows = '';
+
+                res.sales.forEach(sale => {
+
+                    let actions = '';
+
+                    actions += `
+                            <button class="btn btn-sm btn-outline-info view-sale"
+                                data-id="${sale.id}"
+                                title="View Details">
+                                <iconify-icon icon="mdi:eye-outline"></iconify-icon>
+                            </button>
+                        `;
+
+                    if (sale.status === 'hold') {
+                        actions += `
+                            <button class="btn btn-sm btn-outline-primary resume-sale"
+                                data-id="${sale.id}"
+                                title="Resume Sale">
+                                <iconify-icon icon="mdi:play-circle-outline"></iconify-icon>
+                            </button>
+                        `;
+                    }
+
+                    if (sale.status === 'delivered') {
+                        actions += `
+                            <button class="btn btn-sm btn-outline-danger void-sale"
+                                data-id="${sale.id}"
+                                title="Void Sale">
+                                <iconify-icon icon="mdi:close-circle-outline"></iconify-icon>
+                            </button>
+                        `;
+                    }
+
+                    actions += `
+                            <a class="btn btn-sm btn-outline-secondary"
+                            target="_blank"
+                            title="Print Invoice"
+                            href="{{ route('pos.sales.invoice', ':id') }}">
+                            <iconify-icon icon="mdi:printer-outline"></iconify-icon>
+                            </a>
+                        `.replace(':id', sale.id);
+
+                    let statusBadge = '';
+
+                    if (sale.status === 'hold') {
+                        statusBadge = `<span class="badge bg-warning text-dark">HOLD</span>`;
+                    } else if (sale.status === 'delivered') {
+                        statusBadge = `<span class="badge bg-success">PAID</span>`;
+                    }
+
+                    rows += `
+                        <tr class="align-middle text-sm">
+                            <td class="fw-semibold">${sale.invoice}</td>
+                            <td>${sale.customer}</td>
+                            <td class="text-center">${sale.time}</td>
+                            <td class="text-center fw-semibold">${parseFloat(sale.total).toFixed(2)}</td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-end  gap-1">
+                                ${actions}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                $('#todayOrdersBody').html(rows);
+            });
+        });
+
+        // ================= VOID A SALE ===================
+        $(document).on('click', '.void-sale', function() {
+
+            let saleId = $(this).data('id');
+
+            Swal.fire({
+                title: 'Void this sale?',
+                text: 'Stock will be reverted. This cannot be undone!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Void it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: "{{ route('pos.sales.void', ':id') }}".replace(':id', saleId),
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(res) {
+                        Swal.fire('Voided!', res.message, 'success');
+                        loadTodayOrders(); // reload modal list
+                    },
+                    error: function(xhr) {
+                        Swal.fire(
+                            'Error',
+                            xhr.responseJSON?.message || 'Unable to void sale',
+                            'error'
+                        );
+                    }
+                });
+            });
+        });
+
+        // ================= POS RESET ===================
+
+        $(document).on('click', '#pos-reset-btn', function() {
+
+            Swal.fire({
+                title: 'Start New Order?',
+                text: 'Current cart, customer and discounts will be cleared.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Start New',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                // -----------------------------
+                // 1️⃣ Clear cart (tab-specific)
+                // -----------------------------
+                window.clearCartForTab();
+
+                // -----------------------------
+                // 2️⃣ Clear customer (Walk-in)
+                // -----------------------------
+                $('#customer').val(null).trigger('change');
+
+
+                // -----------------------------
+                // 3️⃣ Clear discount & shipping
+                // -----------------------------
+                sessionStorage.removeItem(window.getDiscountKey());
+                sessionStorage.removeItem(window.getShippingKey());
+
+                $('#discount').val('0.00');
+                $('#shipping').val('0.00');
+                $('#discount-input').val('');
+                $('#shipping-input').val('');
+
+                // -----------------------------
+                // 4️⃣ Reset totals UI
+                // -----------------------------
+                $('#subtotal').text('0.00');
+                $('#total_amount').text('0.00');
+                $('#total_items').text('0');
+
+                // -----------------------------
+                // 5️⃣ Reset payment modal fields
+                // -----------------------------
+                $('#paid_amount').val('');
+                $('#checkout_total_amount').val('');
+                $('#change_amount').val('0.00');
+
+                // -----------------------------
+                // 6️⃣ Reset product active state
+                // -----------------------------
+                $('.product-card').removeClass('active');
+
+                // -----------------------------
+                // 7️⃣ Reload cart UI (safe)
+                // -----------------------------
+                if (typeof loadCartItems === 'function') {
+                    loadCartItems();
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Ready',
+                    text: 'New order started',
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+            });
+        });
+
+        // ================= VIEW SALE DETAILS ===================
+        $(document).on('click', '.view-sale', function() {
+
+            let saleId = $(this).data('id');
+
+            $('#orderDetailsModal').modal('show');
+            $('#orderDetailsBody').html('<div class="text-center p-4 ">Loading...</div>');
+
+            $.get("{{ route('pos.sales.show', ':id') }}".replace(':id', saleId), function(res) {
+
+                if (!res.success) {
+                    $('#orderDetailsBody').html('<div class="text-danger">Failed to load order</div>');
+                    return;
+                }
+
+                let s = res.sale;
+
+                // -----------------------------
+                // Items
+                // -----------------------------
+                let itemsHtml = '';
+                s.items.forEach((i, idx) => {
+                    itemsHtml += `
+            <tr>
+                <td>${idx + 1}. ${i.name}</td>
+                <td class="text-center">${i.qty}</td>
+                <td class="text-end">${parseFloat(i.price).toFixed(2)}</td>
+                <td class="text-end">${parseFloat(i.total).toFixed(2)}</td>
+            </tr>
+        `;
+                });
+
+                // -----------------------------
+                // Payments
+                // -----------------------------
+                let paymentsHtml = '';
+                s.payments.forEach(p => {
+                    paymentsHtml += `
+            <div>${p.method.toUpperCase()} : ${parseFloat(p.amount).toFixed(2)}</div>
+        `;
+                });
+
+                // -----------------------------
+                // Full Render
+                // -----------------------------
+                $('#orderDetailsBody').html(`
+                <div class="p-3 text-dark">
+
+                    <!-- Order Meta -->
+                    <div class="mb-3">
+                        
+                        <div><strong>Invoice:</strong> ${s.invoice}</div>
+                        <div><strong>Customer:</strong> ${s.customer}</div>
+                        <div><strong>Status:</strong> ${s.status.toUpperCase()}</div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="mt-3 text-end">
+                        <div>Subtotal:  ${parseFloat(s.subtotal).toFixed(2)}</div>
+                        <div>Discount: ${parseFloat(s.discount).toFixed(2)}</div>
+                        <div>Shipping:  ${parseFloat(s.shipping).toFixed(2)}</div>
+                        <div class="fw-bold fs-6">Total:  ${parseFloat(s.total).toFixed(2)}</div>
+
+                        <div class="mt-2 fw-semibold">
+                            Paid:  ${parseFloat(s.paid).toFixed(2)}
+                        </div>
+
+                        <div class="mt-1 text-muted">
+                            ${paymentsHtml}
+                        </div>
+                    </div>
+
+            </div>
+        `);
+
+            });
+        });
+
+        // ================= VIEW TODAY'S TRANSACTIONS ===================
+  $(document).on('click', '.btn-transactions', function () {
+
+    $('#transactionsModal').modal('show');
+
+    $('#transactionsBody').html(`
+        <tr>
+            <td colspan="4" class="text-center p-3">Loading...</td>
+        </tr>
+    `);
+
+    $.get("{{ route('pos.transactions.today') }}", function (res) {
+
+        if (!res.success || res.transactions.length === 0) {
+            $('#transactionsBody').html(`
+                <tr>
+                    <td colspan="4" class="text-center p-3">No transactions today</td>
+                </tr>
+            `);
+            return;
+        }
+
+        let rows = '';
+        let cash = 0, card = 0, bkash = 0, grand = 0;
+
+        res.transactions.forEach(t => {
+
+            let amt = parseFloat(t.amount);
+            grand += amt;
+
+            if (t.method === 'cash') cash += amt;
+            if (t.method === 'card') card += amt;
+            if (t.method === 'bkash') bkash += amt;
+
+            rows += `
+                <tr class="text-sm">
+                    <td>${t.time}</td>
+                    <td>${t.invoice}</td>
+                    <td class="text-capitalize">${t.method}</td>
+                    <td class="text-end fw-semibold"> ${amt.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        $('#transactionsBody').html(rows);
+
+        $('#cashTotal').text(cash.toFixed(2));
+        $('#cardTotal').text(card.toFixed(2));
+        $('#bkashTotal').text(bkash.toFixed(2));
+        $('#grandTotal').text(grand.toFixed(2));
+    });
+});
+
     </script>
 @endsection

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockLedger extends Model
 {
     protected $table   = 'stock_ledgers';
-    public $timestamps = false; // we use created_at/updated_at manual fields
+    // public $timestamps = true; // we use created_at/updated_at manual fields
 
     protected $fillable = [
         'txn_date',

@@ -16156,20 +16156,32 @@ div.dt-container .dt-paging .dt-paging-button.current {
   width: auto;
 }
 
+
+/* ===Data table top head css end === */
+
+/* select2 custom css start */
+
 /* Ensure container stretches */
 .select2-container {
   width: 100% !important;
+ 
 }
-
+.select2-container .select2-selection {
+  height: 44px !important;
+}
+.selection{
+  width: 100% !important;
+ 
+}
 /* ===== Single (Module) ===== */
 .select2-container .select2-selection--single {
-  height: 44px; /* তোমার .form-control এর height মতো রাখো */
   border: 1px solid var(--bs-border-color, #dee2e6);
   border-radius: 8px; /* radius-8 match */
   padding: 0.375rem 0.75rem; /* form-control padding */
   display: flex;
   align-items: center;
   background-color: var(--bs-body-bg, #fff);
+  height: 44px !important;
 }
 .select2-container .select2-selection--single .select2-selection__rendered {
   line-height: 1.5;
@@ -16196,71 +16208,27 @@ div.dt-container .dt-paging .dt-paging-button.current {
   background-color: #fff;
   border: 1px solid #aaa;
   border-radius: 4px;
-  width: 372px !important;
   height: 44px !important;
-}
+} 
 
 .select2-container--default.select2-container .select2-selection--multiple {
   border: solid black 1px;
   outline: 0;
   padding: 2px;
-  width: 350px !important;
   height: 44px !important;
 }
 .select2-container--default.select2-container--focus
   .select2-selection--multiple {
   border: solid black 1px;
   outline: 0;
-  width: 350px !important;
   height: 44px !important;
 }
 
-/* শুধুমাত্র .product-select এর select2 dropdown এর জন্য */
-.product-select + .select2-container--default .select2-selection--multiple {
-  border: 1px solid black;
-  outline: 0;
-  padding: 2px;
-  width: 1000px !important;
-  height: 50px !important;
-  padding-bottom: 20px !important;
-}
-.product-select + .select2-container--default .select2-selection--multiple {
-  border: 1px solid black;
-  outline: 0;
-  padding: 2px;
-  width: 1000px !important;
-  height: 50px !important;
-  padding-bottom: 20px !important;
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: #ad58fbed !important;
+    color: white;
 }
 
-.product-select
-  + .select2-container--default.select2-container--focus
-  .select2-selection--multiple {
-  border: 1px solid black;
-  outline: 0;
-  width: 1000px !important;
-  height: 50px !important;
-  padding: 5px !important;
-}
-.product-select
-  + .select2-container--default
-  .select2-search--inline
-  .select2-search__field {
-  background: transparent;
-  border: none;
-  outline: 0;
-  box-shadow: none;
-  padding-bottom: 20px !important;
-}
-/* শুধুমাত্র .cart-select এর select2 dropdown এর জন্য */
-
-.purchase-ware-select +.select2-container--default .select2-selection--single {
-  background-color: #fff;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-  width: 288px !important;
-  height: 44px !important;
-}
 
 
 .footer-pos {

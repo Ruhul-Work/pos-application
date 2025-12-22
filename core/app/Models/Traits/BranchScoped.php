@@ -37,7 +37,7 @@ trait BranchScoped
         });
     }
 
-    // Helper scopes (তোমারটা রেখেই)
+    // Helper scopes 
     public function scopeAllBranches(Builder $q): Builder
     {
         return $q->withoutGlobalScope('branch');
