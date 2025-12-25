@@ -218,9 +218,9 @@
             @endpermgroup
             {{-- Location managemnt module start --}}
 
-            @permgroup(['country.countries', 'division.divisions', 'district.districts', 'upazila.upazilas'])
+            @permgroup(['country', 'division', 'district', 'upazila'])
                 <li class="sidebar-menu-group-title">Location Management</li>
-                @permgroup(['country.countries', 'division.divisions', 'district.districts', 'upazila.upazilas'])
+                @permgroup(['country', 'division', 'district', 'upazila'])
                     <li class=" dropdown ">
                         <a href="javascript:void(0)">
                             <i class="ri-map-pin-line"></i>
@@ -326,14 +326,14 @@
                 @endpermgroup
 
                 @permgroup([
-                    'product.products',
-                    'category-type.category-types',
-                    'category.categories',
-                    'subcategory.subcategories',
-                    'brand.brands',
-                    'color.colors',
+                    'product',
+                    'category-type',
+                    'category',
+                    'subcategory',
+                    'brand',
+                    'color',
                     'units',
-                    'product-type.product-types',
+                    'product-type',
                     'paper_quality',
                     'sizes'
                 ])
@@ -354,14 +354,14 @@
                                 </li>
                             @endperm
 
-                            @permgroup(['category-type.category-types', 'category.categories', 'subcategory.subcategories'])
+                            @permgroup(['category-type', 'category', 'subcategory'])
                                 <li class="dropdown">
                                     <a href="javascript:void(0)">
                                         <iconify-icon icon="mdi:package-variant-closed" class="menu-icon"></iconify-icon>
                                         <span>Categories</span>
                                     </a>
                                     <ul class="sidebar-submenu">
-                                        @perm('category-type.category-types')
+                                        @perm('category-type')
                                             <li class="mb-8">
                                                 <a class="{{ Route::is('category-type.category-types.index') ? 'active' : '' }}"
                                                     href="{{ route('category-type.category-types.index') }}">
@@ -371,7 +371,7 @@
                                                 </a>
                                             </li>
                                         @endperm
-                                        @perm('category.categories')
+                                        @perm('category')
                                             <li class="mb-8">
                                                 <a class="{{ Route::is('category.categories.index') ? 'active' : '' }}"
                                                     href="{{ route('category.categories.index') }}">
@@ -446,7 +446,7 @@
                         </li>
                     @endperm
 
-                    @perm('product-type.product-types')
+                    @perm('product-type.product-types.index')
                         <li class="{{ Route::is('product-type.product-types.index') ? 'active' : '' }}">
                             <a href="{{ route('product-type.product-types.index') }}">
                                 <i class="ri-function-line text-xl me-14 d-flex w-auto"></i>

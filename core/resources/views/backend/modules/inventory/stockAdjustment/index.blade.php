@@ -28,10 +28,10 @@
                 <ul class="table-top-head list-unstyled d-flex align-items-center gap-2 mb-0">
                     @include('backend.include.buttons')
                 </ul>
-                <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
-                    <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a
-                        href="{{ route('inventory.adjustments.create') }}">New Adjustment</a>
-                </button>
+                <a href="{{ route('inventory.adjustments.create') }}"
+                    class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
+                    <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>New Adjustment
+                </a>
             </div>
         </div>
 
@@ -234,6 +234,5 @@
                     });
             });
         });
-       
     </script>
 @endsection
