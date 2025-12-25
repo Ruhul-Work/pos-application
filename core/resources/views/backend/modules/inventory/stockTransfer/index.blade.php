@@ -34,10 +34,10 @@
         data-onsuccess="TransfersIndex.onSaved">
         <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon> New Transfer
       </button> --}}
-                <button class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
-                    <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon><a
-                        href="{{ route('inventory.transfers.create') }}">New Transfer</a>
-                </button>
+                <a href="{{ route('inventory.transfers.create') }}"
+                    class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8" data-size="lg">
+                    <iconify-icon icon="ic:baseline-plus" class="text-xl"></iconify-icon>New Transfer
+                </a>
             </div>
         </div>
 

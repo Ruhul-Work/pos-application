@@ -53,7 +53,7 @@
                                 <div class="row">
 
 
-                                    <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="col-lg-5 col-sm-6 col-12">
                                         <div class="mb-3 add-product">
                                             <label class="form-label">Name <span class="star-sign">*</span></label>
                                             <input type="text" class="form-control" id="name" name="name"
@@ -68,10 +68,16 @@
                                             <input type="text" class="form-control" id="slug" name="slug">
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="col-lg-3 col-sm-6 col-12">
                                         <div class="mb-3 add-product">
                                             <label class="form-label">Email<span class="star-sign">*</span></label>
                                             <input type="email" class="form-control" id="email" name="email">
+                                        </div>
+                                    </div>
+                                     <div class="col-lg-5 col-sm-6 col-12">
+                                        <div class="mb-3 add-product">
+                                            <label class="form-label">Address<span class="star-sign">*</span></label>
+                                            <textarea type="text" class="form-control" rows="3" id="address" name="address"></textarea>
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-6 col-12">
@@ -89,12 +95,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-5 col-sm-6 col-12">
-                                        <div class="mb-3 add-product">
-                                            <label class="form-label">Address<span class="star-sign">*</span></label>
-                                            <textarea type="text" class="form-control" rows="5" id="address" name="address"></textarea>
-                                        </div>
-                                    </div>
+                                   
 
 
 

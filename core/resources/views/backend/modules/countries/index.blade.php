@@ -34,7 +34,7 @@
           @include('backend.include.buttons')
         </ul>
 
-        @perm('org.branches.store')
+        @perm('country.countries.store')
             <button 
                 class="d-flex btn btn-primary btn-sm px-12 py-8 radius-8 AjaxModal"
                 data-ajax-modal="{{ route('country.countries.createModal') }}"  
