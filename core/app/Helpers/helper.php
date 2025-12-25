@@ -1,21 +1,20 @@
 <?php
 
-use App\Models\Option;
-use App\Models\Role;
-use App\Models\Permission;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Product;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Coupon;
+use App\Models\Option;
+use App\Models\Permission;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
-if (!function_exists('get_option')) {
+if (! function_exists('get_option')) {
 
     function get_option($name)
     {
-        if (!empty($name)) {
+        if (! empty($name)) {
             $option = Option::where("name", "=", $name)->first();
             if ($option) {
                 return $option->value;
@@ -28,7 +27,7 @@ if (!function_exists('get_option')) {
     }
 }
 
-if (!function_exists('get_client_ip')) {
+if (! function_exists('get_client_ip')) {
 
     /**
      * get_client_ip
@@ -38,31 +37,31 @@ if (!function_exists('get_client_ip')) {
     function get_client_ip()
     {
         $ipaddress = '';
-        if (getenv('HTTP_CLIENT_IP'))
+        if (getenv('HTTP_CLIENT_IP')) {
             $ipaddress = getenv('HTTP_CLIENT_IP');
-        else if (getenv('HTTP_X_FORWARDED_FOR'))
+        } else if (getenv('HTTP_X_FORWARDED_FOR')) {
             $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
-        else if (getenv('HTTP_X_FORWARDED'))
+        } else if (getenv('HTTP_X_FORWARDED')) {
             $ipaddress = getenv('HTTP_X_FORWARDED');
-        else if (getenv('HTTP_FORWARDED_FOR'))
+        } else if (getenv('HTTP_FORWARDED_FOR')) {
             $ipaddress = getenv('HTTP_FORWARDED_FOR');
-        else if (getenv('HTTP_FORWARDED'))
+        } else if (getenv('HTTP_FORWARDED')) {
             $ipaddress = getenv('HTTP_FORWARDED');
-        else if (getenv('REMOTE_ADDR'))
+        } else if (getenv('REMOTE_ADDR')) {
             $ipaddress = getenv('REMOTE_ADDR');
-        else
+        } else {
             $ipaddress = 'UNKNOWN';
+        }
 
         return $ipaddress;
     }
 }
 
-
-if (!function_exists('image')) {
+if (! function_exists('image')) {
     function image($src, $cdn = false)
     {
 
-        if (!File::exists(($src))) {
+        if (! File::exists(($src))) {
 
             // return asset('theme/common/no_image.jpg');
             return asset('theme/frontend/assets/img/default/book.png');
@@ -73,8 +72,7 @@ if (!function_exists('image')) {
     }
 }
 
-
-if (!function_exists('is_active')) {
+if (! function_exists('is_active')) {
 
     function is_active($mainString, $prefix)
     {
@@ -89,15 +87,15 @@ if (!function_exists('is_active')) {
     }
 }
 
-if (!function_exists('can_view')) {
+if (! function_exists('can_view')) {
     function can_view($url)
     {
 
-        $site_url = get_option('site_url')."/";
-        $url = str_replace("www.", "", $url);
+        $site_url = get_option('site_url') . "/";
+        $url      = str_replace("www.", "", $url);
         //dd($site_url);
         $currentPath = str_replace($site_url, "", $url);
-        $user_role = Auth::user()->user_role;
+        $user_role   = Auth::user()->user_role;
         //super
         if ($user_role == 1) {
             return true;
@@ -117,12 +115,11 @@ if (!function_exists('can_view')) {
             }
         }
 
-
         return false;
     }
 }
 
-if (!function_exists('resizeImage')) {
+if (! function_exists('resizeImage')) {
 
     function resizeImage($filePath, $height, $width, $format)
     {
@@ -130,7 +127,7 @@ if (!function_exists('resizeImage')) {
 
         if ($height == 0 || $width == 0) {
             $height = $originalHeight;
-            $width = $originalWidth;
+            $width  = $originalWidth;
         } else {
             // Calculate new dimensions
             $aspectRatio = $originalWidth / $originalHeight;
@@ -140,7 +137,6 @@ if (!function_exists('resizeImage')) {
                 $height = $width / $aspectRatio;
             }
         }
-
 
         // Create a new true color image with new dimensions
         $newImage = imagecreatetruecolor($width, $height);
@@ -186,9 +182,6 @@ if (!function_exists('resizeImage')) {
     }
 }
 
-
-
-
 /*if (!function_exists('uploadImage')) {
     function uploadImage($file, $directory, $watermarkPath = null, $quality = 60)
     {
@@ -206,8 +199,7 @@ if (!function_exists('resizeImage')) {
 
             // Move the uploaded file to the designated directory
             $file->move($imagePath, $imageName);
-            
-            
+
             //dd($imagePath . $imageName);
 
             // Load the uploaded image
@@ -234,7 +226,6 @@ if (!function_exists('resizeImage')) {
                 imagedestroy($watermark);
             }
 
-
             // Save the final image with the specified quality
             imagewebp($image, $imagePath . $imageName, $quality);
 
@@ -247,36 +238,36 @@ if (!function_exists('resizeImage')) {
     }
 }*/
 
-if (!function_exists('uploadImage')) {
+if (! function_exists('uploadImage')) {
     function uploadImage($file, $directory, $watermarkPath = null, $quality = 60)
     {
         if ($file) {
-            // Generate a unique filename using time and a random number
-            $uniqueId = uniqid(); // Generates a unique ID based on the current time in microseconds
+                                              // Generate a unique filename using time and a random number
+            $uniqueId  = uniqid();            // Generates a unique ID based on the current time in microseconds
             $imageName = $uniqueId . '.webp'; // Fixed extension to webp
             $imagePath = "uploads/$directory/" . date("Y/m/d/");
 
             // 0755 permissions allow the owner full control over the directory,
             // while group members and others have read and execute permissions only.
-            if (!file_exists($imagePath)) {
+            if (! file_exists($imagePath)) {
                 mkdir($imagePath, 0755, true);
             }
 
             // Move the uploaded file to the designated directory
             $file->move($imagePath, $imageName);
-            
+
             // Load the uploaded image with ImageMagick
             $originalFilePath = $imagePath . $imageName;
-            $outputPath = $imagePath . $imageName; // Output path for the converted WebP image
+            $outputPath       = $imagePath . $imageName; // Output path for the converted WebP image
 
             // Use ImageMagick to convert the image to WebP
-            exec("convert $originalFilePath -quality $quality $outputPath"); 
+            exec("convert $originalFilePath -quality $quality $outputPath");
 
             // If a watermark is provided, add it to the image
             if ($watermarkPath && file_exists($watermarkPath)) {
                 // Load the watermark image
-                $watermark = new Imagick($watermarkPath);
-                $watermarkWidth = $watermark->getImageWidth();
+                $watermark       = new Imagick($watermarkPath);
+                $watermarkWidth  = $watermark->getImageWidth();
                 $watermarkHeight = $watermark->getImageHeight();
 
                 // Create an Imagick object from the converted image
@@ -302,8 +293,6 @@ if (!function_exists('uploadImage')) {
         return null;
     }
 }
-
-
 
 /*if (!function_exists('uploadImages')) {
     function uploadImages($image, $format, $path, $height, $width)
@@ -331,13 +320,13 @@ if (!function_exists('uploadImage')) {
     }
 }*/
 
-if (!function_exists('uploadImages')) {
+if (! function_exists('uploadImages')) {
     function uploadImages($image, $format, $path, $height = null, $width = null)
     {
         if ($image) {
             // Create the directory path
             $directoryPath = $path . date("Y") . "/" . date("m") . "/" . date("d") . "/";
-            if (!Storage::exists($directoryPath)) {
+            if (! Storage::exists($directoryPath)) {
                 Storage::makeDirectory($directoryPath);
             }
 
@@ -356,8 +345,7 @@ if (!function_exists('uploadImages')) {
     }
 }
 
-
-if (!function_exists('UserID')) {
+if (! function_exists('UserID')) {
 
     function UserID()
     {
@@ -365,7 +353,7 @@ if (!function_exists('UserID')) {
     }
 }
 
-if (!function_exists('formatPrice')) {
+if (! function_exists('formatPrice')) {
 
     function formatPrice($price)
     {
@@ -377,7 +365,7 @@ if (!function_exists('formatPrice')) {
     }
 }
 
-if (!function_exists('generateOrderStatusBadge')) {
+if (! function_exists('generateOrderStatusBadge')) {
     function generateOrderStatusBadge($orderStatusId)
     {
         // Define status colors mapping
@@ -403,54 +391,53 @@ if (!function_exists('generateOrderStatusBadge')) {
     }
 }
 
-
-if (!function_exists('numberToWords')) {
+if (! function_exists('numberToWords')) {
     function numberToWords($number)
     {
-        $hyphen = '-';
+        $hyphen      = '-';
         $conjunction = ' and ';
-        $separator = ', ';
-        $negative = 'negative ';
-        $decimal = ' point ';
-        $dictionary = [
-            0 => 'zero',
-            1 => 'one',
-            2 => 'two',
-            3 => 'three',
-            4 => 'four',
-            5 => 'five',
-            6 => 'six',
-            7 => 'seven',
-            8 => 'eight',
-            9 => 'nine',
-            10 => 'ten',
-            11 => 'eleven',
-            12 => 'twelve',
-            13 => 'thirteen',
-            14 => 'fourteen',
-            15 => 'fifteen',
-            16 => 'sixteen',
-            17 => 'seventeen',
-            18 => 'eighteen',
-            19 => 'nineteen',
-            20 => 'twenty',
-            30 => 'thirty',
-            40 => 'forty',
-            50 => 'fifty',
-            60 => 'sixty',
-            70 => 'seventy',
-            80 => 'eighty',
-            90 => 'ninety',
-            100 => 'hundred',
-            1000 => 'thousand',
-            1000000 => 'million',
-            1000000000 => 'billion',
-            1000000000000 => 'trillion',
-            1000000000000000 => 'quadrillion',
-            1000000000000000000 => 'quintillion'
+        $separator   = ', ';
+        $negative    = 'negative ';
+        $decimal     = ' point ';
+        $dictionary  = [
+            0                   => 'zero',
+            1                   => 'one',
+            2                   => 'two',
+            3                   => 'three',
+            4                   => 'four',
+            5                   => 'five',
+            6                   => 'six',
+            7                   => 'seven',
+            8                   => 'eight',
+            9                   => 'nine',
+            10                  => 'ten',
+            11                  => 'eleven',
+            12                  => 'twelve',
+            13                  => 'thirteen',
+            14                  => 'fourteen',
+            15                  => 'fifteen',
+            16                  => 'sixteen',
+            17                  => 'seventeen',
+            18                  => 'eighteen',
+            19                  => 'nineteen',
+            20                  => 'twenty',
+            30                  => 'thirty',
+            40                  => 'forty',
+            50                  => 'fifty',
+            60                  => 'sixty',
+            70                  => 'seventy',
+            80                  => 'eighty',
+            90                  => 'ninety',
+            100                 => 'hundred',
+            1000                => 'thousand',
+            1000000             => 'million',
+            1000000000          => 'billion',
+            1000000000000       => 'trillion',
+            1000000000000000    => 'quadrillion',
+            1000000000000000000 => 'quintillion',
         ];
 
-        if (!is_numeric($number)) {
+        if (! is_numeric($number)) {
             return false;
         }
 
@@ -478,26 +465,26 @@ if (!function_exists('numberToWords')) {
                 $string = $dictionary[$number];
                 break;
             case $number < 100:
-                $tens = ((int) ($number / 10)) * 10;
-                $units = $number % 10;
+                $tens   = ((int) ($number / 10)) * 10;
+                $units  = $number % 10;
                 $string = $dictionary[$tens];
                 if ($units) {
                     $string .= $hyphen . $dictionary[$units];
                 }
                 break;
             case $number < 1000:
-                $hundreds = $number / 100;
+                $hundreds  = $number / 100;
                 $remainder = $number % 100;
-                $string = $dictionary[$hundreds] . ' ' . $dictionary[100];
+                $string    = $dictionary[$hundreds] . ' ' . $dictionary[100];
                 if ($remainder) {
                     $string .= $conjunction . numberToWords($remainder);
                 }
                 break;
             default:
-                $baseUnit = pow(1000, floor(log($number, 1000)));
+                $baseUnit     = pow(1000, floor(log($number, 1000)));
                 $numBaseUnits = (int) ($number / $baseUnit);
-                $remainder = $number % $baseUnit;
-                $string = numberToWords($numBaseUnits) . ' ' . $dictionary[$baseUnit];
+                $remainder    = $number % $baseUnit;
+                $string       = numberToWords($numBaseUnits) . ' ' . $dictionary[$baseUnit];
                 if ($remainder) {
                     $string .= $remainder < 100 ? $conjunction : $separator;
                     $string .= numberToWords($remainder);
@@ -518,7 +505,6 @@ if (!function_exists('numberToWords')) {
     }
 }
 
-
 // if (!function_exists('productSection')) {
 //     function productSection($type)
 //     {
@@ -532,16 +518,12 @@ if (!function_exists('numberToWords')) {
 //     }
 // }
 
-
-
-
-
-if (!function_exists('sendMail')) {
+if (! function_exists('sendMail')) {
     function sendMail($otp, $email, $name)
     {
 
         $data = [
-            'otp' => $otp,
+            'otp'  => $otp,
             'name' => $name,
         ];
 
@@ -550,8 +532,6 @@ if (!function_exists('sendMail')) {
     }
 }
 
-
-
 // //updated
 // if (!function_exists('productSection')) {
 //     function productSection($type)
@@ -559,11 +539,10 @@ if (!function_exists('sendMail')) {
 //         if ($type == 'recent') {
 
 //             //$latestProducts = \App\Models\Product::where('product_type', //'book')->orderBy('created_at', 'desc')->take(10)->get();
-            
+
 //             // Get the product with id = 1
 //           $featuredProduct = \App\Models\Product::find([1, 2, 3]);
 
-            
 //             // Get the latest products excluding the one with id = 1
 //             $latestProducts = \App\Models\Product::where('product_type', 'book')
 //                 ->whereNotIn('id', [1, 2, 3])
@@ -571,12 +550,9 @@ if (!function_exists('sendMail')) {
 //                 ->take(7)
 //                 ->get()
 //                 ->sortBy('stock_status');
-            
+
 //             // Combine the featured product with the latest products
 //             $finalProducts = $latestProducts->prepend($featuredProduct);
-
-
-          
 
 //             return  $finalProducts;
 //         }
@@ -585,7 +561,7 @@ if (!function_exists('sendMail')) {
 //     }
 // }
 
-if (!function_exists('productSection')) {
+if (! function_exists('productSection')) {
     function productSection($type)
     {
         if ($type == 'recent') {
@@ -595,10 +571,10 @@ if (!function_exists('productSection')) {
             // Get the latest products excluding the featured ones
             $latestProducts = \App\Models\Product::where('product_type', 'book')
                 ->whereNotIn('id', [1, 2, 3])
-                //->where('stock_status','in_stock')
+            //->where('stock_status','in_stock')
                 ->orderBy('created_at', 'desc')
                 ->take(7)
-                ->get()  // Fetch the results as a collection
+                ->get()                   // Fetch the results as a collection
                 ->sortBy('stock_status'); // Sort the collection by stock_status
 
             // Combine the featured products with the latest products
@@ -610,10 +586,6 @@ if (!function_exists('productSection')) {
         return collect();
     }
 }
-
-
-
-
 
 // if (! function_exists('priceAfterDiscount')) {
 
@@ -653,23 +625,21 @@ if (!function_exists('productSection')) {
 //     }
 // }
 
-
-
-if (!function_exists('priceAfterDiscount')) {
+if (! function_exists('priceAfterDiscount')) {
     function priceAfterDiscount($product)
     {
-        if (!$product instanceof \App\Models\Product) {
+        if (! $product instanceof \App\Models\Product) {
             throw new InvalidArgumentException('Expected an instance of Product model.');
         }
 
-        $currentPrice = $product->current_price;
-        $mrpPrice = $product->mrp_price;
-        $discountType = $product->discount_type;
+        $currentPrice   = $product->current_price;
+        $mrpPrice       = $product->mrp_price;
+        $discountType   = $product->discount_type;
         $discountAmount = $product->discount_amount;
 
         // Check if there is an active campaign
         $hasActiveCampaign = $product->hasActiveCampaign();
-        $activeCampaign = $hasActiveCampaign ? $product->getActiveCampaign() : null;
+        $activeCampaign    = $hasActiveCampaign ? $product->getActiveCampaign() : null;
 
         $existingDiscount = 0;
 
@@ -682,11 +652,11 @@ if (!function_exists('priceAfterDiscount')) {
 
         // Calculate final discounted price including campaign discount if applicable
         if ($hasActiveCampaign && $activeCampaign) {
-         
+
             if ($activeCampaign->discount_type->value == 'percent') {
-                
-                $discount=($currentPrice/100)*$activeCampaign->discount;
-             
+
+                $discount = ($currentPrice / 100) * $activeCampaign->discount;
+
                 $campaignDiscountAmount = $discount;
                 //$campaignDiscountAmount = ($activeCampaign->discount / 100) * $currentPrice;
             } else {
@@ -703,30 +673,24 @@ if (!function_exists('priceAfterDiscount')) {
     }
 }
 
-
-
-if (!function_exists('calculateDiscount')) {
+if (! function_exists('calculateDiscount')) {
 
     function calculateDiscount($product)
     {
-        $mrpPrice = $product->mrp_price;
+        $mrpPrice             = $product->mrp_price;
         $finalDiscountedPrice = priceAfterDiscount($product);
 
-        $discountAmount = $mrpPrice - $finalDiscountedPrice;
+        $discountAmount     = $mrpPrice - $finalDiscountedPrice;
         $discountPercentage = ($discountAmount / $mrpPrice) * 100;
 
         return [
-            'discountAmount' => round($discountAmount),
-            'discountPercentage' => round($discountPercentage)
+            'discountAmount'     => round($discountAmount),
+            'discountPercentage' => round($discountPercentage),
         ];
     }
 }
 
-
-
-
-
-if (!function_exists('calculateCouponDiscount')) {
+if (! function_exists('calculateCouponDiscount')) {
 
     function calculateCouponDiscount($cartSubtotal, $coupon, $cartItems)
     {
@@ -756,7 +720,7 @@ if (!function_exists('calculateCouponDiscount')) {
 
             $couponProducts = $coupon->products;
 
-            $matchingProducts = [];
+            $matchingProducts         = [];
             $matchingProductsSubtotal = 0;
 
             foreach ($cartItems as $item) {
@@ -764,7 +728,6 @@ if (!function_exists('calculateCouponDiscount')) {
                 if ($couponProducts->contains($item['id'])) {
 
                     $matchingProducts[] = $item['id'];
-
 
                     $matchingProductsSubtotal += $item['current_price'] * $item['quantity'];
                 }
@@ -797,21 +760,12 @@ if (!function_exists('calculateCouponDiscount')) {
     }
 }
 
-
-
-
-
-
-
-
 function hasActiveCoupons()
 {
     return Coupon::where('end_date', '>', now())->count() > 0;
 }
 
-
-
-if (!function_exists('calculateAverageRating')) {
+if (! function_exists('calculateAverageRating')) {
     function calculateAverageRating($item)
     {
 
@@ -821,44 +775,42 @@ if (!function_exists('calculateAverageRating')) {
             return 0;
         }
 
-        $sumRatings = $item->reviews()->sum('rating');
+        $sumRatings    = $item->reviews()->sum('rating');
         $averageRating = $sumRatings / $totalReviews;
 
         return round($averageRating, 1);
     }
 }
 
-function replaceQuotes($text) {
+function replaceQuotes($text)
+{
     // Initialize a flag to alternate between opening and closing quotes
     $isOpeningQuote = true;
 
     // Use a callback function with preg_replace_callback
-    $result = preg_replace_callback('/"/', function($matches) use (&$isOpeningQuote) {
+    $result = preg_replace_callback('/"/', function ($matches) use (&$isOpeningQuote) {
         if ($isOpeningQuote) {
             $isOpeningQuote = false;
-            return '“';  // Opening quote
+            return '“'; // Opening quote
         } else {
             $isOpeningQuote = true;
-            return '”';  // Closing quote
+            return '”'; // Closing quote
         }
     }, $text);
 
     return $result;
 }
 
+function convertToBengaliNumber($number)
+{
 
-function convertToBengaliNumber($number) {
-    
     $englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     $bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    
+
     return str_replace($englishNumbers, $bengaliNumbers, $number);
 }
 
-
-
-
-if (!function_exists('isProductInWishlist')) {
+if (! function_exists('isProductInWishlist')) {
     /**
      * Check if a product is in the authenticated user's wishlist.
      *
@@ -875,26 +827,18 @@ if (!function_exists('isProductInWishlist')) {
     }
 }
 
-
-
-
-
-
-if (!function_exists('getCartWeightBasedShipping')) {
+if (! function_exists('getCartWeightBasedShipping')) {
     /**
      * Calculate the total cart weight and corresponding shipping charge.
-     
+
      * @return int Calculated shipping charge based on the weight.
      */
-    function getCartWeightBasedShipping(  )
-
+    function getCartWeightBasedShipping()
     {
         // Retrieve the cart from the session
         $baseCharge = get_option('shipping_charge') ?? 60;
 
-
         $cart = Session::get('cart', []); // Default to an empty array if 'cart' does not exist
-
 
         // Initialize total weight
         $totalWeight = 0;
@@ -904,7 +848,6 @@ if (!function_exists('getCartWeightBasedShipping')) {
             foreach ($cart['items'] as $item) {
                 // Find the product by ID
                 $product = Product::find($item['id']);
-
 
                 if ($product) {
                     if ($product->isBundle == 1) {
@@ -920,24 +863,19 @@ if (!function_exists('getCartWeightBasedShipping')) {
 
                         $totalWeight += $bundleWeight * $item['quantity']; // Multiply by cart quantity
                     } else {
-                        // Handle non-bundle product
-                        $weight = $product->weight ?? 0; // Default to 0 if weight is null
+                                                                     // Handle non-bundle product
+                        $weight = $product->weight ?? 0;             // Default to 0 if weight is null
                         $totalWeight += $weight * $item['quantity']; // Multiply by cart quantity
                     }
                 }
             }
         }
 
-
-
         // // Add 10% of the total weight as packaging weight
         // $totalWeight += ($totalWeight * 0.1);
 
-
-
         // Convert total weight to kilograms and round up
         $weightInKg = ceil($totalWeight / 1000);
-
 
         // Calculate the total charge
         $extraChargePerKg = 20;
@@ -948,8 +886,18 @@ if (!function_exists('getCartWeightBasedShipping')) {
         // Charge for additional kilograms
         $additionalCharge = ($weightInKg - 1) * $extraChargePerKg;
 
-
         return $baseCharge + $additionalCharge;
 
+    }
+
+    // Get current branch id
+    function current_branch_id(): ?int
+    {
+        return \App\Support\BranchScope::currentId();
+    }
+    // Get current warehouse id
+    function current_warehouse_id(): ?int
+    {
+        return \App\Support\WarehouseScope::get();
     }
 }

@@ -58,7 +58,7 @@
                 <div class="d-flex gap-2">
 
                     <div class="col-lg-12 d-flex gap-2">
-                        <div class="mt-1 col-lg-10">
+                        <div class="mt-1 col-lg-11">
                             <select class="form-control form-control-sm  js-s2-ajax" name="customer_id" id="customer"
                                 data-url="{{ route('customer.select2') }}" data-placeholder="Select Customer">
                                 <option id="recent" value="1" selected>Walk In Customer</option>
@@ -108,9 +108,21 @@
                                 </div>
                             </div>
                             {{-- modal ends --}}
-                            <button class="btn btn-primary rounded-1 btn-sm"><iconify-icon icon="mdi:qrcode-scan"
-                                    class="menu-icon"></iconify-icon></button>
+
+
                         </div>
+                    </div>
+                </div>
+
+                {{-- barcode input --}}
+                <div class="d-flex gap-2 ">
+                    <div class="col-md-11 col-lg-11">
+                        <input type="text" id="barcodeInput" class="form-control " autocomplete="off"
+                            placeholder="Scan barcode" />
+                    </div>
+                    <div class="my-1">
+                        <button id="btn-scan" class="btn btn-primary rounded-1 btn-md"><iconify-icon
+                                icon="mdi:qrcode-scan" class="menu-icon"></iconify-icon></button>
                     </div>
                 </div>
 
@@ -735,8 +747,8 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
-                    <div class="modal-body p-0"  style="height: 750px !important; overflow-y: auto;">
-                        <table class="table table-sm table-hover mb-0" >
+                    <div class="modal-body p-0" style="height: 750px !important; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light text-sm  fw-semibold sticky-top">
                                 <tr>
                                     <th class="text-center">Time</th>
@@ -1053,6 +1065,23 @@
             if (!name) return '';
             if (name.length > length) return name.slice(0, length) + '...';
             else return name;
+        }
+
+        function productExistsInCart(productId) {
+            let cart = window.getCart() || [];
+            let exists = false;
+
+            cart.forEach(item => {
+                if (
+                    item.id == productId || // direct / barcode
+                    item.product_id == productId || // barcode safe
+                    item.parent_id == productId // child product logic
+                ) {
+                    exists = true;
+                }
+            });
+
+            return exists;
         }
 
         // ---------- Document Ready Start----------
@@ -1434,16 +1463,20 @@
                 } catch (e) {}
             }
             // check product exists in cart
-            function productExistsInCart(productId) {
-                let cart = window.getCart() || [];
-                let exists = false;
-                cart.forEach(element => {
-                    if (element.parent_id == productId || element.id == productId) {
-                        exists = true;
-                    }
-                });
-                return exists;
-            }
+            // function productExistsInCart(productId) {
+            //     let cart = window.getCart() || [];
+            //     let exists = false;
+            //     cart.forEach(element => {
+            //         if (element.parent_id == productId || element.id == productId) {
+            //             exists = true;
+            //         }
+
+            //     });
+            //     return exists;
+            // }
+
+
+
 
             // total items in cart
             function totalItemsInCart() {
@@ -2186,40 +2219,43 @@
         });
 
         // ================= VIEW TODAY'S TRANSACTIONS ===================
-  $(document).on('click', '.btn-transactions', function () {
+        $(document).on('click', '.btn-transactions', function() {
 
-    $('#transactionsModal').modal('show');
+            $('#transactionsModal').modal('show');
 
-    $('#transactionsBody').html(`
+            $('#transactionsBody').html(`
         <tr>
             <td colspan="4" class="text-center p-3">Loading...</td>
         </tr>
     `);
 
-    $.get("{{ route('pos.transactions.today') }}", function (res) {
+            $.get("{{ route('pos.transactions.today') }}", function(res) {
 
-        if (!res.success || res.transactions.length === 0) {
-            $('#transactionsBody').html(`
+                if (!res.success || res.transactions.length === 0) {
+                    $('#transactionsBody').html(`
                 <tr>
                     <td colspan="4" class="text-center p-3">No transactions today</td>
                 </tr>
             `);
-            return;
-        }
+                    return;
+                }
 
-        let rows = '';
-        let cash = 0, card = 0, bkash = 0, grand = 0;
+                let rows = '';
+                let cash = 0,
+                    card = 0,
+                    bkash = 0,
+                    grand = 0;
 
-        res.transactions.forEach(t => {
+                res.transactions.forEach(t => {
 
-            let amt = parseFloat(t.amount);
-            grand += amt;
+                    let amt = parseFloat(t.amount);
+                    grand += amt;
 
-            if (t.method === 'cash') cash += amt;
-            if (t.method === 'card') card += amt;
-            if (t.method === 'bkash') bkash += amt;
+                    if (t.method === 'cash') cash += amt;
+                    if (t.method === 'card') card += amt;
+                    if (t.method === 'bkash') bkash += amt;
 
-            rows += `
+                    rows += `
                 <tr class="text-sm">
                     <td>${t.time}</td>
                     <td>${t.invoice}</td>
@@ -2227,16 +2263,107 @@
                     <td class="text-end fw-semibold"> ${amt.toFixed(2)}</td>
                 </tr>
             `;
+                });
+
+                $('#transactionsBody').html(rows);
+
+                $('#cashTotal').text(cash.toFixed(2));
+                $('#cardTotal').text(card.toFixed(2));
+                $('#bkashTotal').text(bkash.toFixed(2));
+                $('#grandTotal').text(grand.toFixed(2));
+            });
         });
 
-        $('#transactionsBody').html(rows);
+        // ================= SCAN BARCODE ===================
+        let beep = new Audio('/sounds/beep.mp3');
 
-        $('#cashTotal').text(cash.toFixed(2));
-        $('#cardTotal').text(card.toFixed(2));
-        $('#bkashTotal').text(bkash.toFixed(2));
-        $('#grandTotal').text(grand.toFixed(2));
-    });
-});
+        // Scan button → focus only
+        $(document).on('click', '#btn-scan', function() {
+            $('#barcodeInput').val('').focus();
+        });
 
+        // Scanner input
+        $(document).on('keydown', '#barcodeInput', function(e) {
+
+            if (e.key !== 'Enter') return;
+
+            e.preventDefault();
+
+            let barcode = $(this).val().trim();
+            if (!barcode) return;
+
+            handleBarcodeScan(barcode);
+        });
+
+        // Core handler
+        function handleBarcodeScan(barcode) {
+
+            $.get("{{ route('pos.product.byBarcode') }}", {
+                    barcode
+                }, function(res) {
+
+                    if (!res || !res.success || !res.product) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Not Found',
+                            text: 'Product not found for barcode: ' + barcode
+                        });
+                        $('#barcodeInput').val('').focus();
+                        return;
+                    }
+
+                    let product = res.product;
+
+                    if (productExistsInCart(product.id)) {
+                        incrementQty(product.id);
+                    } else {
+                        addProductToCart(product);
+                    }
+
+                    loadCartItems();
+                    beep.play();
+
+                    // Ready for next scan
+                    $('#barcodeInput').val('').focus();
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'Server error while scanning', 'error');
+                    $('#barcodeInput').val('').focus();
+                });
+        }
+
+        // Increment qty
+        function incrementQty(productId) {
+            let cart = window.getCart() || [];
+
+            cart.forEach(item => {
+                if (
+                    item.id == productId ||
+                    item.product_id == productId ||
+                    item.parent_id == productId
+                ) {
+                    item.quantity += 1;
+                }
+            });
+
+            window.setCart(cart);
+        }
+
+        // Add new product
+        function addProductToCart(product) {
+            let cart = window.getCart() || [];
+
+            cart.push({
+                id: product.id, // for cart
+                product_id: product.id, // 🔥 IMPORTANT (POS consistency)
+                name: product.name,
+                price: parseFloat(product.price),
+                mrp: parseFloat(product.mrp),
+                unit_id: product.unit_id ?? null,
+                quantity: 1
+            });
+
+            window.setCart(cart);
+        }
     </script>
 @endsection

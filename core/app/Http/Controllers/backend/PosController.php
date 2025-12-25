@@ -4,17 +4,20 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\backend\Category;
 use App\Models\backend\PaymentType;
+use App\Models\backend\Product;
 use App\Models\backend\Sale;
 use App\Models\backend\SaleItem;
 use App\Models\backend\SalePayment;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
 use App\Services\StockLedgerService;
+use App\Support\BranchScope;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+
 
 class PosController extends Controller
 {
@@ -34,8 +37,7 @@ class PosController extends Controller
         // -----------------------------
 
         $data = $request->validate([
-            'branch_id'                  => 'required|exists:branches,id',
-            'warehouse_id'               => 'required|exists:warehouses,id',
+
             'customer_id'                => 'nullable|exists:customers,id',
             'sale_type'                  => 'nullable|string',
             'status'                     => 'required|string',
@@ -70,11 +72,24 @@ class PosController extends Controller
             'payments.*.note'            => 'nullable|string',
         ]);
 
+        \Log::info('BRANCH DEBUG', [
+            'payload_branch' => $request->branch_id,
+            'session_branch' => BranchScope::currentId(),
+            'user_branch'    => auth()->user()->branch_id,
+        ]);
+
+        // Validate branch access
+
+        $branchId    = current_branch_id();
+        $warehouseId = current_warehouse_id();
+
+        abort_if(! $branchId || ! $warehouseId, 422, 'Branch/Warehouse context missing');
+
         // -----------------------------
         // 2️⃣ DB Transaction
         // -----------------------------
         try {
-            return DB::transaction(function () use ($data, $request) {
+            return DB::transaction(function () use ($data, $request, $branchId, $warehouseId) {
 
                 // -----------------------------
                 // `RESUME SALE` handling
@@ -108,8 +123,8 @@ class PosController extends Controller
                     // -----------------------------
                     $sale = Sale::create([
                         'invoice_no'      => $this->generateInvoiceNo(),
-                        'branch_id'       => $data['branch_id'],
-                        'warehouse_id'    => $data['warehouse_id'],
+                        'branch_id'       => $branchId,
+                        'warehouse_id'    => $warehouseId,
                         'customer_id'     => $data['customer_id'] ?? null,
                         'user_id'         => auth()->id(),
                         'pos_session_id'  => $request->header('X-POS-SESSION') ?? null,
@@ -161,8 +176,8 @@ class PosController extends Controller
                 // -----------------------------
                 StockLedgerService::deductForSale([
                     'sale_id'      => $sale->id,
-                    'warehouse_id' => $sale->warehouse_id,
-                    'branch_id'    => $sale->branch_id,
+                    'warehouse_id' => $warehouseId,
+                    'branch_id'    => $branchId,
                     'user_id'      => auth()->id(),
                     'items'        => collect($data['items'])->map(function ($row) {
                         return [
@@ -530,6 +545,31 @@ class PosController extends Controller
         return response()->json([
             'success'      => true,
             'transactions' => $transactions,
+        ]);
+    }
+
+    //*** Fetch Product by Barcode ***
+    public function productByBarcode(Request $request)
+    {
+        $product = Product::where('barcode', $request->barcode)
+            ->where('is_sellable', 1)
+            ->first();
+
+        if (! $product) {
+            return response()->json([
+                'success' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id'      => $product->id,
+                'name'    => $product->name,
+                'price'   => $product->price,
+                'mrp'     => $product->mrp,
+                'unit_id' => $product->unit_id,
+            ],
         ]);
     }
 

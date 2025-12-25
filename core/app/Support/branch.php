@@ -1,5 +1,10 @@
 <?php
 
+
 function current_branch_id(): ?int {
-    return session('branch_id'); // আপনার existing branch switch যেটা সেট করে
+    return \App\Support\BranchScope::currentId();
+}
+
+function current_warehouse_id(): ?int {
+    return \App\Support\WarehouseScope::get();
 }

@@ -402,6 +402,14 @@
                                     </a>
                                 </li>
                             @endperm
+                            @perm('product.products.barcode')
+                                <li class="{{ Route::is('product.products.barcode') ? 'active' : '' }}">
+                                    <a href="{{ route('product.products.barcode') }}">
+                                        <i class="ri-barcode-line"></i>
+                                        <span>Barcode / Label Print</span>
+                                    </a>
+                                </li>
+                            @endperm
                             @perm('sizes.index')
                                 <li class="{{ Route::is('sizes.index') ? 'active' : '' }}">
                                     <a href="{{ route('sizes.index') }}">

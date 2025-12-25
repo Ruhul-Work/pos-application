@@ -10,6 +10,7 @@ use App\Models\backend\BusinessType;
 
 
 
+
 class BranchController extends Controller
 {
     public function index()
@@ -212,4 +213,7 @@ class BranchController extends Controller
             ])
         ]);
     }
+
+    
+
 }

@@ -3,12 +3,14 @@
 namespace App\Models\backend;
 
 use Illuminate\Database\Eloquent\Model;
+use BranchScoped;
 
 class StockCurrent extends Model
 {
       protected $table = 'stock_currents';
     // public $timestamps = false; 
 
+    
     protected $fillable = [
         'product_id',
         'warehouse_id',

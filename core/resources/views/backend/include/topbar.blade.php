@@ -551,6 +551,7 @@ document.addEventListener('click', function (e) {
 
   const mode = el.dataset.mode;              // "all" | "one"
   const branchId = el.dataset.branch || '';
+  
 
   // UI: disable item (ঐচ্ছিক)
   el.classList.add('disabled');

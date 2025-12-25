@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Services;
 
-use App\Models\backend\StockLedger;
 use App\Models\backend\StockCurrent;
-use Illuminate\Support\Facades\DB;
+use App\Models\backend\StockLedger;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class StockLedgerService
 {
@@ -37,18 +36,37 @@ class StockLedgerService
             // -----------------------------
             // 1️⃣ Lock current stock row
             // -----------------------------
-            $stock = StockCurrent::where('warehouse_id', $params['warehouse_id'])
+            // $stock = StockCurrent::where('warehouse_id', $params['warehouse_id'])
+            //     ->where('branch_id', $params['branch_id'])
+            //     ->where('product_id', $item['product_id'])
+            //     ->lockForUpdate()
+            //     ->first();
+
+            \Log::info('STOCK LOOKUP', [
+                'branch_id'    => $params['branch_id'],
+                'warehouse_id' => $params['warehouse_id'],
+                'product_id'   => $item['product_id'],
+                'qty_needed'   => $qty,
+                'stock_row'    => StockCurrent::withoutGlobalScope('branch')
+                    ->where('warehouse_id', $params['warehouse_id'])
+                    ->where('branch_id', $params['branch_id'])
+                    ->where('product_id', $item['product_id'])
+                    ->first(),
+            ]);
+
+            $stock = StockCurrent::withoutGlobalScope('branch')
+                ->where('warehouse_id', $params['warehouse_id'])
                 ->where('branch_id', $params['branch_id'])
                 ->where('product_id', $item['product_id'])
                 ->lockForUpdate()
                 ->first();
-                
+
             $product = DB::table('products')->where('id', $item['product_id'])->first();
 
-            if (!$stock || $stock->quantity < $qty) {
+            if (! $stock || $stock->quantity < $qty) {
                 throw new Exception(
-                        'Insufficient stock for "' . ($product->name ?? 'Product') . '"'
-                    );
+                    'Insufficient stock for "' . ($product->name ?? 'Product') . '"'
+                );
             }
 
             // -----------------------------
