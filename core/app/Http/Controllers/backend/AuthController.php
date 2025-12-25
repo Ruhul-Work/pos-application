@@ -132,19 +132,42 @@ class AuthController extends Controller
         $req->session()->regenerate();
 
         // ✅ set branch scope
+        // -----------------------------
+        // Branch & Warehouse Context
+        // -----------------------------
         if ($user->isSuper()) {
             BranchScope::setAll();
-        } else {
-            BranchScope::setBranch((int) $user->branch_id);
-
-            $warehouseId = Warehouse::where('branch_id', $user->branch_id)
-                ->where('is_default', 1)
-                ->value('id');
-
-            WarehouseScope::set($warehouseId);
+            return redirect()->intended(route('backend.dashboard'));
         }
 
+        BranchScope::setBranch((int) $user->branch_id);
+
+        $warehouseId = Warehouse::where('branch_id', $user->branch_id)
+            ->where('is_default', 1)
+            ->value('id') ?? Warehouse::where('branch_id', $user->branch_id)->value('id');
+
+        // ❌ Warehouse missing → logout + friendly message
+        if (! $warehouseId) {
+
+            Auth::logout();
+            $req->session()->invalidate();
+            $req->session()->regenerateToken();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'identifier' =>
+                    'আপনার ব্রাঞ্চের জন্য কোনো Warehouse সেট করা নেই।
+                     অনুগ্রহ করে Admin এর সাথে যোগাযোগ করুন।',
+                ]);
+        }
+    // 'No warehouse is configured for your branch. Please contact the administrator to set up a warehouse.',
+    
+        WarehouseScope::set((int) $warehouseId);
+
         return redirect()->intended(route('backend.dashboard'));
+
     }
 
     public function logout(Request $req)

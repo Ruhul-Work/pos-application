@@ -1,8 +1,13 @@
 @extends('auth.master')
 
 @section('content')
-   @if (session('fw_block_msg'))
+    @if (session('fw_block_msg'))
         <div class="alert alert-danger mx-5 my-3">{{ session('fw_block_msg') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+        </div>
     @endif
     <section class="auth bg-base d-flex flex-wrap">
         <div class="auth-left d-lg-block d-none">
@@ -27,15 +32,16 @@
                         <span class="icon top-50 translate-middle-y">
                             <iconify-icon icon="mage:email"></iconify-icon>
                         </span>
-                        <input type="text" name="identifier" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Email">
+                        <input type="text" name="identifier" class="form-control h-56-px bg-neutral-50 radius-12"
+                            placeholder="Email">
                     </div>
                     <div class="position-relative mb-20">
                         <div class="icon-field">
                             <span class="icon top-50 translate-middle-y">
                                 <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
                             </span>
-                            <input type="password" name="password" class="form-control h-56-px bg-neutral-50 radius-12" id="your-password"
-                                placeholder="Password">
+                            <input type="password" name="password" class="form-control h-56-px bg-neutral-50 radius-12"
+                                id="your-password" placeholder="Password">
                         </div>
                         <span
                             class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light"
@@ -68,7 +74,8 @@
                         </button>
                     </div>
                     <div class="mt-32 text-center text-sm">
-                        <p class="mb-0">Don’t have an account?<a href="{{ route('backend.register') }}" class="text-primary-600 fw-semibold">Sign Up</a></p>
+                        <p class="mb-0">Don’t have an account?<a href="{{ route('backend.register') }}"
+                                class="text-primary-600 fw-semibold">Sign Up</a></p>
                     </div>
 
                 </form>
