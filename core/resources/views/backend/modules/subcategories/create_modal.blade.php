@@ -76,9 +76,9 @@
         <div class="invalid-feedback d-block code-error" style="display:none"></div>
       </div>
 
-       <div class="col-md-6 mb-20">
+       <div class="col-md-12 mb-20">
         <label class="form-label text-sm mb-8">Meta description </label>
-        <textarea type="textarea" name="meta_description" rows="5" class="form-control radius-8" placeholder=""  ></textarea>
+        <textarea type="textarea" name="meta_description" rows="3" class="form-control radius-8" placeholder=""  ></textarea>
         <div class="invalid-feedback d-block code-error" style="display:none"></div>
       </div>
 
