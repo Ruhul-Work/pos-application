@@ -139,6 +139,7 @@ class PurchaseController extends Controller
         $products   = Product::with(['category'])
             ->where('parent_id', null)
             ->paginate(6);
+           
 
         return view('backend.modules.purchase.index', compact('categories', 'products'));
     }

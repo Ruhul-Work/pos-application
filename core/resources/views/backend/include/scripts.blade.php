@@ -587,6 +587,34 @@
     });
 
 
+    // =================Global ajaxViwemodal VIEW / SHOW MODAL ===================
+    $(document).on('click', '.AjaxViewModal', function(e) {
+        e.preventDefault();
+
+        const url = $(this).data('ajax-modal');
+        const size = $(this).data('size') || 'lg';
+
+        const $modal = $('#AjaxModal');
+
+        // reset size
+        $modal.find('.modal-dialog')
+            .removeClass('modal-sm modal-lg modal-xl')
+            .addClass('modal-' + size);
+
+        // loading state
+        $modal.find('.modal-content').html(`
+        <div class="p-4 text-center text-muted">
+            <div class="spinner-border spinner-border-sm"></div>
+            Loading...
+        </div>
+    `);
+
+        // load html
+        $.get(url, function(html) {
+            $modal.find('.modal-content').html(html);
+            bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+        });
+    });
     // ====== Bangla Slugify ======
     // Usage: slugify("বাংলা টেক্সট") → "bangla_text"
 
@@ -757,10 +785,10 @@
             // merge + init
             const cfg = $.extend(true, {}, base, opts);
             $el.select2(cfg);
-            
-            
+
+
             // preselected support (server side selected option থাকলে টিকে যাবে)
-            if ($el.find('option[selected]').length ) {
+            if ($el.find('option[selected]').length) {
                 $el.trigger('change.select2');
             } else if ($el.data('initId') && $el.data('initText')) {
                 // data-init-id / data-init-text দিলে client-side প্রিসেট
@@ -783,7 +811,7 @@
                         q: params?.term || ''
                     }),
                     processResults: data => (
-                        
+
                         Array.isArray(data?.results) ? {
                             results: data.results
                         } : {

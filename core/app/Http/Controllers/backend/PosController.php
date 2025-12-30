@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-
 class PosController extends Controller
 {
     public function index()
@@ -83,7 +82,19 @@ class PosController extends Controller
         $branchId    = current_branch_id();
         $warehouseId = current_warehouse_id();
 
-        abort_if(! $branchId || ! $warehouseId, 422, 'Branch/Warehouse context missing');
+        if (auth()->user()->isSuper()) {
+            abort_if(
+                ! $branchId || ! $warehouseId,
+                422,
+                'Please select a branch before making a POS sale.'
+            );
+        } else {
+            abort_if(
+                ! $branchId || ! $warehouseId,
+                422,
+                'Branch/Warehouse context missing.'
+            );
+        }
 
         // -----------------------------
         // 2️⃣ DB Transaction
@@ -354,20 +365,65 @@ class PosController extends Controller
     }
 
     //*** Resume Hold Sale ***
+    // public function resume(Sale $sale)
+    // {
+    //     if ($sale->status !== 'hold') {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'This sale is not on hold',
+    //         ], 422);
+    //     }
+
+    //     $sale->load('items.product', 'customer:id,name');
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'sale'    => $sale,
+    //     ]);
+    // }
+
+    // PosController.php
+
     public function resume(Sale $sale)
     {
-        if ($sale->status !== 'hold') {
-            return response()->json([
-                'success' => false,
-                'message' => 'This sale is not on hold',
-            ], 422);
+        // 🔐 Branch security
+        if (! auth()->user()->isSuperAdmin() &&
+            $sale->branch_id !== auth()->user()->branch_id) {
+            abort(403);
         }
 
-        $sale->load('items.product', 'customer:id,name');
+        // 🔒 Only HOLD sale editable
+        if ($sale->status !== 'hold') {
+            abort(403, 'Only HOLD sales can be edited');
+        }
 
+        $sale->load([
+            'items.product',
+            'customer',
+        ]);
         return response()->json([
             'success' => true,
-            'sale'    => $sale,
+            'sale'    => [
+                'id'              => $sale->id,
+                'customer_id'     => $sale->customer_id,
+                'customer_name'   => $sale->customer?->name ?? 'Walk In',
+                'subtotal'        => $sale->subtotal,
+                'discount'        => $sale->discount,
+                'shipping_charge' => $sale->shipping_charge,
+
+                'items'           => $sale->items->map(function ($i) {
+                    return [
+                        'product_id' => $i->product_id,
+                        'quantity'   => $i->quantity,
+                        'unit_price' => $i->unit_price,
+                        'product'    => [
+                            'name'      => $i->product->name,
+                            'mrp'       => $i->product->mrp,
+                            'parent_id' => $i->product->parent_id,
+                        ],
+                    ];
+                }),
+            ],
         ]);
     }
 
@@ -463,37 +519,55 @@ class PosController extends Controller
 
     //*** Show Sale Details ***
 
+    // public function show(Sale $sale)
+    // {
+    //     $sale->load([
+    //         'customer',
+    //         'items.product',
+    //         'payments.paymentType',
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'sale'    => [
+    //             'invoice'  => $sale->invoice_no,
+    //             'customer' => $sale->customer?->name ?? 'Walk In',
+    //             'status'   => $sale->status,
+    //             'subtotal' => $sale->subtotal,
+    //             'discount' => $sale->discount,
+    //             'shipping' => $sale->shipping_charge,
+    //             'total'    => $sale->total,
+    //             'paid'     => $sale->paid_amount,
+    //             'items'    => $sale->items->map(fn($i) => [
+    //                 'name'  => $i->product->name,
+    //                 'qty'   => $i->quantity,
+    //                 'price' => $i->unit_price,
+    //                 'total' => $i->line_total,
+    //             ]),
+    //             'payments' => $sale->payments->map(fn($p) => [
+    //                 'method' => $p->payment_type,
+    //                 'amount' => $p->amount,
+    //             ]),
+    //         ],
+    //     ]);
+    // }
+
     public function show(Sale $sale)
     {
+
+        if (! auth()->user()->isSuperAdmin() &&
+            $sale->branch_id !== auth()->user()->branch_id) {
+            abort(403);
+        }
+
         $sale->load([
             'customer',
             'items.product',
             'payments.paymentType',
+            'user',
         ]);
 
-        return response()->json([
-            'success' => true,
-            'sale'    => [
-                'invoice'  => $sale->invoice_no,
-                'customer' => $sale->customer?->name ?? 'Walk In',
-                'status'   => $sale->status,
-                'subtotal' => $sale->subtotal,
-                'discount' => $sale->discount,
-                'shipping' => $sale->shipping_charge,
-                'total'    => $sale->total,
-                'paid'     => $sale->paid_amount,
-                'items'    => $sale->items->map(fn($i) => [
-                    'name'  => $i->product->name,
-                    'qty'   => $i->quantity,
-                    'price' => $i->unit_price,
-                    'total' => $i->line_total,
-                ]),
-                'payments' => $sale->payments->map(fn($p) => [
-                    'method' => $p->payment_type,
-                    'amount' => $p->amount,
-                ]),
-            ],
-        ]);
+        return view('backend.modules.pos.saleDetailsModal', compact('sale'));
     }
 
     //*** Generate Invoice ***
@@ -516,29 +590,35 @@ class PosController extends Controller
     {
         $user = auth()->user();
 
-        $query = SalePayment::with(['sale'])
-            ->whereDate('paid_at', now()->toDateString());
+        $query = SalePayment::with(['sale.user'])
+            ->whereDate('paid_at', Carbon::today());
 
-        // -----------------------------
+        // -----------------------------------
         // 🔐 Branch-wise access control
-        // -----------------------------
+        // -----------------------------------
         if (! $user->isSuperAdmin()) {
             $query->whereHas('sale', function ($q) use ($user) {
                 $q->where('branch_id', $user->branch_id);
             });
         }
 
-        // Fetch + format
+        //  Exclude void / refunded sales
+        $query->whereHas('sale', function ($q) {
+            $q->where('status', 'delivered'); // only completed sales
+        });
 
+        // Fetch + Format
         $transactions = $query
-            ->orderByDesc('id')
+            ->orderByDesc('paid_at')
             ->get()
             ->map(function ($p) {
                 return [
-                    'invoice' => $p->sale?->invoice_no,
-                    'method'  => $p->payment_type, // cash / card / bkash
-                    'amount'  => $p->amount,
+                    'invoice' => $p->sale?->invoice_no ?? '-',
+                    'method'  => strtolower($p->payment_type), // cash/card/bkash
+                    'amount'  => (float) $p->amount,
                     'time'    => optional($p->paid_at)->format('H:i'),
+                    'user'    => $p->sale?->user?->name ?? 'System',
+                    'branch'  => $p->sale?->branch?->name ?? '-',
                 ];
             });
 
@@ -570,6 +650,168 @@ class PosController extends Controller
                 'mrp'     => $product->mrp,
                 'unit_id' => $product->unit_id,
             ],
+        ]);
+    }
+
+    //--------------------------------
+    //*** Sales List View & Ajax ***
+    //--------------------------------
+
+    public function list()
+    {
+        return view('backend.modules.pos.list');
+    }
+
+    public function listAjax(Request $request)
+    {
+        $columns = [
+            'id',
+            'invoice_no',
+            'customer_name',
+            'total',
+            'paid_amount',
+            'due_amount',
+            'status',
+            'payment_status',
+            'created_at',
+        ];
+
+        $draw     = (int) $request->input('draw');
+        $start    = (int) $request->input('start', 0);
+        $length   = (int) $request->input('length', 10);
+        $orderIdx = (int) $request->input('order.0.column', 0);
+        $orderDir = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $search   = trim($request->input('search.value', ''));
+
+        $user = auth()->user();
+
+        $base = Sale::with(['customer', 'user'])
+            ->select([
+                'sales.id',
+                'sales.invoice_no',
+                'sales.customer_id',
+                'sales.total',
+                'sales.paid_amount',
+                'sales.due_amount',
+                'sales.status',
+                'sales.payment_status',
+                'sales.created_at',
+                'sales.branch_id',
+                'sales.user_id',
+            ]);
+
+        // 🔐 Branch restriction
+        if (! $user->isSuperAdmin()) {
+            $base->where('sales.branch_id', $user->branch_id);
+        }
+
+        $total = (clone $base)->count();
+
+        if ($search !== '') {
+            $base->where(function ($q) use ($search) {
+                $q->where('sales.invoice_no', 'like', "%{$search}%")
+                    ->orWhereHas('customer', fn($c) =>
+                        $c->where('name', 'like', "%{$search}%")
+                    );
+            });
+        }
+
+        $filtered = (clone $base)->count();
+
+        $orderCol = $columns[$orderIdx] ?? 'id';
+        $base->orderBy($orderCol, $orderDir);
+
+        $rows = $base->skip($start)->take($length)->get();
+
+        $data = [];
+
+        foreach ($rows as $r) {
+
+            $statusBadge = match ($r->status) {
+                'hold'      => '<span class="badge text-sm fw-semibold bg-warning-600 px-20 py-9 radius-4 text-white">Hold</span>',
+                'delivered' => '<span class="badge text-sm fw-semibold bg-success-600 px-20 py-9 radius-4 text-white">Delivered</span>',
+                'void'      => '<span class="badge text-sm fw-semibold bg-danger-600 px-20 py-9 radius-4 text-white">Void</span>',
+                default     => '<span class="badge text-sm fw-semibold bg-lilac-600 px-20 py-9 radius-4 text-white">' . e($r->status) . '</span>',
+            };
+
+            $payBadge = match ($r->payment_status) {
+                'paid'  => '<span class="badge text-sm fw-semibold rounded-pill bg-success-600 px-20 py-9 radius-4 text-white">Paid</span>',
+                'due'   => '<span class="badge text-sm fw-semibold rounded-pill bg-warning-600 px-20 py-9 radius-4 text-white">Due</span>',
+                default => '<span class="badge text-sm fw-semibold rounded-pill bg-lilac-600 px-20 py-9 radius-4 text-white">' . e($r->payment_status) . '</span>',
+            };
+
+            // $actions = '
+            // <div class="d-inline-flex justify-content-end gap-1">
+            //     <a href="' . route('pos.sales.invoice', $r->id) . '" target="_blank"
+            //        class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+            //        bg-info-focus text-info-main" title="Invoice">
+            //        <iconify-icon icon="mdi:printer-outline"></iconify-icon>
+            //     </a>
+
+            //     <a href="#"
+            //     class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+            //             bg-info-focus text-info-main AjaxViewModal"
+            //     title="View Sale"
+            //     data-size="lg"
+            //     data-ajax-modal="' . route('pos.sales.show', $r->id) . '">
+            //         <iconify-icon icon="lucide:eye"></iconify-icon>
+            //     </a>
+            // </div>';
+
+            $actions = '<div class="d-inline-flex justify-content-end gap-1">';
+
+            /* 🖨 Invoice */
+            $actions .= '
+                    <a href="' . route('pos.sales.invoice', $r->id) . '" target="_blank"
+                    class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                    bg-info-focus text-info-main" title="Invoice">
+                    <iconify-icon icon="mdi:printer-outline"></iconify-icon>
+                    </a>';
+
+            /* 👁 View (Ajax Modal) */
+            $actions .= '
+                    <a href="#"
+                    class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                            bg-info-focus text-info-main AjaxViewModal"
+                    title="View Sale"
+                    data-size="lg"
+                    data-ajax-modal="' . route('pos.sales.show', $r->id) . '">
+                        <iconify-icon icon="lucide:eye"></iconify-icon>
+                    </a>';
+
+            /* ✏️ Edit / Resume (if on HOLD) */
+            if ($r->status === 'hold') {
+                $actions .= '
+                        <a href="#"
+                        class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                                bg-warning-focus text-warning-main btn-resume-sale"
+                        title="Edit / Resume Sale"
+                        data-id="' . $r->id . '">
+                            <iconify-icon icon="mdi:pencil-outline"></iconify-icon>
+                        </a>';
+            }
+            $actions .= '</div>';
+
+            $data[] = [
+                $r->id,
+                '<strong>' . $r->invoice_no . '</strong>',
+                e($r->customer?->name ?? 'Walk In'),
+                number_format($r->total, 2),
+                number_format($r->paid_amount, 2),
+                number_format($r->due_amount, 2),
+                $statusBadge,
+                $payBadge,
+                $r->created_at->format('Y-m-d H:i'),
+                e($r->user?->name ?? '-'),
+                $actions,
+            ];
+        }
+
+        return response()->json([
+            'draw'                 => $draw,
+            'iTotalRecords'        => $total,
+            'iTotalDisplayRecords' => $filtered,
+            'aaData'               => $data,
         ]);
     }
 

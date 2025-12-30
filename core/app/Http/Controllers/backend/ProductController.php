@@ -30,7 +30,7 @@ class ProductController extends Controller
             $products = Product::query()
                 ->with(['category:id,name']) // limit category fields
                 ->whereNull('parent_id')
-                ->select('id', 'name', 'price', 'mrp', 'image', 'category_id', 'parent_id')
+                ->select('id', 'name', 'cost_price', 'price', 'mrp', 'image', 'category_id', 'parent_id')
                 ->paginate(100);
 
             return response()->json(['products' => $products], 200);

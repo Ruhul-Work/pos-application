@@ -1,5 +1,10 @@
 @extends('backend.layouts.master')
 @section('content')
+    @if (auth()->user()->isSuper() && !current_branch_id())
+        <div class="alert alert-warning">
+            Please select a branch before creating a POS sale.
+        </div>
+    @endif
     <div class="row ">
 
         <div class="product-div col-lg-7 bg-gray " style="height: 80vh; overflow-y: auto;">
@@ -400,10 +405,12 @@
                                                     <select name="sale_status" id="sale_status"
                                                         class="form-control form-control-sm">
                                                         <option value="delivered" selected>Delivered</option>
-                                                        <option value="order">order placed</option>
                                                         <option value="hold">Hold</option>
+                                                        <option value="draft">Draft</option>
+                                                        <option value="void">Void</option>
+                                                        <option value="order">order placed</option>
                                                         <option value="pending">Pending</option>
-                                                        <option value="cancel">cancel</option>
+                                                        <option value="cancel">Cancel</option>
 
                                                     </select>
                                                 </div>
@@ -488,10 +495,6 @@
             </button>
         </div>
 
-        {{-- <div class="p-0">
-            <button class="btn btn-danger btn-sm rounded-4 d-flex align-item-center justify-content-center "><iconify-icon
-                    icon="mdi:trash-outline" class="menu-icon fs-5 "></iconify-icon>Void</button>
-        </div> --}}
         <div class="p-0">
 
             {{-- <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel"
@@ -705,33 +708,9 @@
         <!-- today orders modal end-->
 
         <!-- order details modal start-->
-        <div class="modal fade" id="orderDetailsModal" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
 
-                    <div class="modal-header">
-                        <h6 class="modal-title d-flex align-items-center gap-2">
-                            <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
-                            Order Details
-                        </h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
+        {{-- // Included via separate Blade file use global AJAXViewModal handler and show details in modal --}}
 
-                    <div class="modal-body" id="orderDetailsBody">
-                        <div class="text-center p-4">
-                            Loading...
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
-                            Close
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
         <!-- order details modal end -->
 
         <!-- transactions modal start-->
@@ -754,31 +733,33 @@
                                     <th class="text-center">Time</th>
                                     <th class="text-center">Invoice</th>
                                     <th class="text-center">Method</th>
+                                    <th class="text-center">User</th>
+                                    <th class="text-center">Branch</th>
                                     <th class="text-end">Amount</th>
                                 </tr>
                             </thead>
 
                             <tbody id="transactionsBody">
                                 <tr>
-                                    <td colspan="4" class="text-center p-3">Loading...</td>
+                                    <td colspan="6" class="text-center p-3">Loading...</td>
                                 </tr>
                             </tbody>
 
                             <tfoot class="table-light fw-semibold sticky-bottom">
                                 <tr class="table-success fs-6">
-                                    <td colspan="3" class="text-end">Cash Total</td>
+                                    <td colspan="5" class="text-end">Cash Total</td>
                                     <td class="text-end"> <span id="cashTotal">0.00</span></td>
                                 </tr>
                                 <tr class="table-primary fs-6">
-                                    <td colspan="3" class="text-end">Card Total</td>
+                                    <td colspan="5" class="text-end">Card Total</td>
                                     <td class="text-end"> <span id="cardTotal">0.00</span></td>
                                 </tr>
                                 <tr class="table-danger fs-6">
-                                    <td colspan="3" class="text-end">bKash Total</td>
+                                    <td colspan="5" class="text-end">bKash Total</td>
                                     <td class="text-end"> <span id="bkashTotal">0.00</span></td>
                                 </tr>
                                 <tr class="table-warning fs-6">
-                                    <td colspan="3" class="text-end">Grand Total</td>
+                                    <td colspan="5" class="text-end">Grand Total</td>
                                     <td class="text-end"> <span id="grandTotal">0.00</span></td>
                                 </tr>
                             </tfoot>
@@ -1623,7 +1604,17 @@
                 }
             });
 
+            // ================= Resume Sale if resume_sale_id present ===================
+            const params = new URLSearchParams(window.location.search);
+            const resumeSaleId = params.get('resume_sale_id');
+
+            if (resumeSaleId) {
+                resumeSale(resumeSaleId);
+            }
+
         }); // document.ready
+
+
 
         // small helpers outside ready
         $(document).on('click', '.nav-btn', function(e) {
@@ -1850,7 +1841,7 @@
                     <td>${row.unit_price}</td>
                     <td class="text-center fw-semibold">${row.total}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-success  mt-4 resume-sale"
+                        <button class="btn btn-sm btn-outline-success  mt-4 btn-resume-sale"
                             data-id="${row.id}" title="Resume Sale"><iconify-icon icon="mdi:play-circle"
                                 class="menu-icon fs-5"></iconify-icon>
                             
@@ -1864,62 +1855,145 @@
             });
         });
 
-        $(document).on('click', '.resume-sale', function() {
+        // $(document).on('click', '.resume-sale', function() {
+
+        //     let saleId = $(this).data('id');
+        //     window.CURRENT_RESUME_SALE_ID = saleId;
+
+        //     $.get("{{ route('pos.sales.resume', ':id') }}".replace(':id', saleId), function(res) {
+
+        //         let sale = res.sale;
+
+        //         // clear current cart first
+        //         window.clearCartForTab();
+
+        //         // rebuild cart
+        //         let items = sale.items.map(i => ({
+        //             id: i.product_id,
+        //             product_id: i.product_id,
+        //             name: i.product?.name ?? 'Unknown Product',
+        //             price: parseFloat(i.unit_price),
+        //             mrp: parseFloat(i.product?.mrp ?? i.unit_price),
+        //             quantity: parseFloat(i.quantity)
+        //         }));
+
+        //         window.setCart(items);
+        //         loadCartItems();
+
+        //         // 3️⃣ ✅ Restore customer (SELECT2 – CORRECT WAY)
+        //         if (sale.customer_id && sale.customer_name) {
+
+        //             let option = new Option(
+        //                 sale.customer_name, // text
+        //                 sale.customer_id, // value
+        //                 true, 
+        //                 true 
+        //             );
+
+        //             $('#customer')
+        //                 .append(option)
+        //                 .trigger('change'); 
+        //         } else {
+        //             // Walk-in customer
+        //             $('#customer').val(null).trigger('change');
+        //         }
+        //         // restore discount
+        //         sessionStorage.setItem(
+        //             window.getDiscountKey(),
+        //             JSON.stringify({
+        //                 type: 'flat', // or percentage if you store it
+        //                 value: parseFloat(sale.discount || 0)
+        //             })
+        //         );
+
+        //         // restore shipping
+        //         sessionStorage.setItem(
+        //             window.getShippingKey(),
+        //             parseFloat(sale.shipping_charge || 0)
+        //         );
+
+        //         // recalc totals
+        //         calculateSubtotal();
+
+        //         $('#holdSalesModal').modal('hide');
+        //         $('#todayOrdersModal').modal('hide');
+
+        //         Swal.fire('Resumed', 'Sale loaded successfully', 'success');
+
+        //     });
+
+        // });
+
+        // ================= RESUME SALE ===================
+        $(document).on('click', '.btn-resume-sale', function() {
 
             let saleId = $(this).data('id');
             window.CURRENT_RESUME_SALE_ID = saleId;
+            resumeSale(saleId);
+        });
+
+        function resumeSale(saleId) {
 
             $.get("{{ route('pos.sales.resume', ':id') }}".replace(':id', saleId), function(res) {
 
                 let sale = res.sale;
-
-                // clear current cart first
+                window.CURRENT_RESUME_SALE_ID = saleId;
+                // 1️⃣ Clear current cart
                 window.clearCartForTab();
 
-                // rebuild cart
+
+                // 2️⃣ Restore cart items
                 let items = sale.items.map(i => ({
+
                     id: i.product_id,
+                    parent_id: i.product?.parent_id ?? null, // 🔥 ADD THIS
                     product_id: i.product_id,
+
                     name: i.product?.name ?? 'Unknown Product',
                     price: parseFloat(i.unit_price),
                     mrp: parseFloat(i.product?.mrp ?? i.unit_price),
+
                     quantity: parseFloat(i.quantity)
                 }));
 
                 window.setCart(items);
                 loadCartItems();
 
-                // restore customer
-                if (sale.customer) {
-                    let newOption = new Option(sale.customer.name, sale.customer.id, true, true);
-                    $('#customer').append(newOption).trigger('change');
+                // 3️⃣ ✅ Restore customer (SELECT2 – CORRECT WAY)
+                if (sale.customer_id && sale.customer_name) {
+
+                    let option = new Option(
+                        sale.customer_name, // text
+                        sale.customer_id, // value
+                        true,
+                        true
+                    );
+
+                    $('#customer')
+                        .append(option)
+                        .trigger('change');
+                } else {
+                    // Walk-in customer
+                    $('#customer').val(null).trigger('change');
                 }
-                // restore discount
-                sessionStorage.setItem(
-                    window.getDiscountKey(),
-                    JSON.stringify({
-                        type: 'flat', // or percentage if you store it
-                        value: parseFloat(sale.discount || 0)
-                    })
-                );
 
-                // restore shipping
-                sessionStorage.setItem(
-                    window.getShippingKey(),
-                    parseFloat(sale.shipping_charge || 0)
-                );
+                // 4️⃣ Restore discount & shipping
+                sessionStorage.setItem(window.getDiscountKey(), JSON.stringify({
+                    type: 'flat',
+                    value: sale.discount
+                }));
 
-                // recalc totals
+                sessionStorage.setItem(window.getShippingKey(), sale.shipping_charge);
+
                 calculateSubtotal();
-
                 $('#holdSalesModal').modal('hide');
                 $('#todayOrdersModal').modal('hide');
 
-                Swal.fire('Resumed', 'Sale loaded successfully', 'success');
 
+                Swal.fire('Resumed', 'Sale loaded into POS', 'success');
             });
+        }
 
-        });
 
         // ================= VIEW TODAY'S ORDERS ===================
         $(document).on('click', '#btn-view-orders', function() {
@@ -1950,16 +2024,19 @@
                     let actions = '';
 
                     actions += `
-                            <button class="btn btn-sm btn-outline-info view-sale"
+                            <button
+                                class="btn btn-sm btn-outline-info AjaxViewModal"
+                                data-ajax-modal="{{ route('pos.sales.show', ':id') }}"
                                 data-id="${sale.id}"
+                                data-size="lg"
                                 title="View Details">
                                 <iconify-icon icon="mdi:eye-outline"></iconify-icon>
                             </button>
-                        `;
+                        `.replace(':id', sale.id);
 
                     if (sale.status === 'hold') {
                         actions += `
-                            <button class="btn btn-sm btn-outline-primary resume-sale"
+                            <button class="btn btn-sm btn-outline-primary btn-resume-sale"
                                 data-id="${sale.id}"
                                 title="Resume Sale">
                                 <iconify-icon icon="mdi:play-circle-outline"></iconify-icon>
@@ -2124,99 +2201,8 @@
         });
 
         // ================= VIEW SALE DETAILS ===================
-        $(document).on('click', '.view-sale', function() {
+        // use global AJAXViewModal handler and show details in modal//
 
-            let saleId = $(this).data('id');
-
-            $('#orderDetailsModal').modal('show');
-            $('#orderDetailsBody').html('<div class="text-center p-4 ">Loading...</div>');
-
-            $.get("{{ route('pos.sales.show', ':id') }}".replace(':id', saleId), function(res) {
-
-                if (!res.success) {
-                    $('#orderDetailsBody').html('<div class="text-danger">Failed to load order</div>');
-                    return;
-                }
-
-                let s = res.sale;
-
-                // -----------------------------
-                // Items
-                // -----------------------------
-                let itemsHtml = '';
-                s.items.forEach((i, idx) => {
-                    itemsHtml += `
-            <tr>
-                <td>${idx + 1}. ${i.name}</td>
-                <td class="text-center">${i.qty}</td>
-                <td class="text-end">${parseFloat(i.price).toFixed(2)}</td>
-                <td class="text-end">${parseFloat(i.total).toFixed(2)}</td>
-            </tr>
-        `;
-                });
-
-                // -----------------------------
-                // Payments
-                // -----------------------------
-                let paymentsHtml = '';
-                s.payments.forEach(p => {
-                    paymentsHtml += `
-            <div>${p.method.toUpperCase()} : ${parseFloat(p.amount).toFixed(2)}</div>
-        `;
-                });
-
-                // -----------------------------
-                // Full Render
-                // -----------------------------
-                $('#orderDetailsBody').html(`
-                <div class="p-3 text-dark">
-
-                    <!-- Order Meta -->
-                    <div class="mb-3">
-                        
-                        <div><strong>Invoice:</strong> ${s.invoice}</div>
-                        <div><strong>Customer:</strong> ${s.customer}</div>
-                        <div><strong>Status:</strong> ${s.status.toUpperCase()}</div>
-                    </div>
-
-                    <!-- Items Table -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Item</th>
-                                    <th class="text-center">Qty</th>
-                                    <th class="text-end">Price</th>
-                                    <th class="text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${itemsHtml}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Summary -->
-                    <div class="mt-3 text-end">
-                        <div>Subtotal:  ${parseFloat(s.subtotal).toFixed(2)}</div>
-                        <div>Discount: ${parseFloat(s.discount).toFixed(2)}</div>
-                        <div>Shipping:  ${parseFloat(s.shipping).toFixed(2)}</div>
-                        <div class="fw-bold fs-6">Total:  ${parseFloat(s.total).toFixed(2)}</div>
-
-                        <div class="mt-2 fw-semibold">
-                            Paid:  ${parseFloat(s.paid).toFixed(2)}
-                        </div>
-
-                        <div class="mt-1 text-muted">
-                            ${paymentsHtml}
-                        </div>
-                    </div>
-
-            </div>
-        `);
-
-            });
-        });
 
         // ================= VIEW TODAY'S TRANSACTIONS ===================
         $(document).on('click', '.btn-transactions', function() {
@@ -2234,7 +2220,7 @@
                 if (!res.success || res.transactions.length === 0) {
                     $('#transactionsBody').html(`
                 <tr>
-                    <td colspan="4" class="text-center p-3">No transactions today</td>
+                    <td colspan="6" class="text-center p-3">No transactions today</td>
                 </tr>
             `);
                     return;
@@ -2260,6 +2246,8 @@
                     <td>${t.time}</td>
                     <td>${t.invoice}</td>
                     <td class="text-capitalize">${t.method}</td>
+                    <td>${t.user}</td>
+                    <td>${t.branch}</td>
                     <td class="text-end fw-semibold"> ${amt.toFixed(2)}</td>
                 </tr>
             `;

@@ -132,6 +132,15 @@
                     </li>
                 @endperm
 
+                @perm('pos.sales.list')
+                    <li>
+                        <a class="{{ Route::is('pos.sales.list') ? 'active' : '' }}" href="{{ route('pos.sales.list') }}">
+                            <iconify-icon icon="mdi:cash-register" class="menu-icon"></iconify-icon>
+                            <span>Pos Sales</span>
+                        </a>
+                    </li>
+                @endperm
+
 
                 @perm('purchase.index')
                     <li>

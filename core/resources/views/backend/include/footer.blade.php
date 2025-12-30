@@ -68,7 +68,7 @@
    <script src="{{asset('theme/admin/assets/plugins/fileupload/spartan-multi-image-picker-min.js')}}" type="text/javascript"></script>
 
    
-   {{-- Modal --}}
+   {{--Global Form submit Modal  --}}
     <div class="modal fade" id="AjaxModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog  modal-dialog-centered">
             <div class="modal-content">
@@ -77,3 +77,13 @@
             </div>
         </div>
     </div>
+
+    {{-- Global Ajax View Modal --}}
+<div class="modal fade" id="AjaxViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            {{-- AJAX content will be loaded here --}}
+        </div>
+    </div>
+</div>
+

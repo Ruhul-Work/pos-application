@@ -233,7 +233,7 @@
                             } else {
                                 console.warn(
                                     `bulkFetchSystemQty: no value from server for pid ${pid} — preserving existing`
-                                    );
+                                );
                             }
                         });
                     },
@@ -437,6 +437,20 @@
                     loadProducts(url);
                 } else loadProducts(window.routes.productsList);
             }, 300));
+            
+            // category click (delegated)
+            $(document).on('click', '.nav-btn', function() {
+                $('.nav-btn').removeClass('active');
+                $(this).addClass('active');
+
+                const cid = $(this).data('category-id');
+                if (!cid) {
+                    loadProducts(window.routes.productsList);
+                    return;
+                }
+                const url = window.routes.productsByCategory.replace(':category', cid);
+                loadProducts(url);
+            });
 
             // initial load
             loadProducts(window.routes.productsList);

@@ -146,7 +146,7 @@ class AuthController extends Controller
             ->where('is_default', 1)
             ->value('id') ?? Warehouse::where('branch_id', $user->branch_id)->value('id');
 
-        // ❌ Warehouse missing → logout + friendly message
+        // Warehouse missing → logout + friendly message
         if (! $warehouseId) {
 
             Auth::logout();
@@ -163,7 +163,7 @@ class AuthController extends Controller
                 ]);
         }
     // 'No warehouse is configured for your branch. Please contact the administrator to set up a warehouse.',
-    
+
         WarehouseScope::set((int) $warehouseId);
 
         return redirect()->intended(route('backend.dashboard'));

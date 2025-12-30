@@ -31,7 +31,7 @@ use App\Http\Controllers\backend\UpazilaController;
 use App\Http\Controllers\backend\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['web', 'auth', 'perm','branchscope'])->group(function () {
+Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
     Route::prefix('country')->name('country.')->group(function () {
 
         Route::get('countries', [CountryController::class, 'index'])->name('countries.index');
@@ -233,8 +233,8 @@ Route::middleware(['web', 'auth', 'perm','branchscope'])->group(function () {
         Route::get('products/childProductList/{product}', [ProductController::class, 'childProductList'])->name('childProductList');
         Route::get('products/product-search/{name}', [ProductController::class, 'productSearch'])->name('productsSearch');
         Route::get('products/product-byCategory/{category}', [ProductController::class, 'productByCategory'])->name('productsByCategory');
-        Route::get('products/barcode/index',[ProductController::class, 'barcodeIndex'])->name('products.barcode');
-        Route::get('products/{product}/barcode-preview',[ProductController::class, 'barcodePreview'])->name('barcode.preview');
+        Route::get('products/barcode/index', [ProductController::class, 'barcodeIndex'])->name('products.barcode');
+        Route::get('products/{product}/barcode-preview', [ProductController::class, 'barcodePreview'])->name('barcode.preview');
     });
 
     // Product type Management
@@ -254,7 +254,7 @@ Route::middleware(['web', 'auth', 'perm','branchscope'])->group(function () {
     // Inventory Opening Stock
     Route::prefix('inventory')->name('inventory.')->group(function () {
 
-        // Warehouse Management 
+        // Warehouse Management
         Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::post('warehouses/list', [WarehouseController::class, 'listAjax'])->name('warehouses.list.ajax');
         Route::get('warehouses/create-modal', [WarehouseController::class, 'createModal'])->name('warehouses.createModal');
@@ -364,6 +364,9 @@ Route::middleware(['web', 'auth', 'perm','branchscope'])->group(function () {
         Route::get('pos/sales/{sale}/invoice', [PosController::class, 'invoice'])->name('sales.invoice');
         Route::get('pos/transactions/today', [PosController::class, 'todayTransactions'])->name('transactions.today');
         Route::get('pos/product/by-barcode', [PosController::class, 'productByBarcode'])->name('product.byBarcode');
+
+        Route::get('pos/sales_list', [PosController::class, 'list'])->name('sales.list');
+        Route::post('pos/sales/list/ajax', [PosController::class, 'listAjax'])->name('sales.list.ajax');
 
     });
 
