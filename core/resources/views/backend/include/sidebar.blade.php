@@ -120,6 +120,79 @@
                 @endpermgroup
             @endpermgroup
 
+            {{-- branch management module end --}}
+            
+            {{-- accounting module start --}}
+            @permgroup(['accounts', 'account_types', 'accounts.assign.branch', 'accounts.opening_balance'])
+                <li class="sidebar-menu-group-title">Accounting</li>
+
+                <li
+                    class="dropdown {{ Route::is('accounts.*') ||
+                    Route::is('account-types.*') ||
+                    Route::is('branch-accounts.*') ||
+                    Route::is('opening-balances.*')
+                        ? 'active'
+                        : '' }}">
+
+                    <a href="javascript:void(0)">
+                        {{-- Parent: Accounts --}}
+                        <iconify-icon icon="mdi:bank-outline" class="menu-icon"></iconify-icon>
+                        <span>Accounts</span>
+                    </a>
+
+                    <ul class="sidebar-submenu">
+
+                        {{-- Account Types --}}
+                        @perm('account_types.index')
+                            <li>
+                                <a class="{{ Route::is('account-types.*') ? 'active' : '' }}"
+                                    href="{{ route('account-types.index') }}">
+                                    <iconify-icon icon="mdi:shape-outline" class="menu-icon "></iconify-icon>
+                                    Account Types
+                                </a>
+                            </li>
+                        @endperm
+
+                        {{-- Account List --}}
+                        @perm('accounts.index')
+                            <li>
+                                <a class="{{ Route::is('accounts.*') ? 'active' : '' }}" href="{{ route('accounts.index') }}">
+                                    <iconify-icon icon="mdi:format-list-bulleted"
+                                        class="menu-icon "></iconify-icon>
+                                    Account List
+                                </a>
+                            </li>
+                        @endperm
+
+                        {{-- Branch Accounts --}}
+                        @perm('accounts.assign.branch')
+                            <li>
+                                <a class="{{ Route::is('branch-accounts.*') ? 'active' : '' }}"
+                                    href="{{ route('branch-accounts.index') }}">
+                                    <iconify-icon icon="mdi:source-branch" class="menu-icon "></iconify-icon>
+                                    Branch Accounts
+                                </a>
+                            </li>
+                        @endperm
+
+                        {{-- Opening Balances --}}
+                        @perm('accounts.opening_balance')
+                            <li>
+                                <a class="{{ Route::is('opening-balances.*') ? 'active' : '' }}"
+                                    href="{{ route('opening-balances.index') }}">
+                                    <iconify-icon icon="mdi:scale-balance" class="menu-icon "></iconify-icon>
+                                    Opening Balances
+                                </a>
+                            </li>
+                        @endperm
+
+                    </ul>
+                </li>
+            @endpermgroup
+
+            {{-- accounting module end --}}
+
+
             @permgroup(['purchase', 'pos', 'paymentTypes', 'expenseCategories', 'expenses'])
                 <li class="sidebar-menu-group-title">Sale Management</li>
 
@@ -152,7 +225,8 @@
                 @endperm
                 @perm('purchase.create')
                     <li>
-                        <a class="{{ Route::is('purchase.orders.create') ? 'active' : '' }}" href="{{ route('purchase.orders.create') }}">
+                        <a class="{{ Route::is('purchase.orders.create') ? 'active' : '' }}"
+                            href="{{ route('purchase.orders.create') }}">
                             <iconify-icon icon="tabler:shopping-cart" class="menu-icon"></iconify-icon>
                             <span>Add Purchase</span>
                         </a>
@@ -302,7 +376,7 @@
 
                     <li class="{{ Route::is('coupon.index') ? 'active' : '' }}">
                         <a href="{{ route('coupon.index') }}">
-                             <iconify-icon icon="mdi:ticket-percent-outline" class="menu-icon"></iconify-icon>
+                            <iconify-icon icon="mdi:ticket-percent-outline" class="menu-icon"></iconify-icon>
                             <span>Coupon</span>
                         </a>
                     </li>

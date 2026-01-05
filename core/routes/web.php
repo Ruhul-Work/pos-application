@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\backend\AccountController;
+use App\Http\Controllers\backend\AccountTypeController;
+use App\Http\Controllers\backend\BranchAccountController;
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\CategoryController;
 use App\Http\Controllers\backend\CategoryTypeController;
@@ -12,6 +15,7 @@ use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
 use App\Http\Controllers\backend\ExpenseCategoryController;
 use App\Http\Controllers\backend\ExpenseController;
+use App\Http\Controllers\backend\OpeningBalanceController;
 use App\Http\Controllers\backend\PaperQualityController;
 use App\Http\Controllers\backend\PaymentTypeController;
 use App\Http\Controllers\backend\PosController;
@@ -457,6 +461,47 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
         Route::get('company_settings/edit/{company_setting}', [CompanySettingController::class, 'edit'])->whereNumber('company_setting')->name('edit');
         Route::put('company_settings/{company_setting}', [CompanySettingController::class, 'update'])->name('update');
         Route::delete('company_settings/{company_setting}', [CompanySettingController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('account-types')->name('account-types.')->group(function () {
+
+        Route::get('/', [AccountTypeController::class, 'index'])->name('index');
+        Route::post('account-types/list/ajax', [AccountTypeController::class, 'listAjax'])->name('list.ajax');
+
+        Route::get('account-types/create/modal', [AccountTypeController::class, 'createModal'])->name('createModal');
+        Route::post('account-types/', [AccountTypeController::class, 'store'])->name('store');
+        Route::get('account-types/{type}/edit/modal', [AccountTypeController::class, 'editModal'])->name('editModal');
+        Route::post('account-types/{type}', [AccountTypeController::class, 'update'])->name('update');
+
+        Route::delete('account-types/{type}', [AccountTypeController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('accounts')->name('accounts.')->group(function () {
+
+        Route::get('/', [AccountController::class, 'index'])->name('index');
+        Route::post('accounts/list/ajax', [AccountController::class, 'listAjax'])->name('list.ajax');
+
+        Route::get('accounts/create/modal', [AccountController::class, 'createModal'])->name('createModal');
+        Route::post('accounts/', [AccountController::class, 'store'])->name('store');
+        Route::get('accounts/{account}/edit/modal', [AccountController::class, 'editModal'])->name('editModal');
+        Route::post('accounts/{account}', [AccountController::class, 'update'])->name('update');
+        Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->name('destroy');
+
+    });
+
+    Route::prefix('branch-accounts')->name('branch-accounts.')->group(function () {
+
+        Route::get('/', [BranchAccountController::class, 'index'])->name('index');
+
+        Route::post('branch-accounts/assign', [BranchAccountController::class, 'assign'])->name('assign');
+        Route::get('/branch-accounts/{branch}/accounts', [BranchAccountController::class, 'assignedAccounts'])->name('assigned');
+    });
+
+    Route::prefix('opening-balances')->name('opening-balances.')->group(function () {
+
+        Route::get('/', [OpeningBalanceController::class, 'index'])->name('index');
+        Route::post('/save', [OpeningBalanceController::class, 'save'])->name('save');
+        Route::get('/opening-balances/{branch}/{fiscalYear}/accounts', [OpeningBalanceController::class, 'loadAccounts'])->name('accounts');
     });
 
 });

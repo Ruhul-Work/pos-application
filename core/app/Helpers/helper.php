@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\backend\FiscalYear;
 use App\Models\Coupon;
 use App\Models\Option;
 use App\Models\Permission;
 use App\Models\Product;
+use App\Support\BranchScope;
+use App\Support\WarehouseScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
@@ -893,11 +896,33 @@ if (! function_exists('getCartWeightBasedShipping')) {
     // Get current branch id
     function current_branch_id(): ?int
     {
-        return \App\Support\BranchScope::currentId();
+        return BranchScope::currentId();
     }
     // Get current warehouse id
     function current_warehouse_id(): ?int
     {
-        return \App\Support\WarehouseScope::get();
+        return WarehouseScope::get();
     }
+
+    // Get current fiscal year(according to is_active field in fiscal_years table)
+    if (! function_exists('currentFiscalYear')) {
+
+        function currentFiscalYear()
+        {
+            return FiscalYear::where('is_active', 1)->first();
+        }
+
+    }
+
+    function requireFiscalYear()
+    {
+        $fy = currentFiscalYear();
+
+        if (! $fy) {
+            abort(503, 'Fiscal year is not configured.');
+        }
+
+        return $fy;
+    }
+
 }
