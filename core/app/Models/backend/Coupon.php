@@ -13,4 +13,16 @@ class Coupon extends Model
         'updated_at',
         'deleted_at'
     ];
+
+    public function product()
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsToMany(Customer::class,'user_id');
+    }
+
+
 }

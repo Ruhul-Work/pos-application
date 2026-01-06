@@ -90,17 +90,15 @@
                                         <form id="customer_form">
                                             <div class="modal-body p-3">
                                                 <label for="" class="form-label">Name</label>
-                                                <input type="text" class="form-control" id="customer_name"
-                                                    name="name">
+                                                <input type="text" class="form-control" id="" name="name">
                                                 <label for="" class="form-label mt-3">Email</label>
-                                                <input type="email" min="0" class="form-control"
-                                                    id="customer_email" name="email">
+                                                <input type="email" min="0" class="form-control" id=""
+                                                    name="email">
                                                 <label for="" class="form-label">Phone</label>
-                                                <input type="text" class="form-control" id="customer_name"
-                                                    name="phone">
+                                                <input type="text" class="form-control" id="" name="phone">
                                                 <label for="" class="form-label mt-3">Adress</label>
-                                                <input type="text" min="0" class="form-control"
-                                                    id="customer_email" name="address">
+                                                <input type="text" min="0" class="form-control" id=""
+                                                    name="address">
                                             </div>
                                             <div class="modal-footer ">
                                                 <button type="button" class="btn btn-danger btn-sm"
@@ -270,24 +268,27 @@
                                                 <div class="modal-body p-3">
 
                                                     <label for="" class="form-label ">Available Coupon</label>
-                                                    <select name="coupon" id="" class=" form-control">
-                                                        <option value="none" selected>Select</option>
-                                                        <option value="coupon1">Coupon 1 - 10% off</option>
-                                                        <option value="coupon2">Coupon 2 - $20 off</option>
+                                                    <select class="form-control form-control-sm  js-s2-ajax"
+                                                        name="coupon_id" id="coupon-select"
+                                                        data-url="{{ route('coupon.select2') }}"
+                                                        data-placeholder="Select Coupon">
+
                                                     </select>
+                                                    <div class="invalid-feedback d-block category_id-error"
+                                                        style="display:none"> </div>
                                                 </div>
                                                 <div class="modal-footer ">
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" data-bs-toggle="modal"
-                                                        class="btn btn-dark btn-sm">Save</button>
+                                                        class="btn btn-dark btn-sm" id="coupon-save">Save</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-secondary"><input type="number" disabled id="coupon" min="0"
-                                        value="0" style="width: 80px"></td>
+                                <td class="text-danger"><input type="number" disabled id="coupon_discount"
+                                        min="0" value="0" style="width: 80px"></td>
 
                             </tr>
                             <tr>
@@ -1008,6 +1009,7 @@
             // clear tab-specific discount/shipping
             sessionStorage.removeItem(window.getDiscountKey());
             sessionStorage.removeItem(window.getShippingKey());
+            window.coupon = null;
             loadCartItems();
             $('.product-card').removeClass('active');
         }
@@ -1023,8 +1025,47 @@
             window.setCart(cart);
         }
 
+
+        //new coupon function
+        function previewCoupon(subtotal) {
+            const couponId = window.coupon;
+            if (!couponId || window.getCart().length === 0) {
+                $('#coupon_discount').val('0.00');
+                return Promise.resolve(0);
+            }
+
+            return $.ajax({
+                url: "{{ route('coupon.preview') }}",
+                method: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    coupon_id: couponId,
+                    user_id: $('#customer').val() || null,
+                    cart: window.getCart(),
+                    subtotal: subtotal
+                }
+            }).then(res => {
+                let discount = 0;
+                if (res.eligible) {
+                    discount = res.discount;
+                    $('#coupon_discount').val(discount.toFixed(2));
+                } else {
+                    $('#coupon_discount').val('0.00');
+                    // alert(res.message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: res.message
+                    });
+                }
+                return discount;
+            });
+        }
+
+
+
         // calculateSubtotal (uses tab-specific discount/shipping)
-        function calculateSubtotal() {
+        async function calculateSubtotal() {
             let cart = window.getCart() || [];
             let discountObj = JSON.parse(sessionStorage.getItem(window.getDiscountKey())) || {
                 type: 'flat',
@@ -1037,6 +1078,13 @@
             cart.forEach(function(item) {
                 subtotal += (item.price * item.quantity);
             });
+
+            previewCoupon(subtotal);
+
+            let couponDiscount = await previewCoupon(subtotal);
+            console.log('coupon:', couponDiscount);
+            // subtotal -= couponDiscount;
+
             if (discountObj.type === 'percentage') {
                 let d = (subtotal * discountObj.value / 100);
                 $('#discount').val(`${d.toFixed(2)}`);
@@ -1047,7 +1095,7 @@
             }
             $('#shipping').val(`${shipping.toFixed(2)}`);
             $('#subtotal').text(subtotal.toFixed(2));
-            $('#total_amount').text(total.toFixed(2));
+            $('#total_amount').text((total - couponDiscount).toFixed(2));
 
             return total;
         }
@@ -1186,6 +1234,9 @@
                     categoryId);
                 loadProducts(url);
             });
+
+           
+
 
             // initial load
             loadProducts("{{ route('product.productsList') }}");
@@ -1537,6 +1588,16 @@
                 });
             } // addToCart
 
+
+
+
+            //coupon apply
+            $('#coupon-save').on('click', function() {
+                let couponId = $('#coupon-select').val();
+                // sessionStorage.setItem('coupon', couponId);
+                window.coupon = couponId;
+                calculateSubtotal();
+            })
 
 
             // discount save (tab-specific)

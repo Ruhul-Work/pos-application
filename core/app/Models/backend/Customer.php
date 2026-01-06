@@ -17,4 +17,8 @@ class Customer extends Model
     {
         return $this->hasMany(Sale::class);
     }
+    public function coupon()
+    {
+        return $this->belongsToMany(CouponUser::class,'user_id');
+    }
 }

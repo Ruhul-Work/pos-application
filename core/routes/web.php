@@ -316,7 +316,6 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
             ->name('adjustments.parent.update');
         Route::get('adjustments/parent-variants', [StockAdjustmentController::class, 'ajaxParentVariants'])
             ->name('adjustments.parent.variants');
-
     });
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
@@ -371,7 +370,6 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
 
         Route::get('pos/sales_list', [PosController::class, 'list'])->name('sales.list');
         Route::post('pos/sales/list/ajax', [PosController::class, 'listAjax'])->name('sales.list.ajax');
-
     });
 
     Route::prefix('purchase')->name('purchase.')->group(function () {
@@ -398,7 +396,6 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
 
         Route::get('purchase/edit/{purchase}', [PurchaseController::class, 'edit'])->whereNumber('purchase')->name('orders.edit');
         Route::put('purchase/{purchase}', [PurchaseController::class, 'update'])->name('orders.update');
-
     });
 
     Route::prefix('paymentTypes')->name('paymentTypes.')->group(function () {
@@ -417,14 +414,21 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
     Route::prefix('coupon')->name('coupon.')->group(function () {
 
         Route::get('coupon', [CouponController::class, 'index'])->name('index');
-        Route::get('coupon/create', [CouponController::class, 'createModal'])->name('create');
+        Route::get('coupon/create', [CouponController::class, 'create'])->name('create');
         Route::post('coupon/list', [CouponController::class, 'listAjax'])->name('list.ajax');
         Route::post('coupon', [CouponController::class, 'store'])->name('store');
-        Route::get('coupon/edit/{coupon}', [CouponController::class, 'editModal'])->whereNumber('coupon')->name('edit');
+        Route::get('coupon/edit/{coupon}', [CouponController::class, 'edit'])->whereNumber('coupon')->name('edit');
         Route::put('coupon/{coupon}', [CouponController::class, 'update'])->name('update');
         Route::get('coupon/{coupon}', [CouponController::class, 'show'])->name('show');
+        Route::get('coupon/add/coupon-products/{coupon}', [CouponController::class, 'couponProducts'])->name('addProducts');
+        Route::post('coupon/store/coupon-products/{coupon}', [CouponController::class, 'storeCouponProducts'])->name('storeCouponProducts');
         Route::delete('coupon/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
         Route::get('coupon/select2/type', [CouponController::class, 'select2'])->name('select2');
+        Route::get('coupon/allCoupon/{userId}', [CouponController::class, 'allCouponByUser'])->name('allCouponByUser');
+        Route::post('coupon/calculate/discount/preview', [CouponController::class, 'preview'])->name('preview');
+
+        Route::post('coupon/product/list/{coupon}', [CouponController::class, 'allCouponAssociates'])->name('allCouponAssociates');
+        Route::delete('coupon-product/{pivot}/{type}', [CouponController::class, 'couponAssociatesDestroy'])->name('couponAssociates.destroy');
     });
 
     Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {
