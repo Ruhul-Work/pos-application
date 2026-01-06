@@ -10,6 +10,7 @@ use App\Models\backend\SaleItem;
 use App\Models\backend\SalePayment;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
+use App\Models\backend\Account;
 use App\Services\StockLedgerService;
 use App\Support\BranchScope;
 use Carbon\Carbon;
@@ -23,7 +24,17 @@ class PosController extends Controller
     public function index()
     {
         $categories = Category::all();
-        return view('backend.modules.pos.index', compact('categories'));
+
+        $branchId   = auth()->user()->branch_id;
+
+        $accounts = Account::where('is_active', 1)
+            ->whereHas('branchAccounts', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('backend.modules.pos.index', compact(['categories' , 'accounts'] ));
     }
 
     /**
