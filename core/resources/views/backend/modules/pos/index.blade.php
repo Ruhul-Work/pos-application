@@ -358,7 +358,7 @@
                 </div>
 
                 {{-- payment button and modal --}}
-  
+
 
                 <div class="p-3 border border-danger bg-light rounded">
                     <h1 class="text-md lh-1 fw-semibold">Select Payment Method</h1>
@@ -1065,40 +1065,46 @@
 
 
         // calculateSubtotal (uses tab-specific discount/shipping)
+
+
         async function calculateSubtotal() {
+
             let cart = window.getCart() || [];
             let discountObj = JSON.parse(sessionStorage.getItem(window.getDiscountKey())) || {
                 type: 'flat',
                 value: 0.00
             };
+
             let shipping = parseFloat(sessionStorage.getItem(window.getShippingKey())) || 0;
             let subtotal = 0;
-            let total = 0;
 
-            cart.forEach(function(item) {
+            cart.forEach(item => {
                 subtotal += (item.price * item.quantity);
             });
 
-            previewCoupon(subtotal);
+            // 🔹 coupon preview (ONLY once)
+            let couponDiscount = await previewCoupon(subtotal) || 0;
 
-            let couponDiscount = await previewCoupon(subtotal);
-            console.log('coupon:', couponDiscount);
-            // subtotal -= couponDiscount;
+            let discount = 0;
+            let total = 0;
 
             if (discountObj.type === 'percentage') {
-                let d = (subtotal * discountObj.value / 100);
-                $('#discount').val(`${d.toFixed(2)}`);
-                total = subtotal + shipping - d;
+                discount = (subtotal * discountObj.value / 100);
             } else {
-                total = subtotal + shipping - parseFloat(discountObj.value || 0);
-                $('#discount').val(`${(parseFloat(discountObj.value) || 0).toFixed(2)}`);
+                discount = parseFloat(discountObj.value || 0);
             }
-            $('#shipping').val(`${shipping.toFixed(2)}`);
-            $('#subtotal').text(subtotal.toFixed(2));
-            $('#total_amount').text((total - couponDiscount).toFixed(2));
 
-            return total;
+            total = subtotal + shipping - discount - couponDiscount;
+
+            // UI update
+            $('#discount').val(discount.toFixed(2));
+            $('#shipping').val(shipping.toFixed(2));
+            $('#subtotal').text(subtotal.toFixed(2));
+            $('#total_amount').text(total.toFixed(2));
+
+            return total; // ✅ final payable amount
         }
+
 
         // stringShortner
         function stringShortner(name, length) {
@@ -1235,7 +1241,7 @@
                 loadProducts(url);
             });
 
-           
+
 
 
             // initial load
@@ -1639,9 +1645,9 @@
 
             window.POS_ACCOUNTS = @json($accounts);
 
-            $(document).on('click', '.payment-modal-btn', function() {
+            $(document).on('click', '.payment-modal-btn', async function() {
 
-                const total = parseFloat(calculateSubtotal()) || 0;
+                const total = await calculateSubtotal();
                 $('#checkout_total_amount').val(total.toFixed(2));
 
                 const accId = $(this).data('account_id');
