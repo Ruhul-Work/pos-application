@@ -68,5 +68,10 @@ class Product extends Model
     {
         return $this->hasMany(StockLedger::class);
     }
+    
+    public function coupon()
+    {
+        return $this->belongsToMany(Coupon::class);
+    }
 
 }

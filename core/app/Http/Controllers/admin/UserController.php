@@ -398,4 +398,31 @@ class UserController extends Controller
         return view('backend.modules.users.edit_modal', compact('user'));
     }
 
+   public function select2(Request $r)
+    {
+        
+        $q = trim($r->input('q', ''));
+        $type = $r->type;
+        $base = User::query();
+      
+
+        if ($q !== '') {
+            $base->where(function($x) use ($q){
+                $x->where('name','like',"%{$q}%")
+                ;
+            });
+        }
+
+        $items = $base->orderBy('id')->orderBy('name')
+                      ->limit(20)->get(['id','name']);
+
+
+        return response()->json([
+            'results' => $items->map(fn($t)=>[
+                'id'   => $t->id,
+                'text' => $t->name 
+            ])
+        ]);
+    }
+
 }

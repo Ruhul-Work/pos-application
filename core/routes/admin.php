@@ -32,6 +32,8 @@ Route::middleware(['web', 'auth', 'perm'])->group(function () {
         Route::post('users/{encrypted}/userpermission', [UserPermissionController::class, 'update'])
             ->name('userspermission.update');
 
+         Route::get('user/all/select2', [UserController::class, 'select2'])->name('select2');
+
     });
 
 // === RBAC (Role & Permission routes)===
