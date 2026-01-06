@@ -453,8 +453,8 @@
             });
 
             // initial load
-            loadProducts(window.routes.productsList);
-            loadPurchaseItems();
+                loadProducts(window.routes.productsList);
+                loadPurchaseItems();
 
             // product card click
             $(document).on('click', '.product-card', function() {

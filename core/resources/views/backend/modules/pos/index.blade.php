@@ -357,108 +357,119 @@
 
                 </div>
 
+                {{-- payment button and modal --}}
+  
+
                 <div class="p-3 border border-danger bg-light rounded">
                     <h1 class="text-md lh-1 fw-semibold">Select Payment Method</h1>
-                    <div class="row gap-3  mt-5 px-3 justify-content-center">
-                        {{-- <div class="col-lg"><button class="btn btn-outline-dark btn-sm">Cash</button></div> --}}
-                        {{-- <button class="btn col-lg-3 payment-btn btn-sm">Cash</button> --}}
-                        <button type="button" class=" btn col-lg-3 payment-btn payment-modal-btn btn-sm"
-                            data-bs-toggle="modal" data-bs-target="#paymentModal" data-bs-whatever="@getbootstrap"
-                            data-payment_method="cash">Cash</button>
-                        {{-- payment modal starts here --}}
-                        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Checkout</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form>
-                                            <div class="row">
-                                                <div class="mb-3 col-lg-4">
-                                                    <label for="checkout_amount" class="col-form-label">Total
-                                                        Amount</label>
-                                                    <input type="number" min="0"
-                                                        class="form-control form-control-sm" id="checkout_total_amount"
-                                                        disabled value="0">
-                                                </div>
-                                                <div class="mb-3 col-lg-4">
-                                                    <label for="received_amount" class="col-form-label">Paying
-                                                        Amount</label>
-                                                    <input type="number" min="0"
-                                                        class="form-control form-control-sm" id="paid_amount"
-                                                        value="0">
-                                                </div>
-                                                <div class="mb-3 col-lg-4">
-                                                    <label for="received_amount" class="col-form-label">Change</label>
-                                                    <input type="number" disabled min="0"
-                                                        class="form-control form-control-sm" id="change_amount"
-                                                        value="$ 0">
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="mb-3 col-md-6">
-                                                    <label for="received_amount" class=" col-form-label">Sale
-                                                        Status</label>
-                                                    <select name="sale_status" id="sale_status"
-                                                        class="form-control form-control-sm">
-                                                        <option value="delivered" selected>Delivered</option>
-                                                        <option value="hold">Hold</option>
-                                                        <option value="draft">Draft</option>
-                                                        <option value="void">Void</option>
-                                                        <option value="order">order placed</option>
-                                                        <option value="pending">Pending</option>
-                                                        <option value="cancel">Cancel</option>
 
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3 col-md-6">
-                                                    <label for="received_amount" class=" col-form-label">Payment
-                                                        Type</label>
-                                                    <select name="payment_method" id="payment_method"
-                                                        class="form-control form-control-sm">
-                                                        <option value="cash" selected>Cash</option>
-                                                        <option value="card">Card</option>
-                                                        <option value="bkash">Bkash</option>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3 ">
-                                                    <label for="received_amount" class="col-form-label">Payment
-                                                        Receiver</label>
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        id="recipient-name">
-                                                </div>
-                                                <div class="mb-3 col-md-6">
-                                                    <label for="received_amount" class="col-form-label">Payment
-                                                        Note</label>
-                                                    <textarea rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
-                                                </div>
-                                                <div class="mb-3 col-md-6">
-                                                    <label for="received_amount" class="col-form-label">Sale Note</label>
-                                                    <textarea type="text" rows="2" class="col-md-12 rounded-3" id="recipient-name"></textarea>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger btn-sm rounded-4"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" id="pos-submit-sale"
-                                            class="btn btn-dark btn-sm rounded-4">Submit</button>
-                                    </div>
+                    <div class="row gap-3 mt-5 px-3 justify-content-center">
+                        @foreach ($accounts as $acc)
+                            <button type="button" class="btn col-lg-3 payment-btn payment-modal-btn btn-sm"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal"
+                                data-account_id="{{ $acc->id }}" data-account_name="{{ $acc->name }}">
+                                {{ $acc->name }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    {{-- payment modal starts here --}}
+                    <div class="modal fade" id="paymentModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h6 class="modal-title">Checkout</h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
+
+                                <div class="modal-body">
+                                    <form>
+
+                                        {{-- TOTAL --}}
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Total Amount</label>
+                                                <input type="number" class="form-control form-control-sm"
+                                                    id="checkout_total_amount" disabled>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Change</label>
+                                                <input type="number" class="form-control form-control-sm"
+                                                    id="change_amount" value="0.00" readonly>
+                                            </div>
+                                        </div>
+
+
+                                        {{-- MULTIPLE PAYMENTS --}}
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered align-middle" id="paymentTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th width="45%">Account</th>
+                                                        <th width="35%">Amount</th>
+                                                        <th width="20%">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {{-- rows added by JS --}}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <button type="button" class="btn btn-sm btn-outline-primary mb-3"
+                                            id="addPaymentRow">
+                                            + Add Payment
+                                        </button>
+
+                                        <hr>
+
+                                        {{-- SALE STATUS --}}
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Sale Status</label>
+                                                <select id="sale_status" class="form-control form-control-sm">
+                                                    <option value="delivered" selected>Delivered</option>
+                                                    <option value="hold">Hold</option>
+                                                    <option value="draft">Draft</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Payment Receiver</label>
+                                                <input type="text" id="payment_receiver"
+                                                    class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+
+                                        {{-- NOTES (kept as-is) --}}
+                                        <div class="row">
+
+                                            <div class="col-md-12">
+                                                <label class="form-label">Sale Note</label>
+                                                <textarea id="sale_note" rows="2" class="form-control form-control-md"></textarea>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">
+                                        Cancel
+                                    </button>
+
+                                    <button type="button" id="pos-submit-sale" class="btn btn-dark btn-sm">
+                                        Submit
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
-                        <button class="btn col-lg-3 payment-btn btn-sm payment-modal-btn" data-bs-toggle="modal"
-                            data-bs-target="#paymentModal" data-payment_method="bkash">Bkash</button>
-                        <button class="btn col-lg-3 payment-btn btn-sm payment-modal-btn" data-bs-toggle="modal"
-                            data-bs-target="#paymentModal" data-payment_method="card">Card</button>
-
                     </div>
+
+
                 </div>
+
                 <div class="d-flex mt-3 gap-2 mb-3">
                     <button style="padding: 10px"
                         class="btn btn-light border col-lg-6   d-flex align-items-center justify-content-center gap-2"><iconify-icon
@@ -1612,28 +1623,108 @@
 
             // checkout modal open setup
             // ensure subtotal recalculated instantly and modal receives correct value
+            // $(document).on('click', '.payment-modal-btn', function() {
+            //     // recalc just before opening
+            //     const total = parseFloat(calculateSubtotal()) || 0;
+            //     $('#checkout_total_amount').val(total.toFixed(2));
+            //     // reset paid and change
+            //     $('#paid_amount').val('');
+            //     $('#change_amount').val('0.00');
+            //     // set payment_method from button data if present
+            //     const payment = $(this).data('payment_method') ?? 'cash';
+            //     $('#payment_method').val(payment);
+            //     // optionally store current cart snapshot id for trace
+            //     $('#paymentModal').data('pos_tab_id', window.getPosTabId());
+            // });
+
+            window.POS_ACCOUNTS = @json($accounts);
+
             $(document).on('click', '.payment-modal-btn', function() {
-                // recalc just before opening
+
                 const total = parseFloat(calculateSubtotal()) || 0;
                 $('#checkout_total_amount').val(total.toFixed(2));
-                // reset paid and change
-                $('#paid_amount').val('');
-                $('#change_amount').val('0.00');
-                // set payment_method from button data if present
-                const payment = $(this).data('payment_method') ?? 'cash';
-                $('#payment_method').val(payment);
+
+                const accId = $(this).data('account_id');
+
+                $('#paymentTable tbody').empty();
+                addPaymentRow(accId, total);
+                recalcChangeAmount();
                 // optionally store current cart snapshot id for trace
                 $('#paymentModal').data('pos_tab_id', window.getPosTabId());
             });
 
-            // paid amount change -> calculate change
-            $(document).on('input', '#paid_amount', function() {
-                let paid = parseFloat($(this).val()) || 0;
-                let total = parseFloat($('#checkout_total_amount').val()) || 0;
-                let change = (paid - total);
-                // if you want show positive change as customer change, else negative remains due
+
+            //change amount re calculate function
+            function recalcChangeAmount() {
+
+                const saleTotal = parseFloat($('#checkout_total_amount').val()) || 0;
+
+                let totalPaid = 0;
+
+                $('#paymentTable tbody tr').each(function() {
+                    const amt = parseFloat($(this).find('.payment-amount').val()) || 0;
+                    totalPaid += amt;
+                });
+
+                let change = totalPaid - saleTotal;
+                if (change < 0) change = 0;
+
                 $('#change_amount').val(change.toFixed(2));
+            }
+
+            $(document).on('input', '.payment-amount', function() {
+                recalcChangeAmount();
             });
+
+            // paid amount change -> calculate change
+            // $(document).on('input', '#paid_amount', function() {
+            //     let paid = parseFloat($(this).val()) || 0;
+            //     let total = parseFloat($('#checkout_total_amount').val()) || 0;
+            //     let change = (paid - total);
+            //     // if you want show positive change as customer change, else negative remains due
+            //     $('#change_amount').val(change.toFixed(2));
+            // });
+
+            $('#addPaymentRow').on('click', function() {
+                addPaymentRow();
+                recalcChangeAmount();
+            });
+
+            $(document).on('click', '.remove-payment-row', function() {
+                $(this).closest('tr').remove();
+                recalcChangeAmount();
+            });
+
+            function addPaymentRow(accountId = null, amount = 0) {
+
+                let options = '';
+                window.POS_ACCOUNTS.forEach(acc => {
+                    options += `
+                                <option value="${acc.id}"
+                                    ${acc.id == accountId ? 'selected' : ''}>
+                                    ${acc.name}
+                                </option>`;
+                });
+
+                $('#paymentTable tbody').append(`
+                            <tr>
+                                <td>
+                                    <select class="form-control form-control-sm payment-account">
+                                        ${options}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01"
+                                        class="form-control form-control-sm payment-amount"
+                                        value="${amount}">
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-danger remove-payment-row">×</button>
+                                </td>
+                            </tr>
+                        `);
+            }
+
 
             // customer create (unchanged)
             $('#customer_form').on('submit', function(e) {
@@ -1728,22 +1819,23 @@
             // -----------------------------
             // 2️⃣ Build PAYMENTS
             // -----------------------------
-            let total = parseFloat($('#checkout_total_amount').val());
-            let paid = parseFloat($('#paid_amount').val()) || 0;
+            let changeAmount = parseFloat($('#change_amount').val()) || 0;
+            let payments = [];
 
-            if (paid <= 0) {
-                alert('Paid amount required');
-                return;
-            }
+            $('#paymentTable tbody tr').each(function() {
+                const accId = $(this).find('.payment-account').val();
+                const amt = parseFloat($(this).find('.payment-amount').val()) || 0;
 
-            let payments = [{
-                payment_type_id: $('#payment_method').val() ? null : null, // optional
-                payment_type: $('#payment_method').val(), // cash / bkash / card
-                amount: paid,
-                reference: '',
-                received_by: $('#recipient-name').val() || 'POS',
-                note: ''
-            }];
+                if (accId && amt > 0) {
+                    payments.push({
+                        account_id: accId,
+                        amount: amt,
+                        change_amount: changeAmount,
+                        received_by: $('#payment_receiver').val() || 'POS',
+                        note: ''
+                    });
+                }
+            });
 
             // -----------------------------
             // 3️⃣ Totals
