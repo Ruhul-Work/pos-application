@@ -380,6 +380,12 @@
                             <span>Coupon</span>
                         </a>
                     </li>
+                    <li class="{{ Route::is('loyalty.index') ? 'active' : '' }}">
+                        <a href="{{ route('loyalty.index') }}">
+                            <iconify-icon icon="mdi:coin" class="menu-icon"></iconify-icon>
+                            <span>Loyalty Point</span>
+                        </a>
+                    </li>
 
 
                     <li class="dropdown {{ Route::is('org.btypes.*') ? 'active' : '' }}">
