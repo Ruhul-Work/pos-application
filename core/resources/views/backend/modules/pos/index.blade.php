@@ -132,13 +132,13 @@
                 <div class="d-flex justify-content-between mt-3 mb-0 rounded-3 p-3 "
                     style="background:#FFEEE9;border:1px solid #E04F16">
                     <div class="">
-                        <h1 class="text-md lh-1 fw-semibold ">James Anderson</h1>
-                        <p class="text-sm lh-1">Bonus: <span
-                                class="bg-info rounded-3 fw-semibold p-1 text-white">148</span>
+                        <h1 class="text-md lh-1 fw-semibold " id="customer_point">James Anderson</h1>
+                        <p class="text-sm lh-1">Loyalty Point: <span
+                                class="bg-info rounded-3 fw-semibold p-1 text-white" id="loyalty_point">0</span>
                             |
-                            Loyality: <span class="bg-success rounded-3 fw-semibold p-1 text-white">520</span></p>
+                            Discount: <span class="bg-success rounded-3 fw-semibold p-1 text-white" ><input style="width: 40px" disabled type="number" value="0" id="avail_loyalty_discount"> </span></p>
                     </div>
-                    <div> <button class="btn btn-danger btn-xs py-1 text-xs ">Apply</button></div>
+                    <div> <button class="btn btn-danger btn-xs py-1 text-xs " id="redeem_point">Apply</button></div>
 
                 </div>
                 <hr class="my-3">
@@ -333,6 +333,16 @@
                                     </div>
                                 </td>
                                 <td> <input type="number" min="0" value="0" disabled id="discount"
+                                        class="text-danger" style="width: 80px"></td>
+
+                            </tr>
+                            <tr>
+
+                                <td class="text-secondary">
+                                    <span>Redeem Point</span>
+
+                                </td>
+                                <td class="text-danger"> <input type="number" min="0" value="0.00" disabled id="loyalty_discount"
                                         class="text-danger" style="width: 80px"></td>
 
                             </tr>
@@ -1086,6 +1096,7 @@
             let couponDiscount = await previewCoupon(subtotal) || 0;
 
             let discount = 0;
+            let loyaltyPoints = $('#loyalty_discount').val() || 0;
             let total = 0;
 
             if (discountObj.type === 'percentage') {
@@ -1094,7 +1105,7 @@
                 discount = parseFloat(discountObj.value || 0);
             }
 
-            total = subtotal + shipping - discount - couponDiscount;
+            total = subtotal + shipping - discount - couponDiscount - loyaltyPoints;
 
             // UI update
             $('#discount').val(discount.toFixed(2));
@@ -1604,6 +1615,35 @@
                 window.coupon = couponId;
                 calculateSubtotal();
             })
+
+            $('#customer').on('change', function() {
+                let customerId = $(this).val(); 
+                console.log('Selected customer ID:', customerId); // Debug log
+                $.ajax({
+                    url: "{{ route('loyalty.userLoyaltyPoints', ':customerId') }}".replace(':customerId', customerId),
+                    method: 'GET',
+                    success: function(res) {
+                        $('#loyalty_point').text(res.points || 0);
+                        $('#avail_loyalty_discount').val(parseInt(res.discount)  || 0);
+                        $('#customer_point').text($('#customer option:selected').text() || '');
+                          $('#loyalty_discount').val(0);
+                          calculateSubtotal();
+                      
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+               
+            });
+
+            // loyalty point apply
+            $('#redeem_point').on('click', function() {
+                console.log('Redeeming loyalty points');
+                console.log('Available loyalty discount:', parseInt($('#avail_loyalty_discount').val()) || 0);
+                $('#loyalty_discount').val( parseInt($('#avail_loyalty_discount').val()) || 0);
+                calculateSubtotal();
+            });
 
 
             // discount save (tab-specific)

@@ -15,6 +15,7 @@ use App\Http\Controllers\backend\DistrictController;
 use App\Http\Controllers\backend\DivisionController;
 use App\Http\Controllers\backend\ExpenseCategoryController;
 use App\Http\Controllers\backend\ExpenseController;
+use App\Http\Controllers\backend\LoyaltyController;
 use App\Http\Controllers\backend\OpeningBalanceController;
 use App\Http\Controllers\backend\PaperQualityController;
 use App\Http\Controllers\backend\PaymentTypeController;
@@ -429,6 +430,20 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
 
         Route::post('coupon/product/list/{coupon}', [CouponController::class, 'allCouponAssociates'])->name('allCouponAssociates');
         Route::delete('coupon-product/{pivot}/{type}', [CouponController::class, 'couponAssociatesDestroy'])->name('couponAssociates.destroy');
+    });
+    Route::prefix('loyalty')->name('loyalty.')->group(function () {
+
+        Route::get('loyalty', [LoyaltyController::class, 'index'])->name('index');
+        Route::get('loyalty/create', [LoyaltyController::class, 'createModal'])->name('createModal');
+        Route::post('loyalty/list', [LoyaltyController::class, 'listAjax'])->name('list.ajax');
+        Route::post('loyalty', [LoyaltyController::class, 'store'])->name('store');
+        Route::get('loyalty/edit/{loyaltyRule}', [LoyaltyController::class, 'editModal'])->whereNumber('loyaltyRule')->name('editModal');
+        Route::put('loyalty/{loyaltyRule}', [LoyaltyController::class, 'update'])->name('update');
+        Route::get('loyalty/{loyaltyRule}', [LoyaltyController::class, 'show'])->name('show');
+        Route::delete('loyalty/{loyaltyRule}', [LoyaltyController::class, 'destroy'])->name('destroy');
+
+        Route::get('loyalty/points/{userId}', [LoyaltyController::class, 'userLoyaltyPoints'])->name('userLoyaltyPoints');
+
     });
 
     Route::prefix('expenseCategories')->name('expenseCategories.')->group(function () {
