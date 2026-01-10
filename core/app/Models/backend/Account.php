@@ -23,7 +23,7 @@ class Account extends Model
 
     public function branchAccounts()
     {
-        return $this->hasMany(BranchAccount::class,'account_id');
+        return $this->hasMany(BranchAccount::class, 'account_id');
     }
 
     public function openingBalances()
@@ -34,5 +34,10 @@ class Account extends Model
     public function type()
     {
         return $this->belongsTo(AccountType::class, 'account_type_id');
+    }
+
+    public function journalLines()
+    {
+        return $this->hasMany(JournalLine::class, 'account_id');
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models\backend;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,11 +15,14 @@ class Sale extends Model
         'warehouse_id',
         'customer_id',
         'user_id',
+        'coupon_id',
         'pos_session_id',
         'sale_type',
         'status',
         'subtotal',
         'discount',
+        'coupon_code',
+        'coupon_discount',
         'tax_amount',
         'shipping_charge',
         'total',
@@ -32,7 +34,7 @@ class Sale extends Model
         'updated_at',
     ];
 
-     protected $casts = [
+    protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -67,6 +69,11 @@ class Sale extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function journal()
+    {
+        return $this->hasOne(Journal::class, 'ref_id')->where('ref_type', 'sale');
     }
 
     /* ================= Helpers ================= */

@@ -181,7 +181,7 @@
                     style="background:#e9e0ef;border:1px solid #8035ba">
                     <div class="">
                         <h1 class="text-md lh-1 fw-semibold ">Discount 5%</h1>
-                        <p class="text-sm ">For $20 Minimum Purchase, all Items</p>
+                        <p class="text-sm ">For 2000 tk Minimum Purchase, all Items</p>
                     </div>
                     <div> <button class="btn btn-danger btn-xs py-1 text-xs">Apply</button></div>
 
@@ -274,6 +274,11 @@
                                                         data-placeholder="Select Coupon">
 
                                                     </select>
+
+                                                    <input type="hidden" id="applied_coupon_id" value="">
+                                                    <input type="hidden" id="applied_coupon_code" value="">
+                                                    <input type="hidden" id="applied_coupon_discount" value="0">
+
                                                     <div class="invalid-feedback d-block category_id-error"
                                                         style="display:none"> </div>
                                                 </div>
@@ -374,11 +379,10 @@
                     <h1 class="text-md lh-1 fw-semibold">Select Payment Method</h1>
 
                     <div class="row gap-3 mt-5 px-3 justify-content-center">
-                        @foreach ($accounts as $acc)
+                        @foreach ($paymentTypes as $type)
                             <button type="button" class="btn col-lg-3 payment-btn payment-modal-btn btn-sm"
-                                data-bs-toggle="modal" data-bs-target="#paymentModal"
-                                data-account_id="{{ $acc->id }}" data-account_name="{{ $acc->name }}">
-                                {{ $acc->name }}
+                                data-bs-toggle="modal" data-bs-target="#paymentModal" data-method="{{ $type->slug }}">
+                                {{ $type->name }}
                             </button>
                         @endforeach
                     </div>
@@ -416,14 +420,12 @@
                                             <table class="table table-bordered align-middle" id="paymentTable">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th width="45%">Account</th>
+                                                        <th width="45%">Payment Method</th>
                                                         <th width="35%">Amount</th>
                                                         <th width="20%">Action</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    {{-- rows added by JS --}}
-                                                </tbody>
+                                                <tbody></tbody>
                                             </table>
                                         </div>
 
@@ -1107,6 +1109,8 @@
 
             total = subtotal + shipping - discount - couponDiscount - loyaltyPoints;
 
+            
+            total = Math.round(total * 100) / 100;
             // UI update
             $('#discount').val(discount.toFixed(2));
             $('#shipping').val(shipping.toFixed(2));
@@ -1608,13 +1612,39 @@
 
 
 
-            //coupon apply
-            $('#coupon-save').on('click', function() {
-                let couponId = $('#coupon-select').val();
-                // sessionStorage.setItem('coupon', couponId);
+            //=====coupon apply function=====
+            $(document).on('click', '#coupon-save', async function() {
+
+                const couponId = $('#coupon-select').val();
+                if (!couponId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Select Coupon',
+                        text: 'Please select a coupon first.'
+                    });
+                    return;
+                }
+
+                // store globally (you already use window.coupon)
                 window.coupon = couponId;
-                calculateSubtotal();
-            })
+                const couponText = $('#coupon-select option:selected').text();
+                // 🔹 set hidden fields
+                $('#applied_coupon_id').val(couponId);
+                $('#applied_coupon_code').val(couponText);
+
+                const total = await calculateSubtotal();
+                const couponDiscount = parseFloat($('#coupon_discount').val()) || 0;
+                $('#applied_coupon_discount').val(couponDiscount);
+
+                // close modal
+                $('#couponModal').modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Coupon Applied',
+                    text: `${couponText} applied successfully`
+                });
+            });
 
             $('#customer').on('change', function() {
                 let customerId = $(this).val(); 
@@ -1646,7 +1676,7 @@
             });
 
 
-            // discount save (tab-specific)
+            //===== discount save (tab-specific)====
             $('#discount-save').on('click', function() {
                 let discountType = $('#discount-type').val();
                 let discountAmount = parseFloat($('#discount-input').val()) || 0;
@@ -1667,7 +1697,8 @@
                 $('#shippingModal').modal('hide');
             });
 
-            // checkout modal open setup
+            //===== checkout modal open setup======
+
             // ensure subtotal recalculated instantly and modal receives correct value
             // $(document).on('click', '.payment-modal-btn', function() {
             //     // recalc just before opening
@@ -1683,22 +1714,54 @@
             //     $('#paymentModal').data('pos_tab_id', window.getPosTabId());
             // });
 
-            window.POS_ACCOUNTS = @json($accounts);
+
+            let selectedMethod = 'cash';
 
             $(document).on('click', '.payment-modal-btn', async function() {
-
                 const total = await calculateSubtotal();
                 $('#checkout_total_amount').val(total.toFixed(2));
 
-                const accId = $(this).data('account_id');
-
-                $('#paymentTable tbody').empty();
-                addPaymentRow(accId, total);
+                selectedMethod = $(this).data('method');
+                $('#paymentTable tbody').html('');
+                addPaymentRow(selectedMethod, total);
                 recalcChangeAmount();
-                // optionally store current cart snapshot id for trace
+
                 $('#paymentModal').data('pos_tab_id', window.getPosTabId());
             });
 
+
+            //=======add payment  row function=====
+            window.PAYMENT_TYPES = @json($paymentTypes);
+
+            function addPaymentRow(selectedMethod = 'cash') {
+
+                let options = '';
+                window.PAYMENT_TYPES.forEach(pt => {
+                    options += `<option value="${pt.id}" 
+                    ${pt.slug === selectedMethod ? 'selected' : ''}>
+                    ${pt.name}
+                    </option>`;
+                });
+
+                $('#paymentTable tbody').append(`
+                                <tr>
+                                    <td>
+                                        <select class="form-control form-control-sm payment-method">
+                                            ${options}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number"
+                                            class="form-control form-control-sm payment-amount"
+                                            min="0" step="0.01">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button"
+                                            class="btn btn-sm btn-danger remove-row">×</button>
+                                    </td>
+                                </tr>
+                            `);
+            }
 
             //change amount re calculate function
             function recalcChangeAmount() {
@@ -1713,7 +1776,7 @@
                 });
 
                 let change = totalPaid - saleTotal;
-                if (change < 0) change = 0;
+                // if (change < 0) change = 0;
 
                 $('#change_amount').val(change.toFixed(2));
             }
@@ -1722,54 +1785,16 @@
                 recalcChangeAmount();
             });
 
-            // paid amount change -> calculate change
-            // $(document).on('input', '#paid_amount', function() {
-            //     let paid = parseFloat($(this).val()) || 0;
-            //     let total = parseFloat($('#checkout_total_amount').val()) || 0;
-            //     let change = (paid - total);
-            //     // if you want show positive change as customer change, else negative remains due
-            //     $('#change_amount').val(change.toFixed(2));
-            // });
 
             $('#addPaymentRow').on('click', function() {
                 addPaymentRow();
                 recalcChangeAmount();
             });
 
-            $(document).on('click', '.remove-payment-row', function() {
+            $(document).on('click', '.remove-row', function() {
                 $(this).closest('tr').remove();
                 recalcChangeAmount();
             });
-
-            function addPaymentRow(accountId = null, amount = 0) {
-
-                let options = '';
-                window.POS_ACCOUNTS.forEach(acc => {
-                    options += `
-                                <option value="${acc.id}"
-                                    ${acc.id == accountId ? 'selected' : ''}>
-                                    ${acc.name}
-                                </option>`;
-                });
-
-                $('#paymentTable tbody').append(`
-                            <tr>
-                                <td>
-                                    <select class="form-control form-control-sm payment-account">
-                                        ${options}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01"
-                                        class="form-control form-control-sm payment-amount"
-                                        value="${amount}">
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-danger remove-payment-row">×</button>
-                                </td>
-                            </tr>
-                        `);
-            }
 
 
             // customer create (unchanged)
@@ -1863,20 +1888,23 @@
             });
 
             // -----------------------------
-            // 2️⃣ Build PAYMENTS
+            // 2️⃣ Build PAYMENTS (METHOD BASED)
             // -----------------------------
-            let changeAmount = parseFloat($('#change_amount').val()) || 0;
+            let total = parseFloat($('#checkout_total_amount').val()) || 0;
+            let couponId = $('#applied_coupon_id').val() || null;
+            let couponCode = $('#applied_coupon_code').val() || null;
+            let couponDiscount = parseFloat($('#applied_coupon_discount').val()) || 0;
+
             let payments = [];
 
             $('#paymentTable tbody tr').each(function() {
-                const accId = $(this).find('.payment-account').val();
+                const method = $(this).find('.payment-method').val(); // cash/bkash/card
                 const amt = parseFloat($(this).find('.payment-amount').val()) || 0;
 
-                if (accId && amt > 0) {
+                if (method && amt > 0) {
                     payments.push({
-                        account_id: accId,
+                        method: method,
                         amount: amt,
-                        change_amount: changeAmount,
                         received_by: $('#payment_receiver').val() || 'POS',
                         note: ''
                     });
@@ -1887,8 +1915,9 @@
             // 3️⃣ Totals
             // -----------------------------
             let payload = {
-                branch_id: window.AUTH_BRANCH_ID, // inject from blade
-                warehouse_id: window.AUTH_WAREHOUSE_ID, // inject from blade
+                branch_id: window.AUTH_BRANCH_ID,
+                warehouse_id: window.AUTH_WAREHOUSE_ID,
+
                 resume_sale_id: window.CURRENT_RESUME_SALE_ID ?? null,
                 customer_id: $('#customer').val() || null,
 
@@ -1897,11 +1926,17 @@
 
                 subtotal: parseFloat($('#subtotal').text()),
                 discount: parseFloat($('#discount').val()) || 0,
+
+                coupon_id: couponId,
+                coupon_code: couponCode,
+                coupon_discount: couponDiscount,
+
                 tax_amount: 0,
                 shipping_charge: parseFloat($('#shipping').val()) || 0,
+
                 total: total,
 
-                sale_note: 'POS sale',
+                sale_note: $('#sale_note').val() || 'POS sale',
 
                 items: items,
                 payments: payments
