@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\backend\FiscalYear;
+use App\Models\backend\JournalEntry;
+use App\Models\backend\VoucherType;
 use App\Models\Coupon;
 use App\Models\Option;
 use App\Models\Permission;
@@ -923,6 +925,35 @@ if (! function_exists('getCartWeightBasedShipping')) {
         }
 
         return $fy;
+    }
+
+    //voucher number genarate function
+    if (! function_exists('generateVoucherNo')) {
+
+        function generateVoucherNo(string $voucherCode): string
+        {
+            $fy = currentFiscalYear();
+
+            if (! $fy) {
+                throw new Exception('No active fiscal year found.');
+            }
+
+            $year = date('y', strtotime($fy->start_date)); // e.g. 24
+
+            // Count existing vouchers for this type + fiscal year
+            $lastNumber = JournalEntry::where('voucher_type_id', VoucherType::idByCode($voucherCode))
+                ->where('fiscal_year_id', $fy->id)
+                ->count();
+
+            $next = $lastNumber + 1;
+
+            return sprintf(
+                '%s-%s-%06d',
+                $voucherCode,
+                $year,
+                $next
+            );
+        }
     }
 
 }

@@ -2,7 +2,10 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\backend\BranchAccount;
 use App\Models\backend\Category;
+use App\Models\backend\JournalEntry;
+use App\Models\backend\JournalEntryLine;
 use App\Models\backend\PaymentType;
 use App\Models\backend\Product;
 use App\Models\backend\Sale;
@@ -10,14 +13,14 @@ use App\Models\backend\SaleItem;
 use App\Models\backend\SalePayment;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
-use App\Models\backend\Account;
+use App\Models\backend\VoucherType;
 use App\Services\StockLedgerService;
-use App\Support\BranchScope;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PosController extends Controller
 {
@@ -25,71 +28,318 @@ class PosController extends Controller
     {
         $categories = Category::all();
 
-        $branchId   = auth()->user()->branch_id;
+        $branchId = auth()->user()->branch_id;
 
-        $accounts = Account::where('is_active', 1)
-            ->whereHas('branchAccounts', function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
-            })
-            ->orderBy('name')
-            ->get();
+        $paymentTypes = PaymentType::where('is_active', 1)->get();
 
-        return view('backend.modules.pos.index', compact(['categories' , 'accounts'] ));
+        return view('backend.modules.pos.index', compact(['categories', 'paymentTypes']));
     }
 
     /**
      * Store POS Sale
      */
+    // public function store(Request $request)
+    // {
+    //     // -----------------------------
+    //     // 1️⃣ Validate Request
+    //     // -----------------------------
+
+    //     $data = $request->validate([
+
+    //         'customer_id'                => 'nullable|exists:customers,id',
+    //         'sale_type'                  => 'nullable|string',
+    //         'status'                     => 'required|string',
+
+    //         'subtotal'                   => 'required|numeric|min:0',
+    //         'discount'                   => 'nullable|numeric|min:0',
+    //         'tax_amount'                 => 'nullable|numeric|min:0',
+    //         'shipping_charge'            => 'nullable|numeric|min:0',
+    //         'total'                      => 'required|numeric|min:0',
+
+    //         'sale_note'                  => 'nullable|string',
+
+    //         // items
+    //         'items'                      => 'required|array|min:1',
+    //         'items.*.product_id'         => 'required|exists:products,id',
+    //         'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+    //         'items.*.unit_id'            => 'nullable|exists:units,id',
+    //         'items.*.quantity'           => 'required|numeric|min:0.001',
+    //         'items.*.unit_price'         => 'required|numeric|min:0',
+    //         'items.*.discount_amount'    => 'nullable|numeric|min:0',
+    //         'items.*.tax_amount'         => 'nullable|numeric|min:0',
+    //         'items.*.lot_number'         => 'nullable|string',
+    //         'items.*.expiry_date'        => 'nullable|date',
+
+    //         // payments
+    //         'payments'                   => 'nullable|array',
+    //         'payments.*.payment_type_id' => 'nullable|exists:payment_types,id',
+    //         'payments.*.payment_type'    => 'nullable|string',
+    //         'payments.*.amount'          => 'required|numeric|min:0.01',
+    //         'payments.*.reference'       => 'nullable|string',
+    //         'payments.*.received_by'     => 'nullable|string',
+    //         'payments.*.note'            => 'nullable|string',
+    //     ]);
+
+    //     \Log::info('BRANCH DEBUG', [
+    //         'payload_branch' => $request->branch_id,
+    //         'session_branch' => BranchScope::currentId(),
+    //         'user_branch'    => auth()->user()->branch_id,
+    //     ]);
+
+    //     // Validate branch access
+
+    // $branchId    = current_branch_id();
+    // $warehouseId = current_warehouse_id();
+
+    // if (auth()->user()->isSuper()) {
+    //     abort_if(
+    //         ! $branchId || ! $warehouseId,
+    //         422,
+    //         'Please select a branch before making a POS sale.'
+    //     );
+    // } else {
+    //     abort_if(
+    //         ! $branchId || ! $warehouseId,
+    //         422,
+    //         'Branch/Warehouse context missing.'
+    //     );
+    // }
+
+    //     // -----------------------------
+    //     // 2️⃣ DB Transaction
+    //     // -----------------------------
+    //     try {
+    //         return DB::transaction(function () use ($data, $request, $branchId, $warehouseId) {
+
+    //             // -----------------------------
+    //             // `RESUME SALE` handling
+    //             // -----------------------------
+    //             if ($request->resume_sale_id) {
+    //                 // UPDATE EXISTING HOLD SALE
+    //                 $sale = Sale::where('id', $request->resume_sale_id)
+    //                     ->where('status', 'hold')
+    //                     ->lockForUpdate()
+    //                     ->firstOrFail();
+
+    //                 $sale->update([
+    //                     'status'          => 'delivered',
+    //                     'subtotal'        => $request->subtotal,
+    //                     'discount'        => $request->discount,
+    //                     'shipping_charge' => $request->shipping_charge,
+    //                     'total'           => $request->total,
+    //                     'paid_amount'     => $request->amount ?? 0,
+    //                     'due_amount'      => 0,
+    //                     'payment_status'  => 'paid',
+    //                 ]);
+
+    //                 // clear old items & payments
+    //                 $sale->items()->delete();
+    //                 $sale->payments()->delete();
+
+    //             } else {
+
+    //                 // -----------------------------
+    //                 // 3️⃣ Create Sale
+    //                 // -----------------------------
+    //                 $sale = Sale::create([
+    //                     'invoice_no'      => $this->generateInvoiceNo(),
+    //                     'branch_id'       => $branchId,
+    //                     'warehouse_id'    => $warehouseId,
+    //                     'customer_id'     => $data['customer_id'] ?? null,
+    //                     'user_id'         => auth()->id(),
+    //                     'pos_session_id'  => $request->header('X-POS-SESSION') ?? null,
+
+    //                     'sale_type'       => $data['sale_type'] ?? 'retail',
+    //                     'status'          => $data['status'],
+
+    //                     'subtotal'        => $data['subtotal'],
+    //                     'discount'        => $data['discount'] ?? 0,
+    //                     'tax_amount'      => $data['tax_amount'] ?? 0,
+    //                     'shipping_charge' => $data['shipping_charge'] ?? 0,
+    //                     'total'           => $data['total'],
+
+    //                     'paid_amount'     => 0,
+    //                     'due_amount'      => $data['total'],
+    //                     'payment_status'  => 'due',
+
+    //                     'sale_note'       => $data['sale_note'] ?? null,
+    //                 ]);
+    //             }
+    //             // -----------------------------
+    //             // 4️⃣ Insert Sale Items
+    //             // -----------------------------
+    //             foreach ($data['items'] as $row) {
+
+    //                 $lineTotal =
+    //                     ($row['unit_price'] * $row['quantity'])
+    //                      - ($row['discount_amount'] ?? 0)
+    //                      + ($row['tax_amount'] ?? 0);
+
+    //                 SaleItem::create([
+    //                     'sale_id'            => $sale->id,
+    //                     'product_id'         => $row['product_id'],
+    //                     'product_variant_id' => $row['product_variant_id'] ?? null,
+    //                     'unit_id'            => $row['unit_id'] ?? null,
+    //                     'quantity'           => $row['quantity'],
+    //                     'unit_price'         => $row['unit_price'],
+    //                     'discount_amount'    => $row['discount_amount'] ?? 0,
+    //                     'tax_amount'         => $row['tax_amount'] ?? 0,
+    //                     'line_total'         => round($lineTotal, 2),
+    //                     'lot_number'         => $row['lot_number'] ?? null,
+    //                     'expiry_date'        => $row['expiry_date'] ?? null,
+    //                 ]);
+
+    //             }
+
+    //             // -----------------------------
+    //             // STOCK LEDGER (WAREHOUSE WISE)
+    //             // -----------------------------
+    //             StockLedgerService::deductForSale([
+    //                 'sale_id'      => $sale->id,
+    //                 'warehouse_id' => $warehouseId,
+    //                 'branch_id'    => $branchId,
+    //                 'user_id'      => auth()->id(),
+    //                 'items'        => collect($data['items'])->map(function ($row) {
+    //                     return [
+    //                         'product_id' => $row['product_id'],
+    //                         'quantity'   => $row['quantity'],
+    //                         'unit_price' => $row['unit_price'],
+    //                     ];
+    //                 })->toArray(),
+    //             ]);
+
+    //             // -----------------------------
+    //             // 5️⃣ Insert Payments (Multi-payment)
+    //             // -----------------------------
+    //             $paidAmount = 0;
+
+    //             if (! empty($data['payments'])) {
+    //                 foreach ($data['payments'] as $pay) {
+
+    //                     // Resolve payment_type_id from enum if needed
+    //                     $paymentTypeId = $pay['payment_type_id'] ?? null;
+
+    //                     if (! $paymentTypeId && ! empty($pay['payment_type'])) {
+    //                         $pt = PaymentType::where('slug', $pay['payment_type'])
+    //                             ->orWhere('name', $pay['payment_type'])
+    //                             ->first();
+    //                         $paymentTypeId = $pt?->id;
+    //                     }
+
+    //                     SalePayment::create([
+    //                         'sale_id'         => $sale->id,
+    //                         'payment_type_id' => $paymentTypeId,
+    //                         'payment_type'    => $pay['payment_type'] ?? null,
+    //                         'amount'          => $pay['amount'],
+    //                         'reference'       => $pay['reference'] ?? null,
+    //                         'received_by'     => $pay['received_by'] ?? auth()->user()->name,
+    //                         'note'            => $pay['note'] ?? null,
+    //                         'paid_at'         => now(),
+    //                     ]);
+
+    //                     $paidAmount += $pay['amount'];
+    //                 }
+    //             }
+
+    //             // -----------------------------
+    //             // 6️⃣ Update Paid / Due / Status
+    //             // -----------------------------
+    //             $sale->paid_amount = round($paidAmount, 2);
+    //             $sale->due_amount  = round($sale->total - $paidAmount, 2);
+    //             $sale->recalcPaymentStatus();
+    //             $sale->save();
+
+    //             // -----------------------------
+    //             // 7️⃣ Response
+    //             // -----------------------------
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => 'Sale completed successfully',
+    //                 'id'      => $sale->id,
+    //                 'sale_id' => $sale->id,
+    //                 'invoice' => $sale->invoice_no,
+    //             ], 201);
+    //         });
+
+    //     } catch (\Exception $e) {
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage(),
+    //             'type'    => 'STOCK_ERROR',
+    //         ], 409); // 409 Conflict = business rule fail
+    //     }
+    // }
+
     public function store(Request $request)
     {
-        // -----------------------------
-        // 1️⃣ Validate Request
-        // -----------------------------
-
         $data = $request->validate([
 
-            'customer_id'                => 'nullable|exists:customers,id',
-            'sale_type'                  => 'nullable|string',
-            'status'                     => 'required|string',
+            'customer_id'        => 'nullable|exists:customers,id',
 
-            'subtotal'                   => 'required|numeric|min:0',
-            'discount'                   => 'nullable|numeric|min:0',
-            'tax_amount'                 => 'nullable|numeric|min:0',
-            'shipping_charge'            => 'nullable|numeric|min:0',
-            'total'                      => 'required|numeric|min:0',
+            'sale_type'          => 'required|string',
+            'status'             => 'required|in:delivered,hold,draft',
 
-            'sale_note'                  => 'nullable|string',
+            'subtotal'           => 'required|numeric|min:0',
+            'discount'           => 'nullable|numeric|min:0',
+            'coupon_id'          => 'nullable|exists:coupons,id',
+            'coupon_code'        => 'nullable|string',
+            'coupon_discount'    => 'nullable|numeric|min:0',
+            'shipping_charge'    => 'nullable|numeric|min:0',
+            'total'              => 'required|numeric|min:0',
 
-            // items
-            'items'                      => 'required|array|min:1',
-            'items.*.product_id'         => 'required|exists:products,id',
-            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
-            'items.*.unit_id'            => 'nullable|exists:units,id',
-            'items.*.quantity'           => 'required|numeric|min:0.001',
-            'items.*.unit_price'         => 'required|numeric|min:0',
-            'items.*.discount_amount'    => 'nullable|numeric|min:0',
-            'items.*.tax_amount'         => 'nullable|numeric|min:0',
-            'items.*.lot_number'         => 'nullable|string',
-            'items.*.expiry_date'        => 'nullable|date',
+            'items'              => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity'   => 'required|numeric|min:0.001',
+            'items.*.unit_price' => 'required|numeric|min:0',
 
-            // payments
-            'payments'                   => 'nullable|array',
-            'payments.*.payment_type_id' => 'nullable|exists:payment_types,id',
-            'payments.*.payment_type'    => 'nullable|string',
-            'payments.*.amount'          => 'required|numeric|min:0.01',
-            'payments.*.reference'       => 'nullable|string',
-            'payments.*.received_by'     => 'nullable|string',
-            'payments.*.note'            => 'nullable|string',
+            'payments'           => 'nullable|array',
+            'payments.*.method'  => 'required|string', // cash / bkash / card
+            'payments.*.amount'  => 'required|numeric|min:0.01',
         ]);
 
-        \Log::info('BRANCH DEBUG', [
-            'payload_branch' => $request->branch_id,
-            'session_branch' => BranchScope::currentId(),
-            'user_branch'    => auth()->user()->branch_id,
-        ]);
+        /* -----------------------------
+        | 🔐 SECURITY: recalc total
+        -----------------------------*/
+        $subtotal = collect($data['items'])
+            ->sum(fn($i) => $i['quantity'] * $i['unit_price']);
 
-        // Validate branch access
+        $calculatedTotal = round(
+            $subtotal
+             - ($data['discount'] ?? 0)
+             - ($data['coupon_discount'] ?? 0)
+             + ($data['shipping_charge'] ?? 0),
+            2
+        );
 
+        if (round($data['total'], 2) !== $calculatedTotal) {
+            throw ValidationException::withMessages([
+                'total' => 'Total mismatch. Please refresh POS.',
+            ]);
+        }
+
+        /* -----------------------------
+        | 💰 PAYMENT VALIDATION
+        -----------------------------*/
+        if ($data['status'] === 'delivered') {
+
+            if (empty($data['payments'])) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Payment required for delivered sale.',
+                ]);
+            }
+
+            $totalPaid = collect($data['payments'])
+                ->sum(fn($p) => round($p['amount'], 2));
+
+            //  Customer must give at least sale total
+            if (round($totalPaid, 2) < round($calculatedTotal, 2)) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Paid amount cannot be less than sale total.',
+                ]);
+            }
+        }
+        //current branch and warehouse
         $branchId    = current_branch_id();
         $warehouseId = current_warehouse_id();
 
@@ -107,11 +357,11 @@ class PosController extends Controller
             );
         }
 
-        // -----------------------------
-        // 2️⃣ DB Transaction
-        // -----------------------------
+        /* -----------------------------
+        | 🚀 TRANSACTION
+        -----------------------------*/
         try {
-            return DB::transaction(function () use ($data, $request, $branchId, $warehouseId) {
+            return DB::transaction(function () use ($request, $data, $subtotal, $calculatedTotal, $branchId, $warehouseId) {
 
                 // -----------------------------
                 // `RESUME SALE` handling
@@ -140,57 +390,45 @@ class PosController extends Controller
 
                 } else {
 
-                    // -----------------------------
-                    // 3️⃣ Create Sale
-                    // -----------------------------
+                    /* -----------------------------
+                    | 1️⃣ SALE
+                    -----------------------------*/
                     $sale = Sale::create([
-                        'invoice_no'      => $this->generateInvoiceNo(),
+                        'invoice_no'      => 'POS-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
                         'branch_id'       => $branchId,
                         'warehouse_id'    => $warehouseId,
                         'customer_id'     => $data['customer_id'] ?? null,
                         'user_id'         => auth()->id(),
-                        'pos_session_id'  => $request->header('X-POS-SESSION') ?? null,
 
-                        'sale_type'       => $data['sale_type'] ?? 'retail',
+                        'sale_type'       => $data['sale_type'],
                         'status'          => $data['status'],
 
-                        'subtotal'        => $data['subtotal'],
+                        'subtotal'        => $subtotal,
                         'discount'        => $data['discount'] ?? 0,
-                        'tax_amount'      => $data['tax_amount'] ?? 0,
+                        'coupon_id'       => $data['coupon_id'] ?? null,
+                        'coupon_code'     => $data['coupon_code'] ?? null,
+                        'coupon_discount' => $data['coupon_discount'] ?? 0,
                         'shipping_charge' => $data['shipping_charge'] ?? 0,
-                        'total'           => $data['total'],
+                        'total'           => $calculatedTotal,
 
-                        'paid_amount'     => 0,
-                        'due_amount'      => $data['total'],
-                        'payment_status'  => 'due',
+                        'paid_amount'     => $data['status'] === 'delivered' ? $calculatedTotal : 0,
+                        'due_amount'      => $data['status'] === 'delivered' ? 0 : $calculatedTotal,
+                        'payment_status'  => $data['status'] === 'delivered' ? 'paid' : 'due',
 
                         'sale_note'       => $data['sale_note'] ?? null,
                     ]);
                 }
-                // -----------------------------
-                // 4️⃣ Insert Sale Items
-                // -----------------------------
-                foreach ($data['items'] as $row) {
-
-                    $lineTotal =
-                        ($row['unit_price'] * $row['quantity'])
-                         - ($row['discount_amount'] ?? 0)
-                         + ($row['tax_amount'] ?? 0);
-
+                /* -----------------------------
+                | 2️⃣ ITEMS
+                -----------------------------*/
+                foreach ($data['items'] as $item) {
                     SaleItem::create([
-                        'sale_id'            => $sale->id,
-                        'product_id'         => $row['product_id'],
-                        'product_variant_id' => $row['product_variant_id'] ?? null,
-                        'unit_id'            => $row['unit_id'] ?? null,
-                        'quantity'           => $row['quantity'],
-                        'unit_price'         => $row['unit_price'],
-                        'discount_amount'    => $row['discount_amount'] ?? 0,
-                        'tax_amount'         => $row['tax_amount'] ?? 0,
-                        'line_total'         => round($lineTotal, 2),
-                        'lot_number'         => $row['lot_number'] ?? null,
-                        'expiry_date'        => $row['expiry_date'] ?? null,
+                        'sale_id'    => $sale->id,
+                        'product_id' => $item['product_id'],
+                        'quantity'   => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'line_total' => round($item['quantity'] * $item['unit_price'], 2),
                     ]);
-
                 }
 
                 // -----------------------------
@@ -210,57 +448,73 @@ class PosController extends Controller
                     })->toArray(),
                 ]);
 
-                // -----------------------------
-                // 5️⃣ Insert Payments (Multi-payment)
-                // -----------------------------
-                $paidAmount = 0;
+                /* -----------------------------
+            | 3️⃣ PAYMENTS + JOURNAL
+            -----------------------------*/
+                if ($sale->status === 'delivered') {
 
-                if (! empty($data['payments'])) {
+                    // 🔑 Branch default cash account
+                    $cashAccountId = BranchAccount::where('branch_id', $sale->branch_id)
+                        ->whereHas('account', fn($q) => $q->where('is_active', 1))
+                        ->value('account_id');
+
+                    if (! $cashAccountId) {
+                        throw new \Exception('Default cash account not configured for this branch.');
+                    }
+
                     foreach ($data['payments'] as $pay) {
-
-                        // Resolve payment_type_id from enum if needed
-                        $paymentTypeId = $pay['payment_type_id'] ?? null;
-
-                        if (! $paymentTypeId && ! empty($pay['payment_type'])) {
-                            $pt = PaymentType::where('slug', $pay['payment_type'])
-                                ->orWhere('name', $pay['payment_type'])
-                                ->first();
-                            $paymentTypeId = $pt?->id;
-                        }
+                        $type = PaymentType::findOrFail($pay['method']);
 
                         SalePayment::create([
                             'sale_id'         => $sale->id,
-                            'payment_type_id' => $paymentTypeId,
-                            'payment_type'    => $pay['payment_type'] ?? null,
+                            'account_id'      => $cashAccountId, // ✅ always cash account
+                            'payment_type_id' => $type->id,      // ✅ dynamic
+                            'payment_type'    => $type->slug,    // ✅ enum safe
                             'amount'          => $pay['amount'],
-                            'reference'       => $pay['reference'] ?? null,
-                            'received_by'     => $pay['received_by'] ?? auth()->user()->name,
-                            'note'            => $pay['note'] ?? null,
+                            'received_by'     => auth()->user()->name,
                             'paid_at'         => now(),
                         ]);
-
-                        $paidAmount += $pay['amount'];
                     }
+
+                    // -------- JOURNAL --------
+                    $revenueAccountId = config('accounting.sales_revenue_account_id');
+
+                    $journal = JournalEntry::create([
+                        'voucher_no'      => generateVoucherNo('SALE'),
+                        'voucher_type_id' => VoucherType::idByCode('SALE'),
+                        'branch_id'       => $branchId,
+                        'fiscal_year_id'  => currentFiscalYear()->id,
+                        'source_id'       => $sale->id,
+                        'entry_date'      => now()->toDateString(),
+                        'narration'       => 'POS Sale #' . $sale->invoice_no,
+                        'created_by'      => auth()->id(),
+                    ]);
+
+                    // Debit cash
+                    JournalEntryLine::create([
+                        'journal_entry_id' => $journal->id,
+                        'account_id'       => $cashAccountId,
+                        'branch_id'        => $sale->branch_id,
+                        'debit'            => $sale->total,
+                        'credit'           => 0,
+                    ]);
+
+                    // Credit revenue
+                    JournalEntryLine::create([
+                        'journal_entry_id' => $journal->id,
+                        'account_id'       => $revenueAccountId,
+                        'branch_id'        => $branchId,
+                        'debit'            => 0,
+                        'credit'           => $sale->total,
+                    ]);
                 }
 
-                // -----------------------------
-                // 6️⃣ Update Paid / Due / Status
-                // -----------------------------
-                $sale->paid_amount = round($paidAmount, 2);
-                $sale->due_amount  = round($sale->total - $paidAmount, 2);
-                $sale->recalcPaymentStatus();
-                $sale->save();
-
-                // -----------------------------
-                // 7️⃣ Response
-                // -----------------------------
                 return response()->json([
                     'success' => true,
-                    'message' => 'Sale completed successfully',
-                    'id'      => $sale->id,
+                    'id' => $sale->id,
                     'sale_id' => $sale->id,
                     'invoice' => $sale->invoice_no,
-                ], 201);
+                ]);
             });
 
         } catch (\Exception $e) {

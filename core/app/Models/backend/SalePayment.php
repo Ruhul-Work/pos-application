@@ -12,8 +12,10 @@ class SalePayment extends Model
     protected $fillable = [
         'sale_id',
         'payment_type_id',
+        'account_id',
         'payment_type',
         'amount',
+        'change_amount',
         'reference',
         'paid_at',
         'received_by',
