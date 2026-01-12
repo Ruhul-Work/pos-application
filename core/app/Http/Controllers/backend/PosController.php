@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
@@ -6,6 +7,8 @@ use App\Models\backend\BranchAccount;
 use App\Models\backend\Category;
 use App\Models\backend\JournalEntry;
 use App\Models\backend\JournalEntryLine;
+use App\Models\backend\LoyaltyRule;
+use App\Models\backend\LoyaltyTransaction;
 use App\Models\backend\PaymentType;
 use App\Models\backend\Product;
 use App\Models\backend\Sale;
@@ -14,6 +17,7 @@ use App\Models\backend\SalePayment;
 use App\Models\backend\StockCurrent;
 use App\Models\backend\StockLedger;
 use App\Models\backend\VoucherType;
+use App\Services\LoyaltyPointService;
 use App\Services\StockLedgerService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -285,6 +289,7 @@ class PosController extends Controller
             'coupon_id'          => 'nullable|exists:coupons,id',
             'coupon_code'        => 'nullable|string',
             'coupon_discount'    => 'nullable|numeric|min:0',
+            'redeem_point'       => 'nullable|boolean',
             'shipping_charge'    => 'nullable|numeric|min:0',
             'total'              => 'required|numeric|min:0',
 
@@ -301,16 +306,28 @@ class PosController extends Controller
         /* -----------------------------
         | 🔐 SECURITY: recalc total
         -----------------------------*/
+        // $subtotal = collect($data['items'])
+        //     ->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+
         $subtotal = collect($data['items'])
-            ->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+            ->sum(fn($i) => $i['quantity'] * Product::find($i['product_id'])->price);
+
+        $redeemPointDiscount = 0;
+        if ($data['redeem_point']) {
+            $redeemPointDiscount = (int) LoyaltyPointService::redeemPoints($data['customer_id']);
+        }
+
 
         $calculatedTotal = round(
             $subtotal
-             - ($data['discount'] ?? 0)
-             - ($data['coupon_discount'] ?? 0)
-             + ($data['shipping_charge'] ?? 0),
+                - ($data['discount'] ?? 0)
+                - ($data['coupon_discount'] ?? 0)
+                -  ($redeemPointDiscount ?? 0)
+                + ($data['shipping_charge'] ?? 0),
             2
         );
+
+        // dd($calculatedTotal);
 
         if (round($data['total'], 2) !== $calculatedTotal) {
             throw ValidationException::withMessages([
@@ -361,7 +378,7 @@ class PosController extends Controller
         | 🚀 TRANSACTION
         -----------------------------*/
         try {
-            return DB::transaction(function () use ($request, $data, $subtotal, $calculatedTotal, $branchId, $warehouseId) {
+            return DB::transaction(function () use ($request, $data, $subtotal, $calculatedTotal, $redeemPointDiscount, $branchId, $warehouseId) {
 
                 // -----------------------------
                 // `RESUME SALE` handling
@@ -377,6 +394,7 @@ class PosController extends Controller
                         'status'          => 'delivered',
                         'subtotal'        => $request->subtotal,
                         'discount'        => $request->discount,
+                        'point_discount'   => $redeemPointDiscount ?? 0,
                         'shipping_charge' => $request->shipping_charge,
                         'total'           => $request->total,
                         'paid_amount'     => $request->amount ?? 0,
@@ -387,7 +405,6 @@ class PosController extends Controller
                     // clear old items & payments
                     $sale->items()->delete();
                     $sale->payments()->delete();
-
                 } else {
 
                     /* -----------------------------
@@ -408,6 +425,7 @@ class PosController extends Controller
                         'coupon_id'       => $data['coupon_id'] ?? null,
                         'coupon_code'     => $data['coupon_code'] ?? null,
                         'coupon_discount' => $data['coupon_discount'] ?? 0,
+                        'point_discount'   => $redeemPointDiscount ?? 0,  // loyalty point discount
                         'shipping_charge' => $data['shipping_charge'] ?? 0,
                         'total'           => $calculatedTotal,
 
@@ -417,7 +435,33 @@ class PosController extends Controller
 
                         'sale_note'       => $data['sale_note'] ?? null,
                     ]);
+
+                    if ($redeemPointDiscount > 0) {
+
+                        LoyaltyTransaction::create([
+                            'customer_id' => $data['customer_id'] ?? null,
+                            'sale_id'     => $sale->id,
+                            'points'      => (-1) * LoyaltyPointService::calculateRedeemablePoints($data['customer_id'] ?? null),
+                            'type'        => 'redeem',
+                            'description' => 'Points redeemed for Sale #' . $sale->invoice_no,
+                        ]);
+                    }
+
+                    $loyalty_rule = LoyaltyRule::where('is_active', 1)->first();
+                    if ($loyalty_rule) {
+                        $earned_points = floor($subtotal / $loyalty_rule->earn_amount) * $loyalty_rule->earn_points;
+                        if ($earned_points > 0) {
+                            LoyaltyTransaction::create([
+                                'customer_id' => $data['customer_id'] ?? null,
+                                'sale_id'     => $sale->id,
+                                'points'      => $earned_points,
+                                'type'        => 'earn',
+                                'description'        => 'Points earned from Sale #' . $sale->invoice_no,
+                            ]);
+                        }
+                    }
                 }
+
                 /* -----------------------------
                 | 2️⃣ ITEMS
                 -----------------------------*/
@@ -457,6 +501,7 @@ class PosController extends Controller
                     $cashAccountId = BranchAccount::where('branch_id', $sale->branch_id)
                         ->whereHas('account', fn($q) => $q->where('is_active', 1))
                         ->value('account_id');
+                    // dd($cashAccountId);
 
                     if (! $cashAccountId) {
                         throw new \Exception('Default cash account not configured for this branch.');
@@ -516,7 +561,6 @@ class PosController extends Controller
                     'invoice' => $sale->invoice_no,
                 ]);
             });
-
         } catch (\Exception $e) {
 
             return response()->json([
@@ -526,6 +570,8 @@ class PosController extends Controller
             ], 409); // 409 Conflict = business rule fail
         }
     }
+
+    //store ends
 
     /**
      * Generate Invoice Number
@@ -652,8 +698,10 @@ class PosController extends Controller
     public function resume(Sale $sale)
     {
         // 🔐 Branch security
-        if (! auth()->user()->isSuperAdmin() &&
-            $sale->branch_id !== auth()->user()->branch_id) {
+        if (
+            ! auth()->user()->isSuperAdmin() &&
+            $sale->branch_id !== auth()->user()->branch_id
+        ) {
             abort(403);
         }
 
@@ -820,8 +868,10 @@ class PosController extends Controller
     public function show(Sale $sale)
     {
 
-        if (! auth()->user()->isSuperAdmin() &&
-            $sale->branch_id !== auth()->user()->branch_id) {
+        if (
+            ! auth()->user()->isSuperAdmin() &&
+            $sale->branch_id !== auth()->user()->branch_id
+        ) {
             abort(403);
         }
 
@@ -975,7 +1025,9 @@ class PosController extends Controller
         if ($search !== '') {
             $base->where(function ($q) use ($search) {
                 $q->where('sales.invoice_no', 'like', "%{$search}%")
-                    ->orWhereHas('customer', fn($c) =>
+                    ->orWhereHas(
+                        'customer',
+                        fn($c) =>
                         $c->where('name', 'like', "%{$search}%")
                     );
             });
@@ -1079,5 +1131,4 @@ class PosController extends Controller
             'aaData'               => $data,
         ]);
     }
-
 }

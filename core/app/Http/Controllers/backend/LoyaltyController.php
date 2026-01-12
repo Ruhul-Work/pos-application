@@ -5,18 +5,19 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\backend\LoyaltyRule;
 use App\Models\backend\LoyaltyTransaction;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\Request;
 
 class LoyaltyController extends Controller
 {
-     public function index()
+    public function index()
     {
         return view('backend.modules.loyalties.index');
     }
 
     public function listAjax(Request $request)
     {
-        $columns   = ['id', 'name','earn_amount', 'earn_points', 'redeem_points', 'redeem_amount', 'min_redeem_points', 'max_redeem_points'];
+        $columns   = ['id', 'name', 'earn_amount', 'earn_points', 'redeem_points', 'redeem_amount', 'min_redeem_points', 'max_redeem_points'];
         $draw      = (int) $request->input('draw');
         $start     = (int) $request->input('start', 0);
         $length    = (int) $request->input('length', 10);
@@ -24,14 +25,13 @@ class LoyaltyController extends Controller
         $orderDir  = strtolower($request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $searchVal = trim($request->input('search.value', ''));
 
-        $base = LoyaltyRule::query()->select(['id', 'name','earn_amount', 'earn_points', 'redeem_points', 'redeem_amount', 'min_redeem_points', 'max_redeem_points']);
+        $base = LoyaltyRule::query()->select(['id', 'name', 'earn_amount', 'earn_points', 'redeem_points', 'redeem_amount', 'min_redeem_points', 'max_redeem_points']);
 
         $total = (clone $base)->count();
 
         if ($searchVal !== '') {
             $base->where(function ($q) use ($searchVal) {
-                $q->where('name', 'like', "%{$searchVal}%")
-                   ;
+                $q->where('name', 'like', "%{$searchVal}%");
             });
         }
 
@@ -83,13 +83,11 @@ class LoyaltyController extends Controller
             'iTotalDisplayRecords' => $filtered,
             'aaData'               => $data,
         ]);
-
-       
     }
 
     public function createModal()
     {
-                                                              // @perm গার্ড চাইলে দিন
+        // @perm গার্ড চাইলে দিন
         return view('backend.modules.loyalties.createModal'); // partial only
     }
     public function store(Request $req)
@@ -102,19 +100,19 @@ class LoyaltyController extends Controller
             'redeem_amount'      => ['required', 'numeric'],
             'min_redeem_points'      => ['required', 'integer'],
             'max_redeem_points'      => ['nullable', 'integer'],
-            
+
         ]);
 
-         $loyaltyRule = LoyaltyRule::create([
-             'name'      => ucwords($data['name']),
-             'earn_amount'      => ($data['earn_amount']),
-             'earn_points'      => ($data['earn_points']),
-             'redeem_points'      => ($data['redeem_points']),
-             'redeem_amount'      => ($data['redeem_amount']),
-             'min_redeem_points'      => ($data['min_redeem_points']),
-             'max_redeem_points'      => ($data['max_redeem_points']),
-            
-      
+        $loyaltyRule = LoyaltyRule::create([
+            'name'      => ucwords($data['name']),
+            'earn_amount'      => ($data['earn_amount']),
+            'earn_points'      => ($data['earn_points']),
+            'redeem_points'      => ($data['redeem_points']),
+            'redeem_amount'      => ($data['redeem_amount']),
+            'min_redeem_points'      => ($data['min_redeem_points']),
+            'max_redeem_points'      => ($data['max_redeem_points']),
+
+
         ]);
 
         return response()->json(['ok' => true, 'msg' => 'Loyalty Rule created', 'id' => $loyaltyRule->id]);
@@ -125,7 +123,7 @@ class LoyaltyController extends Controller
         return response()->json([
             'id'        => $loyaltyRule->id,
             'name'      => $loyaltyRule->name,
-            
+
         ]);
     }
     public function editModal(LoyaltyRule $loyaltyRule)
@@ -142,7 +140,7 @@ class LoyaltyController extends Controller
             'redeem_amount'      => ['required', 'numeric'],
             'min_redeem_points'      => ['required', 'integer'],
             'max_redeem_points'      => ['nullable', 'integer'],
-        
+
         ]);
 
         $loyaltyRule->name  = ucwords($data['name']);
@@ -152,7 +150,7 @@ class LoyaltyController extends Controller
         $loyaltyRule->redeem_amount  = ($data['redeem_amount']);
         $loyaltyRule->min_redeem_points  = ($data['min_redeem_points']);
         $loyaltyRule->max_redeem_points  = ($data['max_redeem_points']);
-  
+
         $loyaltyRule->save();
 
         return response()->json(['ok' => true, 'msg' => 'LoyaltyRule updated']);
@@ -160,27 +158,17 @@ class LoyaltyController extends Controller
 
     public function userLoyaltyPoints($userId)
     {
-        $points = LoyaltyTransaction::where('customer_id', $userId)->sum('points');
+        $points = LoyaltyPointService::calculateRedeemablePoints($userId);
+        $discount = LoyaltyPointService::redeemPoints($userId);
 
-        $rule = LoyaltyRule::where('is_active', 1)->first();
-
-        $discount = 0;
-
-        if($points>=$rule->min_redeem_points && $points<=$rule->max_redeem_points){
-
-            $discount = ($points/$rule->redeem_points)*$rule->redeem_amount;
-        }
-
-        return response()->json(['ok'=>true, 'points'=>$points, 'discount' => $discount]);
+        return response()->json(['ok' => true, 'points' => $points, 'discount' => $discount]);
     }
 
-     public function destroy(LoyaltyRule $loyaltyRule)
+    public function destroy(LoyaltyRule $loyaltyRule)
     {
 
         $loyaltyRule->delete();
 
         return response()->json(['ok' => true, 'msg' => 'LoyaltyRule deleted']);
     }
-
-
 }

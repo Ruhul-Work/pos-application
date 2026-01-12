@@ -23,6 +23,7 @@ class Sale extends Model
         'discount',
         'coupon_code',
         'coupon_discount',
+        'point_discount',
         'tax_amount',
         'shipping_charge',
         'total',

@@ -132,11 +132,13 @@
                 <div class="d-flex justify-content-between mt-3 mb-0 rounded-3 p-3 "
                     style="background:#FFEEE9;border:1px solid #E04F16">
                     <div class="">
-                        <h1 class="text-md lh-1 fw-semibold " id="customer_point">James Anderson</h1>
-                        <p class="text-sm lh-1">Loyalty Point: <span
-                                class="bg-info rounded-3 fw-semibold p-1 text-white" id="loyalty_point">0</span>
+                        <h1 class="text-md lh-1 fw-semibold " id="customer_point">No Registered Customer Selected</h1>
+                        <p class="text-sm lh-1">Loyalty Point: <span class="bg-info rounded-3 fw-semibold p-1 text-white"
+                                id="loyalty_point">0</span>
                             |
-                            Discount: <span class="bg-success rounded-3 fw-semibold p-1 text-white" ><input style="width: 40px" disabled type="number" value="0" id="avail_loyalty_discount"> </span></p>
+                            Discount: <span class="bg-success rounded-3 fw-semibold p-1 text-white"><input
+                                    style="width: 40px" disabled type="number" value="0"
+                                    id="avail_loyalty_discount"> </span></p>
                     </div>
                     <div> <button class="btn btn-danger btn-xs py-1 text-xs " id="redeem_point">Apply</button></div>
 
@@ -347,8 +349,8 @@
                                     <span>Redeem Point</span>
 
                                 </td>
-                                <td class="text-danger"> <input type="number" min="0" value="0.00" disabled id="loyalty_discount"
-                                        class="text-danger" style="width: 80px"></td>
+                                <td class="text-danger"> <input type="number" min="0" value="0.00" disabled
+                                        id="loyalty_discount" class="text-danger" style="width: 80px"></td>
 
                             </tr>
 
@@ -1109,7 +1111,7 @@
 
             total = subtotal + shipping - discount - couponDiscount - loyaltyPoints;
 
-            
+
             total = Math.round(total * 100) / 100;
             // UI update
             $('#discount').val(discount.toFixed(2));
@@ -1646,33 +1648,21 @@
                 });
             });
 
-            $('#customer').on('change', function() {
-                let customerId = $(this).val(); 
-                console.log('Selected customer ID:', customerId); // Debug log
-                $.ajax({
-                    url: "{{ route('loyalty.userLoyaltyPoints', ':customerId') }}".replace(':customerId', customerId),
-                    method: 'GET',
-                    success: function(res) {
-                        $('#loyalty_point').text(res.points || 0);
-                        $('#avail_loyalty_discount').val(parseInt(res.discount)  || 0);
-                        $('#customer_point').text($('#customer option:selected').text() || '');
-                          $('#loyalty_discount').val(0);
-                          calculateSubtotal();
-                      
-                    },
-                    error: function(err) {
-                        console.log(err);
-                    }
-                });
-               
-            });
+      
+
+            $('#customer').on('change', customerLoyaltyPointsCalculate);
 
             // loyalty point apply
             $('#redeem_point').on('click', function() {
-                console.log('Redeeming loyalty points');
-                console.log('Available loyalty discount:', parseInt($('#avail_loyalty_discount').val()) || 0);
-                $('#loyalty_discount').val( parseInt($('#avail_loyalty_discount').val()) || 0);
+
+                let loyatly_discount = parseInt($('#avail_loyalty_discount').val()) || 0;
+
+                $('#loyalty_discount').val(loyatly_discount);
                 calculateSubtotal();
+
+                if (loyatly_discount > 0) {
+                    window.redeem_point = true;
+                }
             });
 
 
@@ -1930,6 +1920,7 @@
                 coupon_id: couponId,
                 coupon_code: couponCode,
                 coupon_discount: couponDiscount,
+                redeem_point: window.redeem_point ? true : false,
 
                 tax_amount: 0,
                 shipping_charge: parseFloat($('#shipping').val()) || 0,
@@ -1955,7 +1946,7 @@
                 data: JSON.stringify(payload),
                 contentType: "application/json",
                 success: function(res) {
-
+                      customerLoyaltyPointsCalculate();
                     // alert('Sale completed. Invoice: ' + res.invoice);
                     Swal.fire({
                         title: 'Sale Completed',
@@ -1968,6 +1959,7 @@
                         if (result.isConfirmed) {
                             let invoiceUrl = "{{ route('pos.sales.invoice', ':id') }}".replace(
                                 ':id', res.id);
+                              
                             window.open(invoiceUrl, '_blank');
                         }
                     });
@@ -2516,6 +2508,28 @@
 
             handleBarcodeScan(barcode);
         });
+
+                function customerLoyaltyPointsCalculate() {
+                let customerId = $('#customer').val();
+                console.log('Selected customer ID:', customerId); // Debug log
+                $.ajax({
+                    url: "{{ route('loyalty.userLoyaltyPoints', ':customerId') }}".replace(
+                        ':customerId', customerId),
+                    method: 'GET',
+                    success: function(res) {
+                        $('#loyalty_point').text(res.points || 0);
+                        $('#avail_loyalty_discount').val(parseInt(res.discount) || 0);
+                        $('#customer_point').text($('#customer option:selected').text() || '');
+                        $('#loyalty_discount').val(0);
+                        calculateSubtotal();
+
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+
+            }
 
         // Core handler
         function handleBarcodeScan(barcode) {
