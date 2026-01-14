@@ -103,7 +103,7 @@
                                             <div class="modal-footer ">
                                                 <button type="button" class="btn btn-danger btn-sm"
                                                     data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" data-bs-toggle="modal" class="btn btn-dark btn-sm"
+                                                <button type="submit"  class="btn btn-dark btn-sm"
                                                     id="customer_submit">Save</button>
                                             </div>
                                         </form>
@@ -237,7 +237,7 @@
                                                 <div class="modal-footer ">
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" data-bs-toggle="modal"
+                                                    <button type="submit" 
                                                         class="btn btn-dark btn-sm" id="shipping-save">Save</button>
                                                 </div>
                                             </div>
@@ -287,7 +287,7 @@
                                                 <div class="modal-footer ">
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" data-bs-toggle="modal"
+                                                    <button type="submit" 
                                                         class="btn btn-dark btn-sm" id="coupon-save">Save</button>
                                                 </div>
                                             </div>
@@ -332,7 +332,7 @@
                                                 <div class="modal-footer ">
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" data-bs-toggle="modal"
+                                                    <button type="submit" 
                                                         class="btn btn-dark btn-sm" id="discount-save">Save</button>
                                                 </div>
                                             </div>
@@ -1063,6 +1063,16 @@
                 if (res.eligible) {
                     discount = res.discount;
                     $('#coupon_discount').val(discount.toFixed(2));
+                    
+                    Swal.fire({
+                       icon: 'success',
+                       title: 'Coupon Applied',
+                       text: `Coupon applied successfully`,
+                       timer: 500,
+                       
+                   });
+                   
+              
                 } else {
                     $('#coupon_discount').val('0.00');
                     // alert(res.message);
@@ -1071,16 +1081,15 @@
                         title: 'Error',
                         text: res.message
                     });
+
+                    window.coupon = null;
                 }
                 return discount;
             });
         }
 
 
-
         // calculateSubtotal (uses tab-specific discount/shipping)
-
-
         async function calculateSubtotal() {
 
             let cart = window.getCart() || [];
@@ -1635,17 +1644,14 @@
                 $('#applied_coupon_code').val(couponText);
 
                 const total = await calculateSubtotal();
+            
                 const couponDiscount = parseFloat($('#coupon_discount').val()) || 0;
                 $('#applied_coupon_discount').val(couponDiscount);
 
                 // close modal
                 $('#couponModal').modal('hide');
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Coupon Applied',
-                    text: `${couponText} applied successfully`
-                });
+                
             });
 
       
@@ -1660,8 +1666,12 @@
                 $('#loyalty_discount').val(loyatly_discount);
                 calculateSubtotal();
 
+              
+
                 if (loyatly_discount > 0) {
                     window.redeem_point = true;
+                }else {
+                    window.redeem_point = false;
                 }
             });
 
@@ -1920,7 +1930,7 @@
                 coupon_id: couponId,
                 coupon_code: couponCode,
                 coupon_discount: couponDiscount,
-                redeem_point: window.redeem_point ? true : false,
+                redeem_point: window.redeem_point??false,
 
                 tax_amount: 0,
                 shipping_charge: parseFloat($('#shipping').val()) || 0,

@@ -232,6 +232,15 @@
                         </a>
                     </li>
                 @endperm
+                @perm('purchase.create')
+                    <li>
+                        <a class="{{ Route::is('purchase.return') ? 'active' : '' }}"
+                            href="{{ route('purchase.return') }}">
+                            <iconify-icon icon="mdi:undo-variant" class="menu-icon"></iconify-icon>
+                            <span>Purchase Return</span>
+                        </a>
+                    </li>
+                @endperm
 
 
 
