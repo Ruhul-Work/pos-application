@@ -708,6 +708,7 @@ class PosController extends Controller
             'items.product',
             'customer',
         ]);
+
         return response()->json([
             'success' => true,
             'sale'    => [

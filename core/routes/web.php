@@ -402,6 +402,10 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
 
         Route::get('purchase/edit/{purchase}', [PurchaseController::class, 'edit'])->whereNumber('purchase')->name('orders.edit');
         Route::put('purchase/{purchase}', [PurchaseController::class, 'update'])->name('orders.update');
+
+        Route::get('purchase/purchase-return', [PurchaseController::class, 'purchaseReturn'])->name('return');
+        Route::get('purchase/order-details/{order}', [PurchaseController::class, 'orderDetails'])->name('order.details');
+
     });
 
     Route::prefix('paymentTypes')->name('paymentTypes.')->group(function () {
