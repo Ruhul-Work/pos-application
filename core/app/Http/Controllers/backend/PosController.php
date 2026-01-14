@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
@@ -278,7 +277,6 @@ class PosController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-
             'customer_id'        => 'nullable|exists:customers,id',
 
             'sale_type'          => 'required|string',
@@ -299,35 +297,29 @@ class PosController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
 
             'payments'           => 'nullable|array',
-            'payments.*.method'  => 'required|string', // cash / bkash / card
+            'payments.*.method'  => 'required|string',
             'payments.*.amount'  => 'required|numeric|min:0.01',
         ]);
 
         /* -----------------------------
         | 🔐 SECURITY: recalc total
         -----------------------------*/
-        // $subtotal = collect($data['items'])
-        //     ->sum(fn($i) => $i['quantity'] * $i['unit_price']);
-
         $subtotal = collect($data['items'])
             ->sum(fn($i) => $i['quantity'] * Product::find($i['product_id'])->price);
 
         $redeemPointDiscount = 0;
-        if ($data['redeem_point']) {
+        if (! empty($data['redeem_point']) && ! empty($data['customer_id'])) {
             $redeemPointDiscount = (int) LoyaltyPointService::redeemPoints($data['customer_id']);
         }
 
-
         $calculatedTotal = round(
             $subtotal
-                - ($data['discount'] ?? 0)
-                - ($data['coupon_discount'] ?? 0)
-                -  ($redeemPointDiscount ?? 0)
-                + ($data['shipping_charge'] ?? 0),
+             - ($data['discount'] ?? 0)
+             - ($data['coupon_discount'] ?? 0)
+             - $redeemPointDiscount
+             + ($data['shipping_charge'] ?? 0),
             2
         );
-
-        // dd($calculatedTotal);
 
         if (round($data['total'], 2) !== $calculatedTotal) {
             throw ValidationException::withMessages([
@@ -336,55 +328,65 @@ class PosController extends Controller
         }
 
         /* -----------------------------
-        | 💰 PAYMENT VALIDATION
+        | 💰 PAYMENT CALCULATION (GLOBAL)
         -----------------------------*/
-        if ($data['status'] === 'delivered') {
+        $payments = collect($data['payments'] ?? []);
 
-            if (empty($data['payments'])) {
-                throw ValidationException::withMessages([
-                    'payments' => 'Payment required for delivered sale.',
-                ]);
-            }
+        $paidAmount = round(
+            $payments->sum(fn($p) => (float) $p['amount']),
+            2
+        );
 
-            $totalPaid = collect($data['payments'])
-                ->sum(fn($p) => round($p['amount'], 2));
-
-            //  Customer must give at least sale total
-            if (round($totalPaid, 2) < round($calculatedTotal, 2)) {
-                throw ValidationException::withMessages([
-                    'payments' => 'Paid amount cannot be less than sale total.',
-                ]);
-            }
+        // overpayment protection
+        if ($paidAmount > $calculatedTotal) {
+            $paidAmount = $calculatedTotal;
         }
-        //current branch and warehouse
+
+        $dueAmount = round($calculatedTotal - $paidAmount, 2);
+
+        if ($paidAmount <= 0) {
+            $paymentStatus = 'due';
+        } elseif ($paidAmount < $calculatedTotal) {
+            $paymentStatus = 'partial';
+        } else {
+            $paymentStatus = 'paid';
+        }
+
+        /* -----------------------------
+        | 🌿 Branch & Warehouse Context
+        -----------------------------*/
         $branchId    = current_branch_id();
         $warehouseId = current_warehouse_id();
 
-        if (auth()->user()->isSuper()) {
-            abort_if(
-                ! $branchId || ! $warehouseId,
-                422,
-                'Please select a branch before making a POS sale.'
-            );
-        } else {
-            abort_if(
-                ! $branchId || ! $warehouseId,
-                422,
-                'Branch/Warehouse context missing.'
-            );
-        }
+        abort_if(
+            ! $branchId || ! $warehouseId,
+            422,
+            'Branch/Warehouse context missing.'
+        );
 
         /* -----------------------------
         | 🚀 TRANSACTION
         -----------------------------*/
         try {
-            return DB::transaction(function () use ($request, $data, $subtotal, $calculatedTotal, $redeemPointDiscount, $branchId, $warehouseId) {
+            return DB::transaction(function () use (
+                $request,
+                $data,
+                $subtotal,
+                $calculatedTotal,
+                $redeemPointDiscount,
+                $branchId,
+                $warehouseId,
+                $payments,
+                $paidAmount,
+                $dueAmount,
+                $paymentStatus
+            ) {
 
-                // -----------------------------
-                // `RESUME SALE` handling
-                // -----------------------------
+                /* -----------------------------
+                | 🧾 SALE CREATE / RESUME
+                -----------------------------*/
                 if ($request->resume_sale_id) {
-                    // UPDATE EXISTING HOLD SALE
+
                     $sale = Sale::where('id', $request->resume_sale_id)
                         ->where('status', 'hold')
                         ->lockForUpdate()
@@ -392,24 +394,23 @@ class PosController extends Controller
 
                     $sale->update([
                         'status'          => 'delivered',
-                        'subtotal'        => $request->subtotal,
-                        'discount'        => $request->discount,
-                        'point_discount'   => $redeemPointDiscount ?? 0,
-                        'shipping_charge' => $request->shipping_charge,
-                        'total'           => $request->total,
-                        'paid_amount'     => $request->amount ?? 0,
-                        'due_amount'      => 0,
-                        'payment_status'  => 'paid',
+                        'subtotal'        => $subtotal,
+                        'discount'        => $data['discount'] ?? 0,
+                        'coupon_discount' => $data['coupon_discount'] ?? 0,
+                        'point_discount'  => $redeemPointDiscount,
+                        'shipping_charge' => $data['shipping_charge'] ?? 0,
+                        'total'           => $calculatedTotal,
+
+                        'paid_amount'     => $paidAmount,
+                        'due_amount'      => $dueAmount,
+                        'payment_status'  => $paymentStatus,
                     ]);
 
-                    // clear old items & payments
                     $sale->items()->delete();
                     $sale->payments()->delete();
+
                 } else {
 
-                    /* -----------------------------
-                    | 1️⃣ SALE
-                    -----------------------------*/
                     $sale = Sale::create([
                         'invoice_no'      => 'POS-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
                         'branch_id'       => $branchId,
@@ -425,13 +426,13 @@ class PosController extends Controller
                         'coupon_id'       => $data['coupon_id'] ?? null,
                         'coupon_code'     => $data['coupon_code'] ?? null,
                         'coupon_discount' => $data['coupon_discount'] ?? 0,
-                        'point_discount'   => $redeemPointDiscount ?? 0,  // loyalty point discount
+                        'point_discount'  => $redeemPointDiscount,
                         'shipping_charge' => $data['shipping_charge'] ?? 0,
                         'total'           => $calculatedTotal,
 
-                        'paid_amount'     => $data['status'] === 'delivered' ? $calculatedTotal : 0,
-                        'due_amount'      => $data['status'] === 'delivered' ? 0 : $calculatedTotal,
-                        'payment_status'  => $data['status'] === 'delivered' ? 'paid' : 'due',
+                        'paid_amount'     => $paidAmount,
+                        'due_amount'      => $dueAmount,
+                        'payment_status'  => $paymentStatus,
 
                         'sale_note'       => $data['sale_note'] ?? null,
                     ]);
@@ -456,14 +457,14 @@ class PosController extends Controller
                                 'sale_id'     => $sale->id,
                                 'points'      => $earned_points,
                                 'type'        => 'earn',
-                                'description'        => 'Points earned from Sale #' . $sale->invoice_no,
+                                'description' => 'Points earned from Sale #' . $sale->invoice_no,
                             ]);
                         }
                     }
                 }
 
                 /* -----------------------------
-                | 2️⃣ ITEMS
+                | 📦 ITEMS
                 -----------------------------*/
                 foreach ($data['items'] as $item) {
                     SaleItem::create([
@@ -475,53 +476,50 @@ class PosController extends Controller
                     ]);
                 }
 
-                // -----------------------------
-                // STOCK LEDGER (WAREHOUSE WISE)
-                // -----------------------------
-                StockLedgerService::deductForSale([
-                    'sale_id'      => $sale->id,
-                    'warehouse_id' => $warehouseId,
-                    'branch_id'    => $branchId,
-                    'user_id'      => auth()->id(),
-                    'items'        => collect($data['items'])->map(function ($row) {
-                        return [
+                /* -----------------------------
+                | 📉 STOCK (only delivered)
+                -----------------------------*/
+                if ($sale->status === 'delivered') {
+                    StockLedgerService::deductForSale([
+                        'sale_id'      => $sale->id,
+                        'warehouse_id' => $warehouseId,
+                        'branch_id'    => $branchId,
+                        'user_id'      => auth()->id(),
+                        'items'        => collect($data['items'])->map(fn($row) => [
                             'product_id' => $row['product_id'],
                             'quantity'   => $row['quantity'],
                             'unit_price' => $row['unit_price'],
-                        ];
-                    })->toArray(),
-                ]);
+                        ])->toArray(),
+                    ]);
+                }
 
                 /* -----------------------------
-            | 3️⃣ PAYMENTS + JOURNAL
-            -----------------------------*/
-                if ($sale->status === 'delivered') {
+                | 💵 PAYMENTS + JOURNAL
+                -----------------------------*/
+                if ($paidAmount > 0) {
 
-                    // 🔑 Branch default cash account
-                    $cashAccountId = BranchAccount::where('branch_id', $sale->branch_id)
-                        ->whereHas('account', fn($q) => $q->where('is_active', 1))
+                    $cashAccountId = BranchAccount::where('branch_id', $branchId)
+                        ->where('is_active', 1)
                         ->value('account_id');
-                    // dd($cashAccountId);
 
                     if (! $cashAccountId) {
-                        throw new \Exception('Default cash account not configured for this branch.');
+                        throw new \Exception('Cash account not configured for branch.');
                     }
 
-                    foreach ($data['payments'] as $pay) {
+                    foreach ($payments as $pay) {
                         $type = PaymentType::findOrFail($pay['method']);
 
                         SalePayment::create([
                             'sale_id'         => $sale->id,
-                            'account_id'      => $cashAccountId, // ✅ always cash account
-                            'payment_type_id' => $type->id,      // ✅ dynamic
-                            'payment_type'    => $type->slug,    // ✅ enum safe
+                            'account_id'      => $cashAccountId,
+                            'payment_type_id' => $type->id,
+                            'payment_type'    => $type->slug,
                             'amount'          => $pay['amount'],
                             'received_by'     => auth()->user()->name,
                             'paid_at'         => now(),
                         ]);
                     }
 
-                    // -------- JOURNAL --------
                     $revenueAccountId = config('accounting.sales_revenue_account_id');
 
                     $journal = JournalEntry::create([
@@ -535,42 +533,38 @@ class PosController extends Controller
                         'created_by'      => auth()->id(),
                     ]);
 
-                    // Debit cash
                     JournalEntryLine::create([
                         'journal_entry_id' => $journal->id,
                         'account_id'       => $cashAccountId,
-                        'branch_id'        => $sale->branch_id,
-                        'debit'            => $sale->total,
+                        'branch_id'        => $branchId,
+                        'debit'            => $paidAmount,
                         'credit'           => 0,
                     ]);
 
-                    // Credit revenue
                     JournalEntryLine::create([
                         'journal_entry_id' => $journal->id,
                         'account_id'       => $revenueAccountId,
                         'branch_id'        => $branchId,
                         'debit'            => 0,
-                        'credit'           => $sale->total,
+                        'credit'           => $paidAmount,
                     ]);
                 }
 
                 return response()->json([
                     'success' => true,
-                    'id' => $sale->id,
-                    'sale_id' => $sale->id,
+                    'id'      => $sale->id,
                     'invoice' => $sale->invoice_no,
                 ]);
             });
+
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'type'    => 'STOCK_ERROR',
-            ], 409); // 409 Conflict = business rule fail
+            ], 409);
         }
     }
-
     //store ends
 
     /**
@@ -1084,6 +1078,19 @@ class PosController extends Controller
                     bg-info-focus text-info-main" title="Invoice">
                     <iconify-icon icon="mdi:printer-outline"></iconify-icon>
                     </a>';
+
+            /* 💰 Receive Payment (only if due & delivered) */
+            if ($r->due_amount > 0 && $r->status === 'delivered') {
+                $actions .= '
+                    <a href="#"
+                    class="w-32-px h-32-px rounded-circle d-inline-flex align-items-center justify-content-center
+                            bg-warning-focus text-warning-main AjaxModal"
+                    title="Receive Payment" data-onsuccess="posSalePaymentIndex.onSaved"
+                    data-size="lg"
+                    data-ajax-modal="' . route('pos.sales.payment.modal', $r->id) . '">
+                        <iconify-icon icon="material-symbols:currency-exchange-rounded" class="text-lg"></iconify-icon>
+                    </a>';
+                            }
 
             /* 👁 View (Ajax Modal) */
             $actions .= '

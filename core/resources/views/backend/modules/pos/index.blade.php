@@ -1648,10 +1648,11 @@
                 });
             });
 
-      
+
 
             $('#customer').on('change', customerLoyaltyPointsCalculate);
 
+            window.redeem_point = false;
             // loyalty point apply
             $('#redeem_point').on('click', function() {
 
@@ -1946,7 +1947,7 @@
                 data: JSON.stringify(payload),
                 contentType: "application/json",
                 success: function(res) {
-                      customerLoyaltyPointsCalculate();
+                    customerLoyaltyPointsCalculate();
                     // alert('Sale completed. Invoice: ' + res.invoice);
                     Swal.fire({
                         title: 'Sale Completed',
@@ -1959,7 +1960,7 @@
                         if (result.isConfirmed) {
                             let invoiceUrl = "{{ route('pos.sales.invoice', ':id') }}".replace(
                                 ':id', res.id);
-                              
+
                             window.open(invoiceUrl, '_blank');
                         }
                     });
@@ -2509,27 +2510,27 @@
             handleBarcodeScan(barcode);
         });
 
-                function customerLoyaltyPointsCalculate() {
-                let customerId = $('#customer').val();
-                console.log('Selected customer ID:', customerId); // Debug log
-                $.ajax({
-                    url: "{{ route('loyalty.userLoyaltyPoints', ':customerId') }}".replace(
-                        ':customerId', customerId),
-                    method: 'GET',
-                    success: function(res) {
-                        $('#loyalty_point').text(res.points || 0);
-                        $('#avail_loyalty_discount').val(parseInt(res.discount) || 0);
-                        $('#customer_point').text($('#customer option:selected').text() || '');
-                        $('#loyalty_discount').val(0);
-                        calculateSubtotal();
+        function customerLoyaltyPointsCalculate() {
+            let customerId = $('#customer').val();
+            console.log('Selected customer ID:', customerId); // Debug log
+            $.ajax({
+                url: "{{ route('loyalty.userLoyaltyPoints', ':customerId') }}".replace(
+                    ':customerId', customerId),
+                method: 'GET',
+                success: function(res) {
+                    $('#loyalty_point').text(res.points || 0);
+                    $('#avail_loyalty_discount').val(parseInt(res.discount) || 0);
+                    $('#customer_point').text($('#customer option:selected').text() || '');
+                    $('#loyalty_discount').val(0);
+                    calculateSubtotal();
 
-                    },
-                    error: function(err) {
-                        console.log(err);
-                    }
-                });
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            });
 
-            }
+        }
 
         // Core handler
         function handleBarcodeScan(barcode) {

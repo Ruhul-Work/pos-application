@@ -37,6 +37,7 @@ class VoucherType extends Model
     public const SALE   = 'SALE';
     public const REFUND = 'REFUND';
     public const ADJUST = 'ADJUST';
+    public const PAYMENT = 'PAYMENT';
 
     /**
      * Resolve voucher type id by code

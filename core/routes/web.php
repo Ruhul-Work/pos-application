@@ -20,6 +20,7 @@ use App\Http\Controllers\backend\OpeningBalanceController;
 use App\Http\Controllers\backend\PaperQualityController;
 use App\Http\Controllers\backend\PaymentTypeController;
 use App\Http\Controllers\backend\PosController;
+use App\Http\Controllers\backend\PosSalePaymentController;
 use App\Http\Controllers\backend\ProductController;
 use App\Http\Controllers\backend\ProductTypeController;
 use App\Http\Controllers\backend\PurchaseController;
@@ -354,7 +355,6 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
     Route::prefix('pos')->name('pos.')->group(function () {
 
         Route::get('pos', [PosController::class, 'index'])->name('index');
-        // web.php or api.php
         Route::post('pos/sales', [PosController::class, 'store'])->name('sales.store');
 
         Route::post('pos/sales/hold', [PosController::class, 'hold'])->name('sales.hold');
@@ -371,6 +371,11 @@ Route::middleware(['web', 'auth', 'perm', 'branchscope'])->group(function () {
 
         Route::get('pos/sales_list', [PosController::class, 'list'])->name('sales.list');
         Route::post('pos/sales/list/ajax', [PosController::class, 'listAjax'])->name('sales.list.ajax');
+
+        // Payment receive modal
+        Route::get('pos/sales/{sale}/payment-modal',[PosSalePaymentController::class, 'create'])->name('sales.payment.modal');
+        // Store received payment
+        Route::post('pos/sales/{sale}/payments',[PosSalePaymentController::class, 'store'])->name('sales.payments.store');
     });
 
     Route::prefix('purchase')->name('purchase.')->group(function () {

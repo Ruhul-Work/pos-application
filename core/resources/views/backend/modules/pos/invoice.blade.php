@@ -94,6 +94,13 @@
             <td class="right">{{ number_format($sale->subtotal, 2) }}</td>
         </tr>
 
+        @if ($sale->shipping_charge > 0)
+            <tr>
+                <td>Shipping</td>
+                <td class="right">{{ number_format($sale->shipping_charge, 2) }}</td>
+            </tr>
+        @endif
+
         @if ($sale->discount > 0)
             <tr>
                 <td>Discount</td>
@@ -101,10 +108,17 @@
             </tr>
         @endif
 
-        @if ($sale->shipping_charge > 0)
+        @if ($sale->coupon_discount > 0)
             <tr>
-                <td>Shipping</td>
-                <td class="right">{{ number_format($sale->shipping_charge, 2) }}</td>
+                <td>Coupon Discount</td>
+                <td class="right">-{{ number_format($sale->coupon_discount, 2) }}</td>
+            </tr>
+        @endif
+
+        @if ($sale->point_discount > 0)
+            <tr>
+                <td>Points Discount</td>
+                <td class="right">-{{ number_format($sale->point_discount, 2) }}</td>
             </tr>
         @endif
 

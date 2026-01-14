@@ -90,12 +90,17 @@
             <div>Subtotal: {{ number_format($sale->subtotal, 2) }}</div>
             <div>Discount: {{ number_format($sale->discount, 2) }}</div>
             <div>Shipping: {{ number_format($sale->shipping_charge, 2) }}</div>
+            <div>Coupon discount: {{ number_format($sale->coupon_discount, 2) }}</div>
+            <div>Points discount: {{ number_format($sale->point_discount, 2) }}</div>
             <hr class="my-1">
             <div class="fw-bold fs-6">
                 Total: {{ number_format($sale->total, 2) }}
             </div>
             <div class="text-success fw-semibold">
                 Paid: {{ number_format($sale->paid_amount, 2) }}
+            </div>
+            <div class="text-danger fw-semibold">
+                due: {{ number_format($sale->due_amount, 2) }}
             </div>
         </div>
     </div>

@@ -25,6 +25,10 @@ class VoucherTypeSeeder extends Seeder
                 'name' => 'Adjustment Voucher',
                 'code' => 'ADJUST',
             ],
+            [
+                'name' => 'Payment Voucher',
+                'code' => 'PAYMENT',
+            ],
         ];
 
         foreach ($types as $type) {
